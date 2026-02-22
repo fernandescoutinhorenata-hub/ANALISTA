@@ -47,6 +47,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, id, type = 'text', value
             <input
                 id={id}
                 type={type}
+                inputMode={type === 'number' ? 'numeric' : undefined}
                 value={value}
                 min={min}
                 placeholder={placeholder}
@@ -394,8 +395,8 @@ export const InputData: React.FC = () => {
                             <img
                                 src="/image_10.png"
                                 alt="Logo Celo Tracker"
-                                className="w-auto object-contain"
-                                style={{ height: '120px', imageRendering: 'high-quality' as any }}
+                                className="w-auto object-contain h-16 md:h-[120px]"
+                                style={{ imageRendering: 'high-quality' as any }}
                             />
                         </div>
                     </div>

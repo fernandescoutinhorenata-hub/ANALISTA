@@ -528,6 +528,14 @@ export const Dashboard: React.FC = () => {
                 creditos={creditos}
             />
 
+            {/* Overlay para Mobile quando a sidebar estiver aberta */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* ── Sidebar ── */}
             <aside
                 className={`fixed inset-y-0 left-0 z-50 w-60 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0`}
@@ -541,8 +549,8 @@ export const Dashboard: React.FC = () => {
                     <img
                         src="/image_10.png"
                         alt="Logo Celo Tracker"
-                        className="w-auto object-contain"
-                        style={{ height: '120px', imageRendering: 'high-quality' as any }}
+                        className="w-auto object-contain h-20 md:h-[120px]"
+                        style={{ imageRendering: 'high-quality' as any }}
                     />
                 </div>
 
@@ -557,8 +565,8 @@ export const Dashboard: React.FC = () => {
                         return (
                             <button
                                 key={item.id}
-                                onClick={() => setActiveTab(item.id)}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm"
+                                onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
+                                className="w-full flex items-center gap-3 px-4 py-3 md:py-4 md:px-5 rounded-xl transition-all font-semibold text-sm"
                                 style={{
                                     backgroundColor: isActive ? '#8A2BE2' : 'transparent',
                                     color: isActive ? '#FFFFFF' : '#7A8291',
@@ -576,7 +584,7 @@ export const Dashboard: React.FC = () => {
                     <div style={{ paddingTop: '12px', marginTop: '4px', borderTop: '1px solid #2A3042' }}>
                         <button
                             onClick={() => navigate('/input')}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm"
+                            className="w-full flex items-center justify-center gap-3 px-4 py-4 md:py-3 rounded-xl transition-all font-bold text-sm"
                             style={{ backgroundColor: '#00FF7F18', color: '#00FF7F', border: '1px solid #00FF7F30' }}
                             onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#00FF7F30'; }}
                             onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#00FF7F18'; }}
