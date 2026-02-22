@@ -629,8 +629,11 @@ export const Dashboard: React.FC = () => {
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
 
                 {/* 🚀 Beta Banner */}
-                <div style={{ backgroundColor: '#8A2BE2', color: '#FFFFFF', padding: '8px', textAlign: 'center', fontSize: '12px', fontWeight: 600, letterSpacing: '0.5px' }}>
-                    🚀 ESTAMOS EM BETA! Use 5 análises gratuitas e envie seu feedback para @CeloCoach no botão ao lado.
+                <div style={{ backgroundColor: '#161B28', borderBottom: '1px solid #2A3042', color: '#FFFFFF', padding: '6px', textAlign: 'center', fontSize: '11px', fontWeight: 600, letterSpacing: '0.5px' }}>
+                    🚀 Versão Beta | Reporte bugs em {' '}
+                    <a href="https://instagram.com/celocoach" target="_blank" rel="noreferrer" style={{ color: '#00BFFF', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'} onMouseLeave={e => e.currentTarget.style.color = '#00BFFF'}>
+                        @CeloCoach
+                    </a>
                 </div>
 
                 {/* Header / Top Bar */}
