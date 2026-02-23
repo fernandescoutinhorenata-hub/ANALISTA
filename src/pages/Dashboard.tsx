@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import {
-    XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    PieChart, Pie, Cell, AreaChart, Area, BarChart, Bar, RadarChart, Radar, PolarGrid, PolarAngleAxis
+    XAxis, YAxis, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, BarChart, Bar,
+    AreaChart, Area, Legend, RadarChart, PolarGrid,
+    Radar, PolarAngleAxis
 } from 'recharts';
 import {
     Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
@@ -16,26 +18,25 @@ import type { DashboardData } from '../types';
 import { processData } from '../utils/data-processing';
 import { useAuth } from '../contexts/AuthContext';
 
-// ─── Cosmic Neon Refined – Design Tokens ───────────────────────────────────
-// BG_MAIN:   #0A0E17  | BG_CARD:   #161B28  | BORDER:    #2A3042
-// TEXT_PRI:  #FFFFFF  | TEXT_SEC:  #B0B8C3  | TEXT_TER:  #7A8291
-// PURPLE:    #8A2BE2  | GREEN:     #00FF7F  | GOLD:      #FFD700
-// RED:       #FF0055  | CYAN:      #00BFFF
+// ─── SaaS Premium – Design Tokens ──────────────────────────────────────────
+// BG_MAIN:   #0B0B0C  | BG_CARD:   #161618  | BORDER:    #2D2D30
+// TEXT_PRI:  #FFFFFF  | TEXT_SEC:  #A1A1AA  | TEXT_TER:  #71717A
+// PURPLE:    #8B5CF6  | GREEN:     #10B981  | GOLD:      #F59E0B
+// RED:       #EF4444  | CYAN:      #06B6D4
 // ────────────────────────────────────────────────────────────────────────────
 
-// Inline style helpers (used where Tailwind arbitrary values would be verbose)
 const S = {
-    bgMain: { backgroundColor: '#0A0E17' },
-    bgCard: { backgroundColor: '#161B28' },
-    border: { border: '1px solid #2A3042' },
-    cardBox: { backgroundColor: '#161B28', border: '1px solid #2A3042', borderRadius: '16px', padding: '24px' },
+    bgMain: { backgroundColor: '#0B0B0C' },
+    bgCard: { backgroundColor: '#161618' },
+    border: { border: '1px solid #2D2D30' },
+    cardBox: { backgroundColor: '#161618', border: '1px solid #2D2D30', borderRadius: '12px', padding: '24px' },
 };
 
 // ─── Shared Card ─────────────────────────────────────────────────────────────
 const Card: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({ children, className = '', style }) => (
     <div
-        className={`rounded-2xl p-6 ${className}`}
-        style={{ backgroundColor: '#161B28', border: '1px solid #2A3042', ...style }}
+        className={`rounded-xl p-6 ${className}`}
+        style={{ backgroundColor: '#161618', border: '1px solid #2D2D30', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', ...style }}
     >
         {children}
     </div>
@@ -50,20 +51,20 @@ const MetricCard: React.FC<{
     accentColor: string;
 }> = ({ title, value, subValue, icon: Icon, accentColor }) => (
     <div
-        className="rounded-2xl p-6 flex flex-col gap-3 transition-all duration-300 hover:scale-[1.02]"
-        style={{ backgroundColor: '#161B28', border: '1px solid #2A3042' }}
+        className="rounded-xl p-6 flex flex-col gap-4 transition-all duration-200 hover:border-[#8B5CF6]/50"
+        style={{ backgroundColor: '#161618', border: '1px solid #2D2D30' }}
     >
         <div className="flex justify-between items-start">
             <div
-                className="p-2.5 rounded-xl"
-                style={{ backgroundColor: `${accentColor}18`, color: accentColor }}
+                className="p-2.5 rounded-lg"
+                style={{ backgroundColor: `${accentColor}10`, color: accentColor }}
             >
                 <Icon size={20} />
             </div>
             {subValue && (
                 <span
-                    className="text-xs font-semibold px-2 py-1 rounded-full"
-                    style={{ color: '#B0B8C3', backgroundColor: '#2A3042' }}
+                    className="text-[10px] font-semibold px-2 py-1 rounded-md uppercase tracking-wider"
+                    style={{ color: '#A1A1AA', backgroundColor: '#2D2D30' }}
                 >
                     {subValue}
                 </span>
@@ -71,14 +72,14 @@ const MetricCard: React.FC<{
         </div>
         <div>
             <h3
-                className="text-4xl font-black tracking-tight"
-                style={{ color: '#FFFFFF', fontFamily: 'Inter, sans-serif' }}
+                className="text-3xl font-bold tracking-tight"
+                style={{ color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}
             >
                 {value}
             </h3>
             <p
-                className="text-sm font-semibold mt-1"
-                style={{ color: '#B0B8C3', fontFamily: 'Inter, sans-serif' }}
+                className="text-sm font-medium mt-1"
+                style={{ color: '#71717A', fontFamily: "'Inter', sans-serif" }}
             >
                 {title}
             </p>
@@ -88,32 +89,60 @@ const MetricCard: React.FC<{
 
 // ─── Tooltip customizado ──────────────────────────────────────────────────────
 const neonTooltipStyle = {
-    backgroundColor: '#161B28',
-    border: '1px solid #2A3042',
-    borderRadius: '10px',
+    backgroundColor: '#161618',
+    border: '1px solid #2D2D30',
+    borderRadius: '8px',
     color: '#FFFFFF',
-    fontFamily: 'Inter, sans-serif',
-    fontSize: '13px',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: '12px',
+    padding: '12px',
 };
+
+// ─── Estilos Globais do Dashboard ──────────────────────────────────────────
+const DashboardStyles = () => (
+    <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.4);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    `}</style>
+);
 
 // ─── Toast Component ─────────────────────────────────────────────────────────
 const Toast: React.FC<{ message: string; type: 'success' | 'error' | 'warning' }> = ({ message, type }) => {
     const config = {
-        success: { bg: '#00FF7F15', border: '#00FF7F50', color: '#00FF7F', icon: CheckCircle },
-        error: { bg: '#FF005515', border: '#FF005550', color: '#FF0055', icon: XCircle },
-        warning: { bg: '#FFD70015', border: '#FFD70050', color: '#FFD700', icon: AlertCircle },
+        success: { bg: '#10B98110', border: '#10B98130', color: '#10B981', icon: CheckCircle },
+        error: { bg: '#EF444410', border: '#EF444430', color: '#EF4444', icon: XCircle },
+        warning: { bg: '#F59E0B10', border: '#F59E0B30', color: '#F59E0B', icon: AlertCircle },
     }[type];
     const Icon = config.icon;
     return (
         <div style={{
             position: 'fixed', top: '24px', right: '24px', zIndex: 9999,
-            backgroundColor: config.bg, border: `1px solid ${config.border}`,
+            backgroundColor: '#161618', border: `1px solid ${config.border}`,
             borderRadius: '12px', padding: '14px 20px',
             display: 'flex', alignItems: 'center', gap: '10px',
-            fontFamily: 'Inter, sans-serif', backdropFilter: 'blur(10px)',
+            fontFamily: "'Inter', sans-serif", backdropFilter: 'blur(10px)',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
         }}>
-            <Icon size={20} color={config.color} />
-            <span style={{ color: config.color, fontWeight: 600, fontSize: '14px' }}>{message}</span>
+            <Icon size={18} color={config.color} />
+            <span style={{ color: '#FFFFFF', fontWeight: 600, fontSize: '13px' }}>{message}</span>
         </div>
     );
 };
@@ -129,69 +158,65 @@ const ImportModal: React.FC<{
 }> = ({ isOpen, onClose, onUpload, onDownloadTemplate, loading, creditos }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#000000CC] backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#000000E0] backdrop-blur-md">
             <div
-                className="w-full max-w-md rounded-3xl p-8 relative animate-in fade-in zoom-in duration-200"
-                style={{ backgroundColor: '#161B28', border: '1px solid #2A3042', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
+                className="w-full max-w-sm rounded-2xl p-8 relative animate-fade-in"
+                style={{ backgroundColor: '#161618', border: '1px solid #2D2D30', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.8)' }}
             >
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 p-2 rounded-xl transition-colors hover:bg-[#2A3042]"
-                    style={{ color: '#7A8291' }}
+                    className="absolute top-6 right-6 p-2 rounded-lg hover:bg-[#2D2D30] transition-colors"
                 >
-                    <XCircle size={20} />
+                    <XCircle size={18} className="text-[#71717A]" />
                 </button>
 
                 <div className="text-center mb-8">
-                    <div className="inline-flex p-4 rounded-2xl mb-4" style={{ backgroundColor: '#8A2BE218', color: '#8A2BE2' }}>
-                        <FileSpreadsheet size={32} />
+                    <div className="inline-flex p-4 rounded-2xl mb-4" style={{ backgroundColor: '#8B5CF610', color: '#8B5CF6' }}>
+                        <FileSpreadsheet size={28} />
                     </div>
-                    <h3 className="text-2xl font-black text-white">Importar Planilha</h3>
-                    <p className="text-sm mt-2" style={{ color: '#B0B8C3' }}>Suba o arquivo .xlsx com os dados da partida.</p>
+                    <h3 className="text-xl font-bold text-white">Importar Dados</h3>
+                    <p className="text-[11px] mt-2" style={{ color: '#71717A' }}>Selecione o arquivo consolidado (.xlsx)</p>
                 </div>
 
-                <div className="space-y-6">
-                    <div className="p-4 rounded-xl flex items-center justify-between" style={{ backgroundColor: '#0D1117', border: '1px solid #2A3042' }}>
+                <div className="space-y-5">
+                    <div className="p-4 rounded-xl flex items-center justify-between" style={{ backgroundColor: '#0B0B0C', border: '1px solid #2D2D30' }}>
                         <div className="flex items-center gap-2">
-                            <Wallet size={16} style={{ color: '#FFD700' }} />
-                            <span className="text-xs font-semibold uppercase tracking-wider text-[#7A8291]">Custo por upload</span>
+                            <Wallet size={14} style={{ color: '#F59E0B' }} />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#71717A]">Custo fixo</span>
                         </div>
-                        <span className="text-sm font-black text-[#FF0055]">1 CRÉDITO</span>
+                        <span className="text-[10px] font-black text-[#EF4444]">1 CRÉDITO</span>
                     </div>
 
                     <label
-                        className={`group flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        style={{ borderColor: '#2A3042', backgroundColor: '#0D1117' }}
-                        onMouseEnter={e => !loading && (e.currentTarget.style.borderColor = '#8A2BE2')}
-                        onMouseLeave={e => !loading && (e.currentTarget.style.borderColor = '#2A3042')}
+                        className={`group flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        style={{ borderColor: '#2D2D30', backgroundColor: '#0B0B0C' }}
                     >
-                        <FileSpreadsheet className="w-10 h-10 mb-3" style={{ color: '#7A8291' }} />
-                        <p className="text-xs text-[#B0B8C3]">
-                            <span className="font-bold text-[#8A2BE2]">Selecionar arquivo</span> ou arraste
+                        <FileSpreadsheet className="w-8 h-8 mb-2 text-[#2D2D30] group-hover:text-[#8B5CF6] transition-colors" />
+                        <p className="text-[10px] text-[#71717A]">
+                            <span className="font-bold text-[#8B5CF6]">Upload</span> ou arraste
                         </p>
                         <input type="file" className="hidden" accept=".xlsx" onChange={onUpload} disabled={loading} />
                     </label>
 
-                    <div className="flex gap-3">
-                        <button
-                            onClick={onDownloadTemplate}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all font-bold text-xs"
-                            style={{ backgroundColor: '#161B28', border: '1px solid #2A3042', color: '#B0B8C3' }}
-                        >
-                            <FileSpreadsheet size={16} /> Modelo v2.0
-                        </button>
-                    </div>
+                    <button
+                        onClick={onDownloadTemplate}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#2D2D30] text-white hover:bg-[#3D3D40] transition-all font-bold text-[10px] uppercase tracking-widest"
+                    >
+                        <FileSpreadsheet size={14} /> Baixar Modelo
+                    </button>
 
                     {loading && (
-                        <div className="flex flex-col items-center gap-2 animate-pulse text-[#8A2BE2]">
-                            <RefreshCcw size={20} className="animate-spin" />
-                            <span className="text-xs font-bold">Processando dados...</span>
+                        <div className="flex flex-col items-center gap-2 animate-pulse text-[#8B5CF6] pt-2">
+                            <RefreshCcw size={16} className="animate-spin" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Calculando...</span>
                         </div>
                     )}
 
-                    <p className="text-[10px] text-center uppercase tracking-widest font-bold" style={{ color: '#7A8291' }}>
-                        Saldo Atual: <span style={{ color: (creditos ?? 0) > 0 ? '#00FF7F' : '#FF0055' }}>{creditos ?? '...'} CRÉDITOS</span>
-                    </p>
+                    <div className="pt-4 border-t border-[#2D2D30] text-center">
+                        <p className="text-[9px] uppercase tracking-[0.2em] font-bold" style={{ color: '#71717A' }}>
+                            Saldo: <span style={{ color: (creditos ?? 0) > 0 ? '#10B981' : '#EF4444' }}>{creditos ?? '0'} CRÉDITOS</span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -508,12 +533,10 @@ export const Dashboard: React.FC = () => {
         reader.readAsBinaryString(file);
     };
 
-    // Neon pie colors
-    const COLORS = ['#8A2BE2', '#00BFFF', '#FF0055', '#00FF7F', '#FFD700', '#a855f7'];
-
     // ── Layout ───────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen flex" style={{ ...S.bgMain, fontFamily: 'Inter, sans-serif', color: '#FFFFFF' }}>
+        <div className="min-h-screen flex" style={{ ...S.bgMain, fontFamily: "'Inter', sans-serif", color: '#FFFFFF' }}>
+            <DashboardStyles />
 
             {/* Toast Feedback */}
             {toast && <Toast message={toast.message} type={toast.type} />}
@@ -538,100 +561,100 @@ export const Dashboard: React.FC = () => {
 
             {/* ── Sidebar ── */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-60 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0`}
-                style={{ backgroundColor: '#0A0E17', borderRight: '1px solid #2A3042' }}
+                className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0`}
+                style={{ backgroundColor: '#0B0B0C', borderRight: '1px solid #2D2D30' }}
             >
                 <div
-                    className="flex justify-center cursor-pointer transition-transform hover:scale-105"
-                    style={{ borderBottom: '1px solid #2A3042', margin: '16px 0', paddingBottom: '16px' }}
+                    className="flex justify-center cursor-pointer transition-all duration-300 group px-6 py-10"
                     onClick={() => navigate('/')}
                 >
-                    <img
-                        src="/image_10.png"
-                        alt="Logo Celo Tracker"
-                        className="w-auto object-contain h-20 md:h-[120px]"
-                        style={{ imageRendering: 'high-quality' as any }}
-                    />
+                    <div className="relative">
+                        <img
+                            src="/image_10.png"
+                            alt="Logo Celo Tracker"
+                            className="w-auto object-contain h-24 md:h-32 relative z-10 transition-all duration-500 group-hover:scale-105"
+                            style={{ imageRendering: 'high-quality' as any }}
+                        />
+                        <div className="absolute inset-0 bg-[#8B5CF6] blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-full" />
+                    </div>
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 p-4 space-y-1">
+                <nav className="flex-1 px-4 space-y-2">
                     {[
-                        { id: 'overview', label: 'Visão Geral', icon: LayoutDashboard },
-                        { id: 'players', label: 'Jogadores', icon: Users },
-                        { id: 'history', label: 'Histórico', icon: FileSpreadsheet },
+                        { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
+                        { id: 'players', label: 'Contas', icon: Users },
+                        { id: 'history', label: 'Análise', icon: FileSpreadsheet },
                     ].map(item => {
                         const isActive = activeTab === item.id;
                         return (
                             <button
                                 key={item.id}
                                 onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
-                                className="w-full flex items-center gap-3 px-4 py-3 md:py-4 md:px-5 rounded-xl transition-all font-semibold text-sm"
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-semibold text-sm group"
                                 style={{
-                                    backgroundColor: isActive ? '#8A2BE2' : 'transparent',
-                                    color: isActive ? '#FFFFFF' : '#7A8291',
+                                    backgroundColor: isActive ? '#8B5CF6' : 'transparent',
+                                    color: isActive ? '#FFFFFF' : '#71717A',
                                 }}
-                                onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#FFFFFF'; }}
-                                onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = '#7A8291'; }}
                             >
-                                <item.icon size={18} />
+                                <item.icon size={18} className={`transition-colors ${isActive ? 'text-white' : 'group-hover:text-white'}`} />
                                 {item.label}
                             </button>
                         );
                     })}
 
-                    {/* Botão Inserir Dados */}
-                    <div style={{ paddingTop: '12px', marginTop: '4px', borderTop: '1px solid #2A3042' }}>
+                    <div className="pt-4 mt-4 border-t border-[#2D2D30]">
                         <button
                             onClick={() => navigate('/input')}
-                            className="w-full flex items-center justify-center gap-3 px-4 py-4 md:py-3 rounded-xl transition-all font-bold text-sm"
-                            style={{ backgroundColor: '#00FF7F18', color: '#00FF7F', border: '1px solid #00FF7F30' }}
-                            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#00FF7F30'; }}
-                            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#00FF7F18'; }}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all font-bold text-sm"
+                            style={{ backgroundColor: '#8B5CF6', color: '#FFFFFF', boxShadow: '0 4px 14px 0 rgba(139, 92, 246, 0.3)' }}
                         >
                             <PlusCircle size={18} />
-                            Novo Registro
+                            Inserir Dados
                         </button>
                     </div>
                 </nav>
 
                 {/* Sidebar Footer */}
-                <div className="p-4 space-y-1" style={{ borderTop: '1px solid #2A3042' }}>
+                <div className="p-4 space-y-1 border-t border-[#2D2D30]">
                     <a
-                        href="https://wa.me/YOURNUMBER" // Replace with actual number if needed
+                        href="https://wa.me/YOURNUMBER"
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all font-semibold text-sm"
-                        style={{ color: '#00BFFF', backgroundColor: '#00BFFF10' }}
-                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#00BFFF25')}
-                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#00BFFF10')}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all font-semibold text-xs"
+                        style={{ color: '#06B6D4', backgroundColor: '#06B6D408' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#06B6D415')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#06B6D408')}
                     >
-                        <span className="flex items-center gap-3">
-                            <LogOut size={18} style={{ transform: 'rotate(180deg)' }} /> Reportar Bug
+                        <span className="flex items-center gap-2">
+                            <AlertCircle size={16} /> Suporte Técnico
                         </span>
+                        <ChevronRight size={12} />
                     </a>
                     <button
                         onClick={() => signOut()}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm"
-                        style={{ color: '#FF0055' }}
-                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FF005510')}
-                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                        className="w-full flex items-center gap-2 px-4 py-3 rounded-lg transition-all font-semibold text-xs hover:bg-[#EF444410]"
+                        style={{ color: '#EF4444' }}
                     >
-                        <LogOut size={18} /> Sair
+                        <LogOut size={16} /> Sair da Conta
                     </button>
-                    <div className="pt-2 text-center">
-                        <p className="text-[11px] font-bold" style={{ color: '#7A8291' }}>Feito por <span style={{ color: '#8A2BE2' }}>@CeloCoach</span></p>
+                    <div className="pt-4 text-center">
+                        <p className="text-[10px] font-medium tracking-widest uppercase" style={{ color: '#71717A' }}>
+                            Created by <span style={{ color: '#8B5CF6' }}>@CeloCoach</span>
+                        </p>
                     </div>
                 </div>
             </aside>
 
             {/* ── Content ── */}
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#0B0B0C]">
 
                 {/* 🚀 Beta Banner */}
-                <div style={{ backgroundColor: '#000000', borderBottom: '1px solid #2A3042', color: '#FFFFFF', padding: '6px', textAlign: 'center', fontSize: '11px', fontWeight: 600, letterSpacing: '0.5px' }}>
-                    🚀 Versão Beta | Reporte bugs em {' '}
-                    <a href="https://instagram.com/celocoach" target="_blank" rel="noreferrer" style={{ color: '#00BFFF', transition: 'color 0.2s', textDecoration: 'none' }} onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'} onMouseLeave={e => e.currentTarget.style.color = '#00BFFF'}>
+                <div className="py-2 px-4 text-center text-[10px] font-bold tracking-[0.1em] uppercase border-b border-[#2D2D30]" style={{ backgroundColor: '#161618', color: '#FFFFFF' }}>
+                    <span className="opacity-50 mr-2">Status:</span>
+                    <span className="text-[#8B5CF6] mr-4">v2.0 Beta Protocol</span>
+                    <span className="opacity-50 mr-2">Feedback:</span>
+                    <a href="https://instagram.com/celocoach" target="_blank" rel="noreferrer" className="text-[#06B6D4] hover:text-white transition-colors">
                         @CeloCoach
                     </a>
                 </div>
@@ -639,50 +662,48 @@ export const Dashboard: React.FC = () => {
                 {/* Header / Top Bar */}
                 <header
                     className="h-20 flex items-center justify-between px-8 z-40 backdrop-blur-md sticky top-0"
-                    style={{ backgroundColor: '#0A0E17CC', borderBottom: '1px solid #2A3042' }}
+                    style={{ backgroundColor: '#0B0B0CEE', borderBottom: '1px solid #2D2D30' }}
                 >
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden p-2.5 rounded-xl transition-all" style={{ backgroundColor: '#161B28', border: '1px solid #2A3042', color: '#B0B8C3' }}>
+                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden p-2 rounded-lg bg-[#161618] border border-[#2D2D30] text-[#71717A]">
                             <Menu size={20} />
                         </button>
-                        <div className="hidden md:flex items-center text-sm" style={{ color: '#7A8291' }}>
+                        <div className="hidden md:flex items-center text-xs font-bold uppercase tracking-wider text-[#71717A]">
                             <LayoutDashboard size={14} className="mr-2" />
-                            <span>Dashboard</span>
-                            <ChevronRight size={14} className="mx-2" />
-                            <span className="font-bold uppercase tracking-wider text-[11px]" style={{ color: '#8A2BE2' }}>
+                            <span>Controle</span>
+                            <ChevronRight size={14} className="mx-2 opacity-50" />
+                            <span style={{ color: '#8B5CF6' }}>
                                 {activeTab === 'overview' ? 'Visão Geral' : activeTab === 'players' ? 'Jogadores' : 'Histórico'}
                             </span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 md:gap-5">
+                    <div className="flex items-center gap-4">
                         {/* Filtros */}
-                        <div className="hidden xl:flex items-center gap-3">
+                        <div className="hidden lg:flex items-center gap-2">
                             <div
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider"
-                                style={{ backgroundColor: '#161B28', border: '1px solid #2A3042', color: '#B0B8C3' }}
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+                                style={{ backgroundColor: '#161618', border: '1px solid #2D2D30', color: '#A1A1AA' }}
                             >
-                                <Calendar size={13} style={{ color: '#8A2BE2' }} />
+                                <Calendar size={13} style={{ color: '#8B5CF6' }} />
                                 <select
                                     value={filters.date}
                                     onChange={e => setFilters(prev => ({ ...prev, date: e.target.value }))}
                                     className="outline-none cursor-pointer bg-transparent"
-                                    style={{ color: '#B0B8C3' }}
                                 >
                                     <option value="Todos">Todas as Datas</option>
                                     {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
                                 </select>
                             </div>
                             <div
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider"
-                                style={{ backgroundColor: '#161B28', border: '1px solid #2A3042', color: '#B0B8C3' }}
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+                                style={{ backgroundColor: '#161618', border: '1px solid #2D2D30', color: '#A1A1AA' }}
                             >
-                                <Trophy size={13} style={{ color: '#8A2BE2' }} />
+                                <Trophy size={13} style={{ color: '#8B5CF6' }} />
                                 <select
                                     value={filters.championship}
                                     onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}
                                     className="outline-none cursor-pointer bg-transparent"
-                                    style={{ color: '#B0B8C3' }}
                                 >
                                     <option value="Todos">Todos Campeonatos</option>
                                     {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
@@ -690,38 +711,21 @@ export const Dashboard: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Créditos Badge */}
-                        <div className="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-xl" style={{ backgroundColor: '#161B28', border: '1px solid #2A3042' }}>
-                            <Wallet size={16} style={{ color: '#FFD700' }} />
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black text-[#7A8291] uppercase tracking-widest leading-none">Saldo</span>
-                                <span className="text-[13px] font-black mt-0.5" style={{ color: (creditos ?? 0) <= 10 ? '#FF0055' : '#00FF7F' }}>
-                                    {creditos ?? '...'}
-                                </span>
+                        {/* Profile & Wallet */}
+                        <div className="flex items-center gap-4 pl-4 border-l border-[#2D2D30]">
+                            <div className="hidden sm:flex flex-col text-right">
+                                <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest">{nomeUsuario || 'Analista'}</span>
+                                <span className="text-xs font-bold text-white leading-none mt-0.5">Créditos: {creditos ?? '...'}</span>
                             </div>
-                        </div>
-
-                        {/* Import Button */}
-                        <button
-                            onClick={() => setIsImportModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all font-bold text-[13px]"
-                            style={{ backgroundColor: '#161B28', border: '1px solid #2A3042', color: '#B0B8C3' }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#8A2BE2'; e.currentTarget.style.color = '#FFFFFF'; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#2A3042'; e.currentTarget.style.color = '#B0B8C3'; }}
-                        >
-                            <FileSpreadsheet size={16} />
-                            <span className="hidden lg:inline">Importar Planilha</span>
-                        </button>
-
-                        {/* Profile Info */}
-                        <div className="flex items-center gap-3 pl-5 md:ml-2" style={{ borderLeft: '1px solid #2A3042' }}>
-                            <div className="hidden md:block text-right">
-                                <p className="text-[12px] font-black leading-tight text-white">{nomeUsuario || user?.email?.split('@')[0]}</p>
-                                <p className="text-[9px] font-black text-[#7A8291] uppercase tracking-widest mt-0.5">Analista Pro</p>
-                            </div>
+                            <button
+                                onClick={() => setIsImportModalOpen(true)}
+                                className="p-2.5 rounded-lg bg-[#161618] border border-[#2D2D30] text-[#A1A1AA] hover:text-white transition-colors"
+                            >
+                                <FileSpreadsheet size={18} />
+                            </button>
                             <div
-                                className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm transition-transform hover:scale-105"
-                                style={{ background: 'linear-gradient(135deg, #8A2BE2, #00BFFF)', color: '#FFFFFF', boxShadow: '0 0 15px rgba(138, 43, 226, 0.3)' }}
+                                className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs shadow-sm"
+                                style={{ backgroundColor: '#8B5CF6', color: '#FFFFFF' }}
                             >
                                 {(nomeUsuario || user?.email || 'A')[0].toUpperCase()}
                             </div>
@@ -730,28 +734,25 @@ export const Dashboard: React.FC = () => {
                 </header>
 
                 {/* Scrollable Content */}
-                <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+                <main className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
 
                     {isDashboardLoading ? (
-                        <div className="h-full w-full flex flex-col items-center justify-center space-y-4">
-                            <RefreshCcw size={48} className="animate-spin" style={{ color: '#8A2BE2' }} />
-                            <p className="text-sm font-bold animate-pulse" style={{ color: '#7A8291' }}>SINCRONIZANDO DADOS DO SUPABASE...</p>
+                        <div className="h-full w-full flex flex-col items-center justify-center space-y-6">
+                            <div className="w-12 h-12 rounded-lg border-2 border-[#8B5CF6]/20 border-t-[#8B5CF6] animate-spin" />
+                            <p className="text-[10px] font-bold tracking-[0.3em] text-[#71717A] uppercase">Initializing Data</p>
                         </div>
                     ) : fetchError ? (
-                        <div className="h-full w-full flex flex-col items-center justify-center space-y-6 p-12 text-center">
-                            <div className="p-6 rounded-3xl bg-[#FF005510] border border-[#FF005530]">
-                                <AlertCircle size={48} style={{ color: '#FF0055' }} />
+                        <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-[#161618] rounded-xl border border-[#2D2D30]">
+                            <div className="p-5 rounded-xl bg-[#EF444408] border border-[#EF444420] mb-6">
+                                <AlertCircle size={40} className="text-[#EF4444]" />
                             </div>
-                            <div>
-                                <h3 className="text-xl font-black text-white mb-2">Ops! Algo deu errado</h3>
-                                <p style={{ color: '#7A8291' }}>{fetchError}</p>
-                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">Sync Failure</h3>
+                            <p className="max-w-xs text-sm text-[#71717A] mb-8">{fetchError}</p>
                             <button
                                 onClick={() => window.location.reload()}
-                                className="px-6 py-3 rounded-xl font-bold transition-all"
-                                style={{ backgroundColor: '#8A2BE2', color: '#FFFFFF' }}
+                                className="px-6 py-3 rounded-lg bg-white text-black font-bold text-xs hover:bg-[#A1A1AA] transition-colors"
                             >
-                                Tentar Novamente
+                                Reconnect System
                             </button>
                         </div>
                     ) : (
@@ -759,22 +760,22 @@ export const Dashboard: React.FC = () => {
                             {/* ══════════ OVERVIEW TAB ══════════ */}
                             {activeTab === 'overview' && (
                                 <div className="space-y-6">
-                                    {/* ── Empty State quando não há dados ── */}
+                                    {/* ── Empty State ── */}
                                     {!data && (
-                                        <div className="flex flex-col items-center justify-center py-16 text-center">
-                                            <div className="p-6 rounded-3xl mb-6" style={{ backgroundColor: '#8A2BE215', border: '1px solid #8A2BE230' }}>
-                                                <FileSpreadsheet size={48} style={{ color: '#8A2BE2' }} />
+                                        <div className="flex flex-col items-center justify-center py-20 text-center bg-[#161618] rounded-xl border border-[#2D2D30] border-dashed">
+                                            <div className="p-6 rounded-2xl mb-6" style={{ backgroundColor: '#8B5CF608', border: '1px solid #8B5CF615' }}>
+                                                <FileSpreadsheet size={40} style={{ color: '#8B5CF6' }} />
                                             </div>
-                                            <h3 className="text-2xl font-black text-white mb-2">Aguardando novos dados</h3>
-                                            <p className="max-w-sm text-sm" style={{ color: '#7A8291' }}>
-                                                Importe uma planilha ou insira dados via formulário para visualizar as análises.
+                                            <h3 className="text-xl font-bold text-white mb-2">Protocolo de Dados Inativo</h3>
+                                            <p className="max-w-xs text-xs px-4" style={{ color: '#71717A', lineHeight: '1.6' }}>
+                                                Nenhum dado detectado no sistema. Por favor, inicialize o banco de dados via importação (.xlsx) ou registro manual.
                                             </p>
                                             <button
                                                 onClick={() => setIsImportModalOpen(true)}
-                                                className="mt-6 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all"
-                                                style={{ backgroundColor: '#8A2BE2', color: '#FFFFFF' }}
+                                                className="mt-8 flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-xs transition-all hover:scale-105"
+                                                style={{ backgroundColor: '#8B5CF6', color: '#FFFFFF' }}
                                             >
-                                                <FileSpreadsheet size={16} /> Importar Planilha
+                                                <PlusCircle size={16} /> Inicializar Sistema
                                             </button>
                                         </div>
                                     )}
@@ -818,35 +819,46 @@ export const Dashboard: React.FC = () => {
 
                                         {/* Area Chart – Tendência de Performance */}
                                         <Card className="lg:col-span-2">
-                                            <div className="flex items-center justify-between mb-5">
+                                            <div className="flex items-center justify-between mb-8">
                                                 <div>
-                                                    <h4 className="text-base font-bold" style={{ color: '#FFFFFF' }}>Tendência de Performance</h4>
-                                                    <p className="text-xs mt-0.5" style={{ color: '#7A8291' }}>Kills ao longo das rodadas</p>
+                                                    <h4 className="text-sm font-bold uppercase tracking-widest" style={{ color: '#FFFFFF' }}>Fluxo de Performance</h4>
+                                                    <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Consolidado de Kills / Partida</p>
                                                 </div>
-                                                <div className="p-2 rounded-lg" style={{ backgroundColor: '#8A2BE218', color: '#8A2BE2' }}>
-                                                    <TrendingUp size={18} />
+                                                <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#8B5CF610', color: '#8B5CF6' }}>
+                                                    <TrendingUp size={16} />
                                                 </div>
                                             </div>
-                                            <div className="h-72 relative">
-                                                {trendChartData.length === 0 ? (
-                                                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-[#161B28CC] backdrop-blur-[2px] rounded-xl">
-                                                        <span className="text-sm font-bold tracking-widest text-[#7A8291] uppercase">Aguardando novos dados...</span>
-                                                    </div>
-                                                ) : null}
+                                            <div className="h-72">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <AreaChart data={trendChartData}>
                                                         <defs>
                                                             <linearGradient id="colorKillsNeon" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#8A2BE2" stopOpacity={0.25} />
-                                                                <stop offset="95%" stopColor="#8A2BE2" stopOpacity={0} />
+                                                                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.15} />
+                                                                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
                                                             </linearGradient>
                                                         </defs>
-                                                        <CartesianGrid strokeDasharray="3 3" stroke="#2A3042" vertical={false} />
-                                                        <XAxis dataKey="Data" stroke="#7A8291" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#7A8291', fontFamily: 'Inter, sans-serif' }} />
-                                                        <YAxis stroke="#7A8291" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#7A8291', fontFamily: 'Inter, sans-serif' }} />
-                                                        <Tooltip contentStyle={neonTooltipStyle} />
-                                                        <Area type="monotone" dataKey="Kill" stroke="#8A2BE2" strokeWidth={2.5} fillOpacity={1} fill="url(#colorKillsNeon)"
-                                                            style={{ filter: 'drop-shadow(0 0 6px #8A2BE2)' }}
+                                                        <XAxis
+                                                            dataKey="Data"
+                                                            stroke="#2D2D30"
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            tick={{ fontSize: 10, fill: '#71717A', fontWeight: 500 }}
+                                                            dy={10}
+                                                        />
+                                                        <YAxis
+                                                            stroke="#2D2D30"
+                                                            tickLine={false}
+                                                            axisLine={false}
+                                                            tick={{ fontSize: 10, fill: '#71717A', fontWeight: 500 }}
+                                                        />
+                                                        <Tooltip contentStyle={neonTooltipStyle} cursor={{ stroke: '#2D2D30', strokeWidth: 1 }} />
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="Kill"
+                                                            stroke="#8B5CF6"
+                                                            strokeWidth={2}
+                                                            fillOpacity={1}
+                                                            fill="url(#colorKillsNeon)"
                                                         />
                                                     </AreaChart>
                                                 </ResponsiveContainer>
@@ -855,13 +867,13 @@ export const Dashboard: React.FC = () => {
 
                                         {/* Pie Chart */}
                                         <Card>
-                                            <div className="flex items-center justify-between mb-5">
+                                            <div className="flex items-center justify-between mb-8">
                                                 <div>
-                                                    <h4 className="text-base font-bold" style={{ color: '#FFFFFF' }}>Pontos por Mapa</h4>
-                                                    <p className="text-xs mt-0.5" style={{ color: '#7A8291' }}>Distribuição total</p>
+                                                    <h4 className="text-sm font-bold uppercase tracking-widest" style={{ color: '#FFFFFF' }}>Domínio de Terreno</h4>
+                                                    <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Distribuição de Pontos</p>
                                                 </div>
-                                                <div className="p-2 rounded-lg" style={{ backgroundColor: '#00BFFF18', color: '#00BFFF' }}>
-                                                    <Map size={18} />
+                                                <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#06B6D410', color: '#06B6D4' }}>
+                                                    <Map size={16} />
                                                 </div>
                                             </div>
                                             <div className="h-72">
@@ -870,22 +882,23 @@ export const Dashboard: React.FC = () => {
                                                         <Pie
                                                             data={data?.byMap || []}
                                                             cx="50%" cy="45%"
-                                                            innerRadius={55} outerRadius={78}
+                                                            innerRadius={60} outerRadius={85}
                                                             startAngle={90} endAngle={-270}
                                                             dataKey="totalPontos" nameKey="mapa" paddingAngle={4}
+                                                            stroke="none"
                                                         >
                                                             {(data?.byMap || []).map((_: any, index: number) => (
-                                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />
+                                                                <Cell key={`cell-${index}`} fill={['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'][index % 5]} />
                                                             ))}
                                                         </Pie>
                                                         <Tooltip contentStyle={neonTooltipStyle} />
                                                         <Legend
                                                             verticalAlign="bottom"
-                                                            height={36}
+                                                            height={40}
                                                             iconType="circle"
-                                                            iconSize={8}
+                                                            iconSize={6}
                                                             formatter={(value) => (
-                                                                <span style={{ color: '#B0B8C3', fontSize: '12px', fontFamily: 'Inter, sans-serif' }}>{value}</span>
+                                                                <span style={{ color: '#71717A', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{value}</span>
                                                             )}
                                                         />
                                                     </PieChart>
@@ -1010,23 +1023,22 @@ export const Dashboard: React.FC = () => {
                                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                                                 {/* Avg Kills */}
                                                 <Card>
-                                                    <div className="flex items-center justify-between mb-5">
+                                                    <div className="flex items-center justify-between mb-8">
                                                         <div>
-                                                            <h4 className="font-bold text-sm" style={{ color: '#FFFFFF' }}>Média de Kills</h4>
-                                                            <p className="text-xs mt-0.5" style={{ color: '#7A8291' }}>Por partida</p>
+                                                            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#FFFFFF' }}>Média de Abates</h4>
+                                                            <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Performance Consolidada</p>
                                                         </div>
-                                                        <div className="p-2 rounded-lg" style={{ backgroundColor: '#FF005518', color: '#FF0055' }}>
+                                                        <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#EF444410', color: '#EF4444' }}>
                                                             <Sword size={16} />
                                                         </div>
                                                     </div>
                                                     <div className="h-56">
                                                         <ResponsiveContainer width="100%" height="100%">
-                                                            <BarChart data={playerChartData} layout="vertical" margin={{ left: 0 }}>
-                                                                <CartesianGrid strokeDasharray="3 3" stroke="#2A3042" horizontal={false} />
-                                                                <XAxis type="number" stroke="#7A8291" tickLine={false} axisLine={false} fontSize={11} tick={{ fill: '#7A8291' }} />
-                                                                <YAxis type="category" dataKey="name" stroke="#7A8291" tickLine={false} axisLine={false} fontSize={11} width={70} tick={{ fill: '#B0B8C3' }} />
-                                                                <Tooltip contentStyle={neonTooltipStyle} />
-                                                                <Bar dataKey="avgKills" fill="#FF0055" radius={[0, 6, 6, 0]} name="Média de Abates" />
+                                                            <BarChart data={playerChartData} layout="vertical" margin={{ left: -20 }}>
+                                                                <XAxis type="number" hide />
+                                                                <YAxis type="category" dataKey="name" stroke="#71717A" tickLine={false} axisLine={false} fontSize={10} width={80} tick={{ fill: '#A1A1AA', fontWeight: 600 }} />
+                                                                <Tooltip contentStyle={neonTooltipStyle} cursor={false} />
+                                                                <Bar dataKey="avgKills" fill="#EF4444" radius={[0, 4, 4, 0]} barSize={12} />
                                                             </BarChart>
                                                         </ResponsiveContainer>
                                                     </div>
@@ -1034,23 +1046,22 @@ export const Dashboard: React.FC = () => {
 
                                                 {/* Avg Damage */}
                                                 <Card>
-                                                    <div className="flex items-center justify-between mb-5">
+                                                    <div className="flex items-center justify-between mb-8">
                                                         <div>
-                                                            <h4 className="font-bold text-sm" style={{ color: '#FFFFFF' }}>Média de Dano</h4>
-                                                            <p className="text-xs mt-0.5" style={{ color: '#7A8291' }}>Por partida</p>
+                                                            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#FFFFFF' }}>Média de Dano</h4>
+                                                            <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Impacto em Combate</p>
                                                         </div>
-                                                        <div className="p-2 rounded-lg" style={{ backgroundColor: '#8A2BE218', color: '#8A2BE2' }}>
+                                                        <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#8B5CF610', color: '#8B5CF6' }}>
                                                             <ShieldAlert size={16} />
                                                         </div>
                                                     </div>
                                                     <div className="h-56">
                                                         <ResponsiveContainer width="100%" height="100%">
-                                                            <BarChart data={playerChartData} layout="vertical" margin={{ left: 0 }}>
-                                                                <CartesianGrid strokeDasharray="3 3" stroke="#2A3042" horizontal={false} />
-                                                                <XAxis type="number" stroke="#7A8291" tickLine={false} axisLine={false} fontSize={11} tick={{ fill: '#7A8291' }} />
-                                                                <YAxis type="category" dataKey="name" stroke="#7A8291" tickLine={false} axisLine={false} fontSize={11} width={70} tick={{ fill: '#B0B8C3' }} />
-                                                                <Tooltip contentStyle={neonTooltipStyle} />
-                                                                <Bar dataKey="avgDamage" fill="#8A2BE2" radius={[0, 6, 6, 0]} name="Média de Dano" />
+                                                            <BarChart data={playerChartData} layout="vertical" margin={{ left: -20 }}>
+                                                                <XAxis type="number" hide />
+                                                                <YAxis type="category" dataKey="name" stroke="#71717A" tickLine={false} axisLine={false} fontSize={10} width={80} tick={{ fill: '#A1A1AA', fontWeight: 600 }} />
+                                                                <Tooltip contentStyle={neonTooltipStyle} cursor={false} />
+                                                                <Bar dataKey="avgDamage" fill="#8B5CF6" radius={[0, 4, 4, 0]} barSize={12} />
                                                             </BarChart>
                                                         </ResponsiveContainer>
                                                     </div>
@@ -1058,23 +1069,22 @@ export const Dashboard: React.FC = () => {
 
                                                 {/* Avg Assists */}
                                                 <Card>
-                                                    <div className="flex items-center justify-between mb-5">
+                                                    <div className="flex items-center justify-between mb-8">
                                                         <div>
-                                                            <h4 className="font-bold text-sm" style={{ color: '#FFFFFF' }}>Média de Assistências</h4>
-                                                            <p className="text-xs mt-0.5" style={{ color: '#7A8291' }}>Por partida</p>
+                                                            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#FFFFFF' }}>Média de Apoio</h4>
+                                                            <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Assistências por Jogo</p>
                                                         </div>
-                                                        <div className="p-2 rounded-lg" style={{ backgroundColor: '#00BFFF18', color: '#00BFFF' }}>
+                                                        <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#06B6D410', color: '#06B6D4' }}>
                                                             <Target size={16} />
                                                         </div>
                                                     </div>
                                                     <div className="h-56">
                                                         <ResponsiveContainer width="100%" height="100%">
-                                                            <BarChart data={playerChartData} layout="vertical" margin={{ left: 0 }}>
-                                                                <CartesianGrid strokeDasharray="3 3" stroke="#2A3042" horizontal={false} />
-                                                                <XAxis type="number" stroke="#7A8291" tickLine={false} axisLine={false} fontSize={11} tick={{ fill: '#7A8291' }} />
-                                                                <YAxis type="category" dataKey="name" stroke="#7A8291" tickLine={false} axisLine={false} fontSize={11} width={70} tick={{ fill: '#B0B8C3' }} />
-                                                                <Tooltip contentStyle={neonTooltipStyle} />
-                                                                <Bar dataKey="avgAssists" fill="#00BFFF" radius={[0, 6, 6, 0]} name="Média de Assistências" />
+                                                            <BarChart data={playerChartData} layout="vertical" margin={{ left: -20 }}>
+                                                                <XAxis type="number" hide />
+                                                                <YAxis type="category" dataKey="name" stroke="#71717A" tickLine={false} axisLine={false} fontSize={10} width={80} tick={{ fill: '#A1A1AA', fontWeight: 600 }} />
+                                                                <Tooltip contentStyle={neonTooltipStyle} cursor={false} />
+                                                                <Bar dataKey="avgAssists" fill="#06B6D4" radius={[0, 4, 4, 0]} barSize={12} />
                                                             </BarChart>
                                                         </ResponsiveContainer>
                                                     </div>
@@ -1125,18 +1135,18 @@ export const Dashboard: React.FC = () => {
                                             )}
 
                                             {/* Players Table */}
-                                            <Card className="overflow-hidden">
-                                                <div className="flex items-center justify-between mb-6">
-                                                    <h4 className="text-base font-bold flex items-center gap-2" style={{ color: '#FFFFFF' }}>
-                                                        <Users size={18} style={{ color: '#8A2BE2' }} /> Ranking de Jogadores
+                                            <Card className="overflow-hidden !p-0">
+                                                <div className="flex items-center justify-between p-6 pb-2">
+                                                    <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2" style={{ color: '#FFFFFF' }}>
+                                                        <Users size={14} style={{ color: '#8B5CF6' }} /> Classificação de Elite
                                                     </h4>
                                                 </div>
                                                 <div className="overflow-x-auto">
-                                                    <table className="w-full text-sm text-left" style={{ color: '#B0B8C3' }}>
+                                                    <table className="w-full text-xs text-left" style={{ color: '#A1A1AA' }}>
                                                         <thead>
-                                                            <tr style={{ borderBottom: '1px solid #2A3042' }}>
-                                                                {['Jogador', 'Equipe', 'Kills', 'Dano', 'Assis.', 'KD', 'Score'].map((h, i) => (
-                                                                    <th key={i} className={`px-5 py-3 text-xs font-semibold uppercase tracking-wider ${i > 1 ? 'text-center' : ''}`} style={{ color: '#7A8291' }}>{h}</th>
+                                                            <tr style={{ borderBottom: '1px solid #2D2D30' }}>
+                                                                {['Jogador', 'Kills', 'Dano', 'Score'].map((h, i) => (
+                                                                    <th key={i} className={`px-6 py-4 font-bold uppercase tracking-widest text-[9px] ${i > 0 ? 'text-right' : ''}`} style={{ color: '#71717A' }}>{h}</th>
                                                                 ))}
                                                             </tr>
                                                         </thead>
@@ -1145,32 +1155,26 @@ export const Dashboard: React.FC = () => {
                                                                 ? filteredPlayerRows
                                                                 : filteredPlayerRows.filter((p: any) => p.Player === selectedPlayer))
                                                                 .sort((a: any, b: any) => b.Kill - a.Kill)
+                                                                .slice(0, 10)
                                                                 .map((p: any, idx: number) => (
                                                                     <tr
                                                                         key={idx}
-                                                                        className="transition-colors"
-                                                                        style={{ borderBottom: '1px solid #2A304280' }}
-                                                                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#8A2BE208')}
-                                                                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                                                                        className="hover:bg-white/[0.02] transition-colors"
+                                                                        style={{ borderBottom: '1px solid #2D2D30' }}
                                                                     >
-                                                                        <td className="px-5 py-4 font-bold flex items-center gap-3" style={{ color: '#FFFFFF' }}>
-                                                                            <span
-                                                                                className="w-6 h-6 rounded flex items-center justify-center text-xs font-mono"
-                                                                                style={{ backgroundColor: '#2A3042', color: '#7A8291' }}
-                                                                            >
-                                                                                {idx + 1}
-                                                                            </span>
+                                                                        <td className="px-6 py-4 font-bold text-white uppercase tracking-tighter">
                                                                             {p.Player}
                                                                         </td>
-                                                                        <td className="px-5 py-4" style={{ color: '#B0B8C3' }}>{p.Equipe}</td>
-                                                                        <td className="px-5 py-4 text-center font-bold" style={{ color: '#FFFFFF' }}>{p.Kill}</td>
-                                                                        <td className="px-5 py-4 text-center">{p['Dano causado']}</td>
-                                                                        <td className="px-5 py-4 text-center">{p.Assistencia}</td>
-                                                                        <td className="px-5 py-4 text-center" style={{ color: '#7A8291' }}>{(p.Kill / (p.Morte || 1)).toFixed(2)}</td>
-                                                                        <td className="px-5 py-4 text-center">
-                                                                            <div className="w-16 h-1.5 rounded-full mx-auto overflow-hidden" style={{ backgroundColor: '#2A3042' }}>
-                                                                                <div className="h-full rounded-full" style={{ width: `${Math.min(p.Kill * 5, 100)}%`, backgroundColor: '#8A2BE2' }} />
-                                                                            </div>
+                                                                        <td className="px-6 py-4 text-right font-mono text-[#EF4444]">
+                                                                            {p.Kill}
+                                                                        </td>
+                                                                        <td className="px-6 py-4 text-right font-mono text-[#8B5CF6]">
+                                                                            {p.Dano?.toLocaleString()}
+                                                                        </td>
+                                                                        <td className="px-6 py-4 text-right">
+                                                                            <span className="px-2 py-1 rounded bg-[#F59E0B10] text-[#F59E0B] text-[10px] font-bold">
+                                                                                {(p.Kill * 10).toFixed(0)}
+                                                                            </span>
                                                                         </td>
                                                                     </tr>
                                                                 ))}
@@ -1193,22 +1197,24 @@ export const Dashboard: React.FC = () => {
 
                             {/* ══════════ HISTORY TAB ══════════ */}
                             {activeTab === 'history' && (
-                                <Card className="overflow-hidden">
-                                    <h4 className="text-base font-bold mb-6 flex items-center gap-2" style={{ color: '#FFFFFF' }}>
-                                        <FileSpreadsheet size={18} style={{ color: '#00BFFF' }} /> Histórico de Partidas
-                                    </h4>
-                                    <div className="overflow-x-auto relative min-h-[200px]">
+                                <Card className="overflow-hidden !p-0">
+                                    <div className="flex items-center justify-between p-6 pb-2">
+                                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2" style={{ color: '#FFFFFF' }}>
+                                            <FileSpreadsheet size={14} style={{ color: '#06B6D4' }} /> Cronologia de Missões
+                                        </h4>
+                                    </div>
+                                    <div className="overflow-x-auto relative">
                                         {!data || data.rawData.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center p-12 text-[#7A8291]">
-                                                <AlertCircle size={32} className="mb-3 opacity-20" />
-                                                <p className="text-sm font-bold uppercase tracking-widest">Aguardando novos dados...</p>
+                                            <div className="flex flex-col items-center justify-center p-16 text-[#71717A]">
+                                                <AlertCircle size={32} className="mb-4 opacity-10" />
+                                                <p className="text-[10px] font-bold uppercase tracking-[0.2em]">Data stream empty</p>
                                             </div>
                                         ) : (
-                                            <table className="w-full text-sm text-left" style={{ color: '#B0B8C3' }}>
+                                            <table className="w-full text-xs text-left" style={{ color: '#A1A1AA' }}>
                                                 <thead>
-                                                    <tr style={{ borderBottom: '1px solid #2A3042' }}>
-                                                        {['Rodada', 'Mapa', 'Equipe', 'Colocação', 'Kills', 'Pontos', 'Booyah'].map((h, i) => (
-                                                            <th key={i} className={`px-5 py-3 text-xs font-semibold uppercase tracking-wider ${i > 2 ? 'text-center' : ''}`} style={{ color: '#7A8291' }}>{h}</th>
+                                                    <tr style={{ borderBottom: '1px solid #2D2D30' }}>
+                                                        {['Rodada', 'Mapa', 'Rank', 'Abates', 'Total', 'Booyah'].map((h, i) => (
+                                                            <th key={i} className={`px-6 py-4 font-bold uppercase tracking-widest text-[9px] ${i > 2 ? 'text-right' : ''}`} style={{ color: '#71717A' }}>{h}</th>
                                                         ))}
                                                     </tr>
                                                 </thead>
@@ -1216,32 +1222,42 @@ export const Dashboard: React.FC = () => {
                                                     {data.rawData.map((row: any, index: number) => (
                                                         <tr
                                                             key={index}
-                                                            className="transition-colors"
-                                                            style={{ borderBottom: '1px solid #2A304280' }}
-                                                            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#8A2BE208')}
-                                                            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                                                            className="hover:bg-white/[0.02] transition-colors"
+                                                            style={{ borderBottom: '1px solid #2D2D30' }}
                                                         >
-                                                            <td className="px-5 py-4 font-medium" style={{ color: '#FFFFFF' }}>#{row.Rodada}</td>
-                                                            <td className="px-5 py-4" style={{ color: '#B0B8C3' }}>{row.Mapa}</td>
-                                                            <td className="px-5 py-4" style={{ color: '#B0B8C3' }}>{row.Equipe}</td>
-                                                            <td className="px-5 py-4 text-center">
+                                                            <td className="px-6 py-4 font-bold text-[#71717A]">
+                                                                #{String(row.Rodada).padStart(2, '0')}
+                                                            </td>
+                                                            <td className="px-6 py-4 font-bold text-white uppercase tracking-wider">
+                                                                {row.Mapa}
+                                                            </td>
+                                                            <td className="px-6 py-4">
                                                                 <span
-                                                                    className="px-2 py-1 rounded text-xs font-bold"
+                                                                    className="px-2 py-1 rounded-md text-[10px] font-bold"
                                                                     style={row.Colocacao === 1
-                                                                        ? { backgroundColor: '#FFD70015', color: '#FFD700' }
-                                                                        : { backgroundColor: '#2A3042', color: '#7A8291' }
+                                                                        ? { backgroundColor: '#F59E0B15', color: '#F59E0B' }
+                                                                        : { backgroundColor: '#2D2D30', color: '#71717A' }
                                                                     }
                                                                 >
-                                                                    {row.Colocacao}º
+                                                                    P{row.Colocacao}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-5 py-4 text-center font-bold" style={{ color: '#FFFFFF' }}>{row.Kill}</td>
-                                                            <td className="px-5 py-4 text-center font-bold" style={{ color: '#8A2BE2' }}>{row.Pontos_Total}</td>
-                                                            <td className="px-5 py-4 text-center">
-                                                                {row.Booyah === 'SIM'
-                                                                    ? <span style={{ color: '#FFD700', fontSize: '18px' }}>★</span>
-                                                                    : <span style={{ color: '#2A3042' }}>-</span>
-                                                                }
+                                                            <td className="px-6 py-4 text-right font-mono text-[#EF4444]">
+                                                                {row.Kill}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right font-mono text-white">
+                                                                {row.Pontos_Total}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                {row.Booyah === 'SIM' ? (
+                                                                    <div className="flex justify-end">
+                                                                        <div className="w-5 h-5 rounded-md bg-[#F59E0B] flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+                                                                            <Trophy size={10} className="text-white" />
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-[#2D2D30]">--</span>
+                                                                )}
                                                             </td>
                                                         </tr>
                                                     ))}
