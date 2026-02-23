@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { LogIn, UserPlus, Lock, Mail, AlertCircle, Shield } from 'lucide-react';
 
-export const Login: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+interface LoginProps {
+    mode?: 'login' | 'register';
+}
+
+export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
+    const [activeTab, setActiveTab] = useState<'login' | 'register'>(mode);
+
+    React.useEffect(() => {
+        setActiveTab(mode);
+    }, [mode]);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [teamName, setTeamName] = useState('');
@@ -109,30 +117,34 @@ export const Login: React.FC = () => {
 
                 {/* Tabs */}
                 <div style={{ display: 'flex', backgroundColor: '#0A0E17', borderRadius: '12px', padding: '4px', marginBottom: '24px', border: `1px solid ${COLORS.border}` }}>
-                    <button
-                        type="button"
-                        onClick={() => { setActiveTab('login'); setError(null); }}
+                    <Link
+                        to="/login"
+                        onClick={() => setError(null)}
                         style={{
                             flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '14px', fontWeight: 600, transition: 'all 0.2s',
                             backgroundColor: activeTab === 'login' ? '#1E2332' : 'transparent',
                             color: activeTab === 'login' ? COLORS.cardTitle : COLORS.textSoft,
-                            border: activeTab === 'login' ? `1px solid ${COLORS.border}` : '1px solid transparent'
+                            border: activeTab === 'login' ? `1px solid ${COLORS.border}` : '1px solid transparent',
+                            textDecoration: 'none',
+                            textAlign: 'center'
                         }}
                     >
                         Entrar
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => { setActiveTab('register'); setError(null); }}
+                    </Link>
+                    <Link
+                        to="/register"
+                        onClick={() => setError(null)}
                         style={{
                             flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '14px', fontWeight: 600, transition: 'all 0.2s',
                             backgroundColor: activeTab === 'register' ? '#1E2332' : 'transparent',
                             color: activeTab === 'register' ? COLORS.cardTitle : COLORS.textSoft,
-                            border: activeTab === 'register' ? `1px solid ${COLORS.border}` : '1px solid transparent'
+                            border: activeTab === 'register' ? `1px solid ${COLORS.border}` : '1px solid transparent',
+                            textDecoration: 'none',
+                            textAlign: 'center'
                         }}
                     >
                         Criar Conta
-                    </button>
+                    </Link>
                 </div>
 
                 {error && (
