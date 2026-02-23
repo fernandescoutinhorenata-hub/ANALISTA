@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+:root {
+  --bg-main: #0B0B0C;
+  --bg-card: #161618;
+  --border: #2D2D30;
+  --text-pri: #FFFFFF;
+  --text-sec: #A1A1AA;
+  --text-ter: #71717A;
+  --cyan: #06B6D4;
+  --emerald: #10B981;
+  --purple: #8B5CF6;
+  --rose: #F43F5E;
+  --amber: #F59E0B;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-pri);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Custom Scrollbar Specialist */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-ter);
+}
+
+/* Base Animations */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-reveal {
+  animation: reveal-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Specialist Focus States */
+.focus-specialist:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 1px var(--cyan);
+}
