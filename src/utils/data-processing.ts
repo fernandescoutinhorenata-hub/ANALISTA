@@ -54,9 +54,9 @@ const processPlayerMetrics = (players: PlayerRow[]): { metrics: PlayerMetrics, s
 
     // Squad aggregation
     players.forEach(p => {
-        totalKills += p.Kill || 0;
-        totalDano += p["Dano causado"] || 0;
-        totalDeaths += p.Morte || 0;
+        totalKills += Math.max(0, p.Kill || 0);
+        totalDano += Math.max(0, p["Dano causado"] || 0);
+        totalDeaths += Math.max(0, p.Morte || 0);
 
         if (p.Kill > maxKills.kills) {
             maxKills = { player: p.Player, kills: p.Kill, team: p.Equipe };
@@ -70,7 +70,7 @@ const processPlayerMetrics = (players: PlayerRow[]): { metrics: PlayerMetrics, s
     });
 
     // Approximate KD
-    const kdRatio = totalDeaths > 0 ? Number((totalKills / totalDeaths).toFixed(2)) : totalKills;
+    const kdRatio = totalDeaths > 0 ? Number(Math.max(0, totalKills / totalDeaths).toFixed(2)) : totalKills;
 
     // Squad Metrics (Averages per Match)
     // We need to know how many matches are represented. 
@@ -123,12 +123,12 @@ export const processData = (rawData: unknown[], rawPlayerData?: unknown[]): Dash
             else if (nKey === 'mapa') newRow.Mapa = row[key]?.toString().trim();
             else if (nKey === 'equipe') newRow.Equipe = row[key];
             else if (nKey === 'colocacao') newRow.Colocacao = row[key];
-            else if (nKey === 'kill' || nKey === 'kills') newRow.Kill = row[key];
-            else if (nKey.includes('pontosposicao')) newRow["Pontos/Posicao"] = row[key];
-            else if (nKey.includes('pontostotal')) newRow.Pontos_Total = row[key];
-            else if (nKey === 'booyah') newRow.Booyah = row[key]?.toString().trim().toUpperCase();
-            else if (nKey.includes('quebradecall')) newRow["Quebra de Call"] = row[key]?.toString().trim().toUpperCase();
-            else if (nKey.includes('resultadoquebra')) newRow["Resultado quebra"] = row[key]?.toString().trim();
+            else if (nKey === 'kill' || nKey === 'kills') newRow.Kill = Math.max(0, parseInt(row[key]) || 0);
+            else if (nKey.includes('pontosposicao')) newRow["Pontos/Posicao"] = Math.max(0, parseInt(row[key]) || 0);
+            else if (nKey.includes('pontostotal')) newRow.Pontos_Total = Math.max(0, parseInt(row[key]) || 0);
+            else if (nKey === 'booyah') newRow.Booyah = row[key]?.toString().trim().toUpperCase() || 'NAO';
+            else if (nKey.includes('quebradecall')) newRow["Quebra de Call"] = row[key]?.toString().trim().toUpperCase() || 'NAO';
+            else if (nKey.includes('resultadoquebra')) newRow["Resultado quebra"] = row[key]?.toString().trim() || '-';
         });
 
         const result = RowSchema.safeParse(newRow);

@@ -28,7 +28,12 @@ const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, 
                     type={type}
                     value={value}
                     placeholder={placeholder}
-                    onChange={e => onChange(e.target.value)}
+                    min={type === 'number' ? "0" : undefined}
+                    onChange={e => {
+                        const val = e.target.value;
+                        if (type === 'number' && parseInt(val) < 0) return;
+                        onChange(val);
+                    }}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
                     className={`w-full bg-[#161618] border ${focused ? 'border-[#A855F7] ring-1 ring-[#A855F7]/30' : 'border-[#2D2D30]'} rounded-sm py-2 px-3 text-xs text-white placeholder:text-zinc-800 transition-all outline-none font-medium`}
@@ -165,14 +170,14 @@ export const InputData: React.FC = () => {
             const { error: errorGeral } = await supabase.from('partidas_geral').insert({
                 user_id: user.id,
                 data: matchData.data,
-                campeonato: matchData.campeonato,
-                rodada: parseInt(matchData.rodada),
+                campeonato: matchData.campeonato.toUpperCase(),
+                rodada: Math.max(0, parseInt(matchData.rodada) || 0),
                 mapa: matchData.mapa,
                 equipe: matchData.equipe,
-                colocacao: parseInt(matchData.colocacao),
-                kill: totalKills,
-                pontos_posicao: pontosPosicao,
-                pontos_total: pontosTotal,
+                colocacao: Math.max(1, parseInt(matchData.colocacao) || 1),
+                kill: Math.max(0, totalKills),
+                pontos_posicao: Math.max(0, pontosPosicao),
+                pontos_total: Math.max(0, pontosTotal),
                 booyah: parseInt(matchData.colocacao) === 1
             });
 
@@ -185,15 +190,15 @@ export const InputData: React.FC = () => {
                 equipe: matchData.equipe,
                 modo: 'Campeonato',
                 mapa: matchData.mapa,
-                posicao: parseInt(matchData.colocacao),
-                player: p.nome,
-                kill: parseInt(p.kills),
-                morte: parseInt(p.morte),
-                assistencia: parseInt(p.assistencias),
-                queda: 0, // Placeholder se não houver campo
-                dano_causado: parseInt(p.dano),
-                derrubados: parseInt(p.derrubados),
-                ressurgimento: parseInt(p.revividos)
+                posicao: Math.max(1, parseInt(matchData.colocacao) || 1),
+                player: p.nome.trim() || 'JOGADOR DESCONHECIDO',
+                kill: Math.max(0, parseInt(p.kills) || 0),
+                morte: Math.max(0, parseInt(p.morte) || 0),
+                assistencia: Math.max(0, parseInt(p.assistencias) || 0),
+                queda: 0,
+                dano_causado: Math.max(0, parseInt(p.dano) || 0),
+                derrubados: Math.max(0, parseInt(p.derrubados) || 0),
+                ressurgimento: Math.max(0, parseInt(p.revividos) || 0)
             }));
 
             const { error: errorPerf } = await supabase.from('performance_jogadores').insert(performanceRecords);
