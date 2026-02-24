@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    ChevronLeft, CheckCircle, XCircle,
+    ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
     Wallet, Play, Target, Hash, Map, Trophy, Users, Sword, HeartPulse, Activity
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -103,6 +103,8 @@ export const InputData: React.FC = () => {
     const [creditos, setCreditos] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState<any>(null);
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [resetLoading, setResetLoading] = useState(false);
 
     // Cálculo de Pontos em Tempo Real
     const pontosPosicao = PONTOS_POR_COLOCACAO[parseInt(matchData.colocacao)] || 0;
@@ -217,6 +219,26 @@ export const InputData: React.FC = () => {
         }
     };
 
+    const handleResetData = async () => {
+        if (!user || resetLoading) return;
+        setResetLoading(true);
+        try {
+            const { error: errorPerf } = await supabase.from('performance_jogadores').delete().eq('user_id', user.id);
+            if (errorPerf) throw errorPerf;
+
+            const { error: errorGeral } = await supabase.from('partidas_geral').delete().eq('user_id', user.id);
+            if (errorGeral) throw errorGeral;
+
+            showToast('Tabela reiniciada com sucesso', 'success');
+            setIsResetModalOpen(false);
+            navigate('/');
+        } catch (err: any) {
+            showToast(err.message || 'Erro ao reiniciar tabela', 'error');
+        } finally {
+            setResetLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#0B0B0C] text-white font-['Inter',sans-serif] selection:bg-[#A3E635] selection:text-black">
             {toast && <Toast message={toast.message} type={toast.type} />}
@@ -235,6 +257,14 @@ export const InputData: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => setIsResetModalOpen(true)}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-red-500/5 border border-red-500/20 rounded-sm hover:bg-red-500/10 hover:border-red-500/40 transition-all group"
+                        >
+                            <Trash2 size={12} className="text-red-500/70 group-hover:text-red-500" />
+                            <span className="text-[9px] font-black text-red-500/70 group-hover:text-red-500 uppercase tracking-widest">Reiniciar Tabela</span>
+                        </button>
+
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-[#161618] border border-[#2D2D30] rounded-sm">
                             <Wallet size={12} className="text-amber-500" />
                             <span className="text-[10px] font-black">{creditos ?? '--'} CRÉDITOS</span>
@@ -311,6 +341,38 @@ export const InputData: React.FC = () => {
                     </button>
                 </div>
             </main>
+
+            {/* ⚠️ Reset Modal */}
+            {isResetModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="w-full max-w-sm bg-[#0B0B0C] border border-[#2D2D30] rounded-2xl p-8 shadow-2xl animate-reveal">
+                        <div className="flex flex-col items-center text-center gap-4">
+                            <div className="p-4 rounded-full bg-red-500/10 text-red-500 mb-2">
+                                <AlertTriangle size={32} />
+                            </div>
+                            <h3 className="text-xl font-black text-white uppercase tracking-tighter">⚠️ Ação Irreversível</h3>
+                            <p className="text-[11px] text-[#71717A] leading-relaxed uppercase font-bold tracking-tight">
+                                Após você aceitar, sua planilha será resetada e você não terá mais acesso aos resultados passados. Deseja continuar?
+                            </p>
+                            <div className="grid grid-cols-2 gap-3 w-full mt-6">
+                                <button
+                                    onClick={() => setIsResetModalOpen(false)}
+                                    className="py-3 px-4 rounded-lg border border-[#2D2D30] text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[#161618] transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleResetData}
+                                    disabled={resetLoading}
+                                    className="py-3 px-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                                >
+                                    {resetLoading ? 'LIMPENDO...' : 'CONFIRMAR'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style>{`
                 @keyframes reveal {
