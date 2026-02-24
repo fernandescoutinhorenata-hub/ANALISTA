@@ -77,8 +77,8 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         />
                         <div className="mt-12 space-y-4">
                             <div className="flex items-center gap-3">
-                                <div className="h-[1px] w-12 bg-[#06B6D4]" />
-                                <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#06B6D4]">Advanced Analytics System</span>
+                                <div className="h-[1px] w-12 bg-[#A855F7]" />
+                                <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#A855F7]">Advanced Analytics System</span>
                             </div>
                             <h2 className="text-5xl font-black text-white leading-tight">Métricas Precisas.<br />Domínio Absoluto.</h2>
                             <p className="text-zinc-500 max-w-md text-lg leading-relaxed font-medium">
@@ -103,7 +103,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
             </div>
 
             {/* Content Section - Asymmetric Alignment */}
-            <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-16 bg-[#111113] border-l border-[#2D2D30] relative z-20">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-16 bg-[#161618] border-l border-[#2D2D30] relative z-20">
                 <div className="w-full max-w-[340px] animate-reveal" style={{ animationDelay: '0.2s' }}>
 
                     <header className="mb-12">
@@ -126,7 +126,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                                 key={tab.id}
                                 to={tab.path}
                                 onClick={() => { setActiveTab(tab.id as any); setError(null); }}
-                                className={`text-[10px] uppercase tracking-[0.2em] font-black transition-all px-2 py-1 ${activeTab === tab.id ? 'text-[#06B6D4] border-b-2 border-[#06B6D4]' : 'text-zinc-600 hover:text-white'}`}
+                                className={`text-[10px] uppercase tracking-[0.2em] font-black transition-all px-2 py-1 ${activeTab === tab.id ? 'text-[#A855F7] border-b-2 border-[#A855F7]' : 'text-zinc-600 hover:text-white'}`}
                                 style={{ textDecoration: 'none' }}
                             >
                                 {tab.label}
@@ -144,7 +144,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                     <form onSubmit={handleAuth} className="space-y-6">
                         {activeTab === 'register' && (
                             <div className="space-y-2 group">
-                                <label className="text-[9px] uppercase tracking-widest font-black text-zinc-500 group-focus-within:text-[#06B6D4] transition-colors">Nome da Unidade / Time</label>
+                                <label className="text-[9px] uppercase tracking-widest font-black text-zinc-500 group-focus-within:text-[#A855F7] transition-colors">Nome da Unidade / Time</label>
                                 <div className="relative">
                                     <Shield size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" />
                                     <input
@@ -152,7 +152,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                                         value={teamName}
                                         onChange={e => setTeamName(e.target.value)}
                                         placeholder="Ex: LOUD ALPHA"
-                                        className="w-full bg-[#161618] border border-[#2D2D30] rounded-sm py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#06B6D4] transition-all placeholder:text-zinc-700 placeholder:font-bold"
+                                        className="w-full bg-[#161618] border border-[#2D2D30] rounded-sm py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#A855F7] transition-all placeholder:text-zinc-700 placeholder:font-bold"
                                         required={activeTab === 'register'}
                                     />
                                 </div>
@@ -160,7 +160,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         )}
 
                         <div className="space-y-2 group">
-                            <label className="text-[9px] uppercase tracking-widest font-black text-zinc-500 group-focus-within:text-[#06B6D4] transition-colors">Credential Email</label>
+                            <label className="text-[9px] uppercase tracking-widest font-black text-zinc-500 group-focus-within:text-[#A855F7] transition-colors">Credential Email</label>
                             <div className="relative">
                                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" />
                                 <input
@@ -168,14 +168,14 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     placeholder="agente@celo.io"
-                                    className="w-full bg-[#161618] border border-[#2D2D30] rounded-sm py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#06B6D4] transition-all placeholder:text-zinc-700 placeholder:font-bold"
+                                    className="w-full bg-[#161618] border border-[#2D2D30] rounded-sm py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#A855F7] transition-all placeholder:text-zinc-700 placeholder:font-bold"
                                     required
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2 group">
-                            <label className="text-[9px] uppercase tracking-widest font-black text-zinc-500 group-focus-within:text-[#06B6D4] transition-colors">Access Override / Senha</label>
+                            <label className="text-[9px] uppercase tracking-widest font-black text-zinc-500 group-focus-within:text-[#A855F7] transition-colors">Access Override / Senha</label>
                             <div className="relative">
                                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" />
                                 <input
@@ -183,7 +183,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     placeholder="••••••••••••"
-                                    className="w-full bg-[#161618] border border-[#2D2D30] rounded-sm py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#06B6D4] transition-all placeholder:text-zinc-700 placeholder:font-bold"
+                                    className="w-full bg-[#161618] border border-[#2D2D30] rounded-sm py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#A855F7] transition-all placeholder:text-zinc-700 placeholder:font-bold"
                                     required
                                 />
                             </div>
@@ -192,7 +192,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-white text-black py-4 rounded-sm font-black text-[11px] uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-[#06B6D4] hover:text-white transition-all duration-300 disabled:opacity-50 mt-4 overflow-hidden relative group"
+                            className="w-full bg-[#BEF264] text-black py-4 rounded-sm font-black text-[11px] uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-[#A855F7] hover:text-white transition-all duration-300 disabled:opacity-50 mt-4 overflow-hidden relative group"
                         >
                             <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[-20deg] -translate-x-full group-hover:translate-x-[300%] transition-transform duration-700" />
                             {loading ? (

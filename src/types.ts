@@ -74,6 +74,13 @@ export interface PlayerMetrics {
     mvp: { player: string; kills: number; team: string };
     topDamage: { player: string; damage: number; team: string };
     topAssists: { player: string; assists: number; team: string };
+    lastMatchMVP: { player: string; score: number };
+}
+
+export interface SquadMetrics {
+    avgDamage: number;
+    totalKills: number;
+    survivalRate: number; // Avg deaths per match (lower is better)
 }
 
 export interface DashboardData {
@@ -82,4 +89,5 @@ export interface DashboardData {
     rawData: ExcelRow[];
     playerData: PlayerRow[];
     playerMetrics: PlayerMetrics;
+    squadMetrics: SquadMetrics;
 }

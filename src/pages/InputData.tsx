@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    ChevronLeft, CheckCircle, AlertCircle, XCircle,
-    Wallet, Play, Target, Shield, Hash, Map, Trophy, Users, Sword, HeartPulse, Activity
+    ChevronLeft, CheckCircle, XCircle,
+    Wallet, Play, Target, Hash, Map, Trophy, Users, Sword, HeartPulse, Activity
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,16 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 const MAPAS = ['Bermuda', 'Purgatório', 'Alpine', 'Bermuda Remastered', 'Outro'];
 
 // ─── Design Tokens Customizados ──────────────────────────────────────────────
-const COLORS = {
-    bgMain: '#0B0B0C',
-    bgCard: '#161618',
-    border: '#2D2D30',
-    textPri: '#FFFFFF',
-    textSec: '#A1A1AA',
-    textTer: '#71717A',
-    cyan: '#06B6D4',
-    lime: '#A3E635', // Verde Limão solicitado
-};
+
 
 // ─── Input Técnico ──────────────────────────────────────────────────────────
 const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, required, placeholder, icon: Icon }) => {
@@ -27,7 +18,7 @@ const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, 
     return (
         <div className="flex flex-col gap-1.5 animate-reveal w-full">
             <label htmlFor={id} className="text-[9px] uppercase tracking-[0.2em] font-black text-[#A1A1AA] flex items-center gap-1.5">
-                {Icon && <Icon size={10} className={focused ? 'text-[#06B6D4]' : 'text-[#71717A]'} />}
+                {Icon && <Icon size={10} className={focused ? 'text-[#A855F7]' : 'text-[#71717A]'} />}
                 {label} {required && <span className="text-rose-500">*</span>}
             </label>
             <div className="relative">
@@ -39,7 +30,7 @@ const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, 
                     onChange={e => onChange(e.target.value)}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
-                    className={`w-full bg-[#161618] border ${focused ? 'border-[#06B6D4] ring-1 ring-[#06B6D4]/30' : 'border-[#2D2D30]'} rounded-sm py-2 px-3 text-xs text-white placeholder:text-zinc-800 transition-all outline-none font-medium`}
+                    className={`w-full bg-[#161618] border ${focused ? 'border-[#A855F7] ring-1 ring-[#A855F7]/30' : 'border-[#2D2D30]'} rounded-sm py-2 px-3 text-xs text-white placeholder:text-zinc-800 transition-all outline-none font-medium`}
                 />
             </div>
         </div>
@@ -52,7 +43,7 @@ const SelectField: React.FC<any> = ({ label, id, value, onChange, options, requi
     return (
         <div className="flex flex-col gap-1.5 animate-reveal w-full">
             <label htmlFor={id} className="text-[9px] uppercase tracking-[0.2em] font-black text-[#A1A1AA] flex items-center gap-1.5">
-                {Icon && <Icon size={10} className={focused ? 'text-[#06B6D4]' : 'text-[#71717A]'} />}
+                {Icon && <Icon size={10} className={focused ? 'text-[#A855F7]' : 'text-[#71717A]'} />}
                 {label} {required && <span className="text-rose-500">*</span>}
             </label>
             <select
@@ -61,7 +52,7 @@ const SelectField: React.FC<any> = ({ label, id, value, onChange, options, requi
                 onChange={e => onChange(e.target.value)}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
-                className={`w-full bg-[#161618] border ${focused ? 'border-[#06B6D4]' : 'border-[#2D2D30]'} rounded-sm py-2 px-3 text-xs ${value ? 'text-white' : 'text-[#71717A]'} transition-all outline-none cursor-pointer font-bold appearance-none`}
+                className={`w-full bg-[#161618] border ${focused ? 'border-[#A855F7]' : 'border-[#2D2D30]'} rounded-sm py-2 px-3 text-xs ${value ? 'text-white' : 'text-[#71717A]'} transition-all outline-none cursor-pointer font-bold appearance-none`}
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2371717A' stroke-width='3'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.6rem' }}
             >
                 <option value="">SELECIONAR</option>
@@ -226,7 +217,7 @@ export const InputData: React.FC = () => {
                             <ChevronLeft size={16} className="text-[#A1A1AA]" />
                         </button>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#06B6D4]">Unified Squad Input</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A855F7]">Unified Squad Input</span>
                             <span className="text-[9px] font-bold text-[#71717A] uppercase tracking-tighter">Terminal de Métricas Elite</span>
                         </div>
                     </div>
@@ -244,7 +235,7 @@ export const InputData: React.FC = () => {
                 {/* 1. Dados da Partida */}
                 <section className="animate-reveal">
                     <div className="flex items-center gap-2 mb-4">
-                        <Activity size={14} className="text-[#06B6D4]" />
+                        <Activity size={14} className="text-[#A855F7]" />
                         <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A1A1AA]">Dados da Partida</h2>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-6 bg-[#161618] border border-[#2D2D30] rounded-sm">
@@ -259,13 +250,13 @@ export const InputData: React.FC = () => {
                 {/* 2. Squad Container */}
                 <section className="animate-reveal">
                     <div className="flex items-center gap-2 mb-4">
-                        <Users size={14} className="text-[#06B6D4]" />
+                        <Users size={14} className="text-[#A855F7]" />
                         <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A1A1AA]">Integrantes do Squad</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {players.map((player, idx) => (
-                            <div key={idx} className="flex flex-col gap-4 p-5 bg-[#161618] border border-[#2D2D30] rounded-sm transition-all hover:border-[#06B6D4]/30">
+                            <div key={idx} className="flex flex-col gap-4 p-5 bg-[#161618] border border-[#2D2D30] rounded-sm transition-all hover:border-[#A855F7]/30">
                                 <div className="pb-3 border-b border-[#2D2D30]">
                                     <InputField
                                         label={`Jogador ${idx + 1}`}
@@ -294,9 +285,9 @@ export const InputData: React.FC = () => {
                     <button
                         onClick={handleSaveSquad}
                         disabled={loading}
-                        className="w-full max-w-2xl bg-[#A3E635] text-black py-4 px-8 rounded-sm font-black text-sm uppercase tracking-[0.4em] hover:bg-white hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-30 disabled:pointer-events-none shadow-[0_0_30px_rgba(163,230,53,0.2)]"
+                        className="w-full max-w-2xl bg-[#BEF264] text-black py-4 px-8 rounded-sm font-black text-sm uppercase tracking-[0.4em] hover:bg-[#A855F7] hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none shadow-[0_0_30px_rgba(190,242,100,0.2)]"
                     >
-                        {loading ? 'PROCESSANDO PROTOCOLO...' : 'SALVAR MÉTRICAS DO SQUAD'}
+                        {loading ? 'PROCESSANDO PROTOCOLO...' : 'SALVAR MÉTRICAS'}
                     </button>
                 </div>
             </main>

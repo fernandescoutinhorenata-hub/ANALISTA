@@ -1,6 +1,6 @@
 
 import { z } from 'zod';
-import type { DashboardData, ExcelRow, GeneralMetrics, MapMetric, PlayerRow, PlayerMetrics } from '../types';
+import type { DashboardData, ExcelRow, GeneralMetrics, MapMetric, PlayerRow, PlayerMetrics, SquadMetrics } from '../types';
 
 // Zod Schema for Row Validation
 const RowSchema = z.object({
@@ -42,19 +42,21 @@ const normalizeKey = (key: string) => {
 };
 
 // Helper to process player data
-const processPlayerMetrics = (players: PlayerRow[]): PlayerMetrics => {
+const processPlayerMetrics = (players: PlayerRow[]): { metrics: PlayerMetrics, squad: SquadMetrics } => {
     let totalKills = 0;
     let totalDano = 0;
+    let totalDeaths = 0;
 
     // Track maximums
     let maxKills = { player: 'N/A', kills: 0, team: '-' };
     let maxDamage = { player: 'N/A', damage: 0, team: '-' };
     let maxAssists = { player: 'N/A', assists: 0, team: '-' };
 
-    // Aggregate simple stats
+    // Squad aggregation
     players.forEach(p => {
         totalKills += p.Kill || 0;
         totalDano += p["Dano causado"] || 0;
+        totalDeaths += p.Morte || 0;
 
         if (p.Kill > maxKills.kills) {
             maxKills = { player: p.Player, kills: p.Kill, team: p.Equipe };
@@ -67,17 +69,44 @@ const processPlayerMetrics = (players: PlayerRow[]): PlayerMetrics => {
         }
     });
 
-    // Approximate KD (Total Kills / Total Deaths)
-    const totalDeaths = players.reduce((acc, p) => acc + (p.Morte || 0), 0);
+    // Approximate KD
     const kdRatio = totalDeaths > 0 ? Number((totalKills / totalDeaths).toFixed(2)) : totalKills;
 
+    // Squad Metrics (Averages per Match)
+    // We need to know how many matches are represented. 
+    // Usually players rows = match_count * players_per_match
+    const uniqueMatches = new Set(players.map(p => `${p.Data}-${p.Mapa}-${p.Posicao}`)).size || 1;
+
+    const squad: SquadMetrics = {
+        avgDamage: Number((totalDano / uniqueMatches).toFixed(0)),
+        totalKills: totalKills,
+        survivalRate: Number((totalDeaths / uniqueMatches).toFixed(2))
+    };
+
+    // Last Match MVP Calculation (Kills * 10 + Damage)
+    // Find the latest date/match
+    const latestDate = players.length > 0 ? [...players].sort((a, b) => String(b.Data).localeCompare(String(a.Data)))[0].Data : null;
+    const lastMatchPlayers = latestDate ? players.filter(p => p.Data === latestDate) : [];
+
+    let lastMVP = { player: 'N/A', score: 0 };
+    lastMatchPlayers.forEach(p => {
+        const score = (p.Kill * 10) + (p["Dano causado"] || 0);
+        if (score > lastMVP.score) {
+            lastMVP = { player: p.Player, score };
+        }
+    });
+
     return {
-        totalKills,
-        totalDano,
-        kdRatio,
-        mvp: maxKills,
-        topDamage: maxDamage,
-        topAssists: maxAssists
+        metrics: {
+            totalKills,
+            totalDano,
+            kdRatio,
+            mvp: maxKills,
+            topDamage: maxDamage,
+            topAssists: maxAssists,
+            lastMatchMVP: lastMVP
+        },
+        squad
     };
 };
 
@@ -117,6 +146,7 @@ export const processData = (rawData: unknown[], rawPlayerData?: unknown[]): Dash
                 const cleanKey = key.trim();
                 normalized[cleanKey] = row[key];
                 if (cleanKey === "Assistência") normalized["Assistencia"] = row[key];
+                if (cleanKey === "Dano" && !row["Dano causado"]) normalized["Dano causado"] = row[key];
             });
 
             const result = PlayerSchema.safeParse(normalized);
@@ -243,13 +273,15 @@ export const processData = (rawData: unknown[], rawPlayerData?: unknown[]): Dash
     const globalVariance = allPoints.reduce((a, b) => a + Math.pow(b - globalMean, 2), 0) / (allPoints.length || 1);
     general.consistencyScore = Number(Math.sqrt(globalVariance).toFixed(2));
 
-    const playerMetrics = processPlayerMetrics(validPlayers);
+    const { metrics, squad } = processPlayerMetrics(validPlayers);
 
     return {
         general,
         byMap,
         rawData: validRows.sort((a, b) => (Number(a.Rodada) || 0) - (Number(b.Rodada) || 0)),
         playerData: validPlayers,
-        playerMetrics
+        playerMetrics: metrics,
+        squadMetrics: squad
     };
 };
+

@@ -21,8 +21,8 @@ import { useAuth } from '../contexts/AuthContext';
 // ─── SaaS Premium – Design Tokens ──────────────────────────────────────────
 // BG_MAIN:   #0B0B0C  | BG_CARD:   #161618  | BORDER:    #2D2D30
 // TEXT_PRI:  #FFFFFF  | TEXT_SEC:  #A1A1AA  | TEXT_TER:  #71717A
-// PURPLE:    #8B5CF6  | GREEN:     #10B981  | GOLD:      #F59E0B
-// RED:       #EF4444  | CYAN:      #06B6D4
+// PURPLE:    #A855F7  | GREEN:     #10B981  | GOLD:      #F59E0B
+// RED:       #EF4444  | CYAN:      #A855F7
 // ────────────────────────────────────────────────────────────────────────────
 
 const S = {
@@ -51,7 +51,7 @@ const MetricCard: React.FC<{
     accentColor: string;
 }> = ({ title, value, subValue, icon: Icon, accentColor }) => (
     <div
-        className="rounded-xl p-6 flex flex-col gap-4 transition-all duration-200 hover:border-[#8B5CF6]/50"
+        className="rounded-xl p-6 flex flex-col gap-4 transition-all duration-200 hover:border-[#A855F7]/50"
         style={{ backgroundColor: '#161618', border: '1px solid #2D2D30' }}
     >
         <div className="flex justify-between items-start">
@@ -172,7 +172,7 @@ const ImportModal: React.FC<{
                 </button>
 
                 <div className="text-center mb-8">
-                    <div className="inline-flex p-4 rounded-2xl mb-4" style={{ backgroundColor: '#8B5CF610', color: '#8B5CF6' }}>
+                    <div className="inline-flex p-4 rounded-2xl mb-4" style={{ backgroundColor: '#A855F710', color: '#A855F7' }}>
                         <FileSpreadsheet size={28} />
                     </div>
                     <h3 className="text-xl font-bold text-white">Importar Dados</h3>
@@ -192,9 +192,9 @@ const ImportModal: React.FC<{
                         className={`group flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         style={{ borderColor: '#2D2D30', backgroundColor: '#0B0B0C' }}
                     >
-                        <FileSpreadsheet className="w-8 h-8 mb-2 text-[#2D2D30] group-hover:text-[#8B5CF6] transition-colors" />
+                        <FileSpreadsheet className="w-8 h-8 mb-2 text-[#2D2D30] group-hover:text-[#A855F7] transition-colors" />
                         <p className="text-[10px] text-[#71717A]">
-                            <span className="font-bold text-[#8B5CF6]">Upload</span> ou arraste
+                            <span className="font-bold text-[#A855F7]">Upload</span> ou arraste
                         </p>
                         <input type="file" className="hidden" accept=".xlsx" onChange={onUpload} disabled={loading} />
                     </label>
@@ -207,7 +207,7 @@ const ImportModal: React.FC<{
                     </button>
 
                     {loading && (
-                        <div className="flex flex-col items-center gap-2 animate-pulse text-[#8B5CF6] pt-2">
+                        <div className="flex flex-col items-center gap-2 animate-pulse text-[#A855F7] pt-2">
                             <RefreshCcw size={16} className="animate-spin" />
                             <span className="text-[10px] font-bold uppercase tracking-widest">Calculando...</span>
                         </div>
@@ -440,42 +440,6 @@ export const Dashboard: React.FC = () => {
         filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0),
         [filteredPlayerRows]);
 
-    // MVP: jogador com maior total de kills
-    const mvpFromPlayers = useMemo(() => {
-        if (filteredPlayerRows.length === 0) return { player: 'N/A', kills: 0 };
-        const agg: Record<string, number> = {};
-        filteredPlayerRows.forEach(p => {
-            if (!p.Player) return;
-            agg[p.Player] = (agg[p.Player] || 0) + (Number(p.Kill) || 0);
-        });
-        const best = Object.entries(agg).sort((a, b) => b[1] - a[1])[0];
-        return best ? { player: best[0], kills: best[1] } : { player: 'N/A', kills: 0 };
-    }, [filteredPlayerRows]);
-
-    // Top Dano: jogador com maior dano_causado total
-    const topDanoFromPlayers = useMemo(() => {
-        if (filteredPlayerRows.length === 0) return { player: 'N/A', damage: 0 };
-        const agg: Record<string, number> = {};
-        filteredPlayerRows.forEach(p => {
-            if (!p.Player) return;
-            agg[p.Player] = (agg[p.Player] || 0) + (Number(p['Dano causado']) || 0);
-        });
-        const best = Object.entries(agg).sort((a, b) => b[1] - a[1])[0];
-        return best ? { player: best[0], damage: best[1] } : { player: 'N/A', damage: 0 };
-    }, [filteredPlayerRows]);
-
-    // Top Suporte: jogador com maior total de assistências
-    const topAssistsFromPlayers = useMemo(() => {
-        if (filteredPlayerRows.length === 0) return { player: 'N/A', assists: 0 };
-        const agg: Record<string, number> = {};
-        filteredPlayerRows.forEach(p => {
-            if (!p.Player) return;
-            agg[p.Player] = (agg[p.Player] || 0) + (Number(p.Assistencia) || 0);
-        });
-        const best = Object.entries(agg).sort((a, b) => b[1] - a[1])[0];
-        return best ? { player: best[0], assists: best[1] } : { player: 'N/A', assists: 0 };
-    }, [filteredPlayerRows]);
-
     // Gráfico de Tendência: kills totais de todos os jogadores agrupadas por data
     const trendChartData = useMemo(() => {
         if (filteredPlayerRows.length === 0) return [];
@@ -576,7 +540,7 @@ export const Dashboard: React.FC = () => {
                             className="w-auto object-contain h-24 md:h-32 relative z-10 transition-all duration-500 group-hover:scale-105"
                             style={{ imageRendering: 'high-quality' as any }}
                         />
-                        <div className="absolute inset-0 bg-[#8B5CF6] blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-full" />
+                        <div className="absolute inset-0 bg-[#A855F7] blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-full" />
                     </div>
                 </div>
 
@@ -594,7 +558,7 @@ export const Dashboard: React.FC = () => {
                                 onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-semibold text-sm group"
                                 style={{
-                                    backgroundColor: isActive ? '#8B5CF6' : 'transparent',
+                                    backgroundColor: isActive ? '#A855F7' : 'transparent',
                                     color: isActive ? '#FFFFFF' : '#71717A',
                                 }}
                             >
@@ -608,7 +572,7 @@ export const Dashboard: React.FC = () => {
                         <button
                             onClick={() => navigate('/input')}
                             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all font-bold text-sm"
-                            style={{ backgroundColor: '#8B5CF6', color: '#FFFFFF', boxShadow: '0 4px 14px 0 rgba(139, 92, 246, 0.3)' }}
+                            style={{ backgroundColor: '#A855F7', color: '#FFFFFF', boxShadow: '0 4px 14px 0 rgba(139, 92, 246, 0.3)' }}
                         >
                             <PlusCircle size={18} />
                             Inserir Dados
@@ -623,9 +587,9 @@ export const Dashboard: React.FC = () => {
                         target="_blank"
                         rel="noreferrer"
                         className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all font-semibold text-xs"
-                        style={{ color: '#06B6D4', backgroundColor: '#06B6D408' }}
-                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#06B6D415')}
-                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#06B6D408')}
+                        style={{ color: '#A855F7', backgroundColor: '#A855F708' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#A855F715')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#A855F708')}
                     >
                         <span className="flex items-center gap-2">
                             <AlertCircle size={16} /> Suporte Técnico
@@ -641,7 +605,7 @@ export const Dashboard: React.FC = () => {
                     </button>
                     <div className="pt-4 text-center">
                         <p className="text-[10px] font-medium tracking-widest uppercase" style={{ color: '#71717A' }}>
-                            Created by <span style={{ color: '#8B5CF6' }}>@CeloCoach</span>
+                            Created by <span style={{ color: '#A855F7' }}>@CeloCoach</span>
                         </p>
                     </div>
                 </div>
@@ -653,9 +617,9 @@ export const Dashboard: React.FC = () => {
                 {/* 🚀 Beta Banner */}
                 <div className="py-2 px-4 text-center text-[10px] font-bold tracking-[0.1em] uppercase border-b border-[#2D2D30]" style={{ backgroundColor: '#161618', color: '#FFFFFF' }}>
                     <span className="opacity-50 mr-2">Status:</span>
-                    <span className="text-[#8B5CF6] mr-4">v2.0 Beta Protocol</span>
+                    <span className="text-[#A855F7] mr-4">v2.0 Beta Protocol</span>
                     <span className="opacity-50 mr-2">Feedback:</span>
-                    <a href="https://instagram.com/celocoach" target="_blank" rel="noreferrer" className="text-[#06B6D4] hover:text-white transition-colors">
+                    <a href="https://instagram.com/celocoach" target="_blank" rel="noreferrer" className="text-[#A855F7] hover:text-white transition-colors">
                         @CeloCoach
                     </a>
                 </div>
@@ -673,7 +637,7 @@ export const Dashboard: React.FC = () => {
                             <LayoutDashboard size={14} className="mr-2" />
                             <span>Controle</span>
                             <ChevronRight size={14} className="mx-2 opacity-50" />
-                            <span style={{ color: '#8B5CF6' }}>
+                            <span style={{ color: '#A855F7' }}>
                                 {activeTab === 'overview' ? 'Visão Geral' : activeTab === 'players' ? 'Jogadores' : 'Histórico'}
                             </span>
                         </div>
@@ -686,7 +650,7 @@ export const Dashboard: React.FC = () => {
                                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest"
                                 style={{ backgroundColor: '#161618', border: '1px solid #2D2D30', color: '#A1A1AA' }}
                             >
-                                <Calendar size={13} style={{ color: '#8B5CF6' }} />
+                                <Calendar size={13} style={{ color: '#A855F7' }} />
                                 <select
                                     value={filters.date}
                                     onChange={e => setFilters(prev => ({ ...prev, date: e.target.value }))}
@@ -700,7 +664,7 @@ export const Dashboard: React.FC = () => {
                                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest"
                                 style={{ backgroundColor: '#161618', border: '1px solid #2D2D30', color: '#A1A1AA' }}
                             >
-                                <Trophy size={13} style={{ color: '#8B5CF6' }} />
+                                <Trophy size={13} style={{ color: '#A855F7' }} />
                                 <select
                                     value={filters.championship}
                                     onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}
@@ -726,7 +690,7 @@ export const Dashboard: React.FC = () => {
                             </button>
                             <div
                                 className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs shadow-sm"
-                                style={{ backgroundColor: '#8B5CF6', color: '#FFFFFF' }}
+                                style={{ backgroundColor: '#A855F7', color: '#FFFFFF' }}
                             >
                                 {(nomeUsuario || user?.email || 'A')[0].toUpperCase()}
                             </div>
@@ -739,7 +703,7 @@ export const Dashboard: React.FC = () => {
 
                     {isDashboardLoading ? (
                         <div className="h-full w-full flex flex-col items-center justify-center space-y-6">
-                            <div className="w-12 h-12 rounded-lg border-2 border-[#8B5CF6]/20 border-t-[#8B5CF6] animate-spin" />
+                            <div className="w-12 h-12 rounded-lg border-2 border-[#A855F7]/20 border-t-[#A855F7] animate-spin" />
                             <p className="text-[10px] font-bold tracking-[0.3em] text-[#71717A] uppercase">Initializing Data</p>
                         </div>
                     ) : fetchError ? (
@@ -764,8 +728,8 @@ export const Dashboard: React.FC = () => {
                                     {/* ── Empty State ── */}
                                     {!data && (
                                         <div className="flex flex-col items-center justify-center py-20 text-center bg-[#161618] rounded-xl border border-[#2D2D30] border-dashed">
-                                            <div className="p-6 rounded-2xl mb-6" style={{ backgroundColor: '#8B5CF608', border: '1px solid #8B5CF615' }}>
-                                                <FileSpreadsheet size={40} style={{ color: '#8B5CF6' }} />
+                                            <div className="p-6 rounded-2xl mb-6" style={{ backgroundColor: '#A855F708', border: '1px solid #A855F715' }}>
+                                                <FileSpreadsheet size={40} style={{ color: '#A855F7' }} />
                                             </div>
                                             <h3 className="text-xl font-bold text-white mb-2">Protocolo de Dados Inativo</h3>
                                             <p className="max-w-xs text-xs px-4" style={{ color: '#71717A', lineHeight: '1.6' }}>
@@ -774,7 +738,7 @@ export const Dashboard: React.FC = () => {
                                             <button
                                                 onClick={() => setIsImportModalOpen(true)}
                                                 className="mt-8 flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-xs transition-all hover:scale-105"
-                                                style={{ backgroundColor: '#8B5CF6', color: '#FFFFFF' }}
+                                                style={{ backgroundColor: '#A855F7', color: '#FFFFFF' }}
                                             >
                                                 <PlusCircle size={16} /> Inicializar Sistema
                                             </button>
@@ -816,168 +780,176 @@ export const Dashboard: React.FC = () => {
                                     )}
 
                                     {/* Charts Row — só renderiza se houver dados */}
-                                    {data && (<div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                                    {data && (
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-                                        {/* Area Chart – Tendência de Performance */}
-                                        <Card className="lg:col-span-2">
-                                            <div className="flex items-center justify-between mb-8">
-                                                <div>
-                                                    <h4 className="text-sm font-bold uppercase tracking-widest" style={{ color: '#FFFFFF' }}>Fluxo de Performance</h4>
-                                                    <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Consolidado de Kills / Partida</p>
+                                            {/* Area Chart – Tendência de Performance */}
+                                            <Card className="lg:col-span-2">
+                                                <div className="flex items-center justify-between mb-8">
+                                                    <div>
+                                                        <h4 className="text-sm font-bold uppercase tracking-widest" style={{ color: '#FFFFFF' }}>Fluxo de Performance</h4>
+                                                        <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Consolidado de Kills / Partida</p>
+                                                    </div>
+                                                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#A855F710', color: '#A855F7' }}>
+                                                        <TrendingUp size={16} />
+                                                    </div>
                                                 </div>
-                                                <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#8B5CF610', color: '#8B5CF6' }}>
-                                                    <TrendingUp size={16} />
+                                                <div className="h-72">
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <AreaChart data={trendChartData}>
+                                                            <defs>
+                                                                <linearGradient id="colorKillsNeon" x1="0" y1="0" x2="0" y2="1">
+                                                                    <stop offset="5%" stopColor="#A855F7" stopOpacity={0.15} />
+                                                                    <stop offset="95%" stopColor="#A855F7" stopOpacity={0} />
+                                                                </linearGradient>
+                                                            </defs>
+                                                            <XAxis
+                                                                dataKey="Data"
+                                                                stroke="#2D2D30"
+                                                                tickLine={false}
+                                                                axisLine={false}
+                                                                tick={{ fontSize: 10, fill: '#71717A', fontWeight: 500 }}
+                                                                dy={10}
+                                                            />
+                                                            <YAxis
+                                                                stroke="#2D2D30"
+                                                                tickLine={false}
+                                                                axisLine={false}
+                                                                tick={{ fontSize: 10, fill: '#71717A', fontWeight: 500 }}
+                                                            />
+                                                            <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} cursor={{ stroke: '#2D2D30', strokeWidth: 1 }} />
+                                                            <Area
+                                                                type="monotone"
+                                                                dataKey="Kill"
+                                                                stroke="#A855F7"
+                                                                strokeWidth={2}
+                                                                fillOpacity={1}
+                                                                fill="url(#colorKillsNeon)"
+                                                            />
+                                                        </AreaChart>
+                                                    </ResponsiveContainer>
                                                 </div>
-                                            </div>
-                                            <div className="h-72">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <AreaChart data={trendChartData}>
-                                                        <defs>
-                                                            <linearGradient id="colorKillsNeon" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.15} />
-                                                                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
-                                                            </linearGradient>
-                                                        </defs>
-                                                        <XAxis
-                                                            dataKey="Data"
-                                                            stroke="#2D2D30"
-                                                            tickLine={false}
-                                                            axisLine={false}
-                                                            tick={{ fontSize: 10, fill: '#71717A', fontWeight: 500 }}
-                                                            dy={10}
-                                                        />
-                                                        <YAxis
-                                                            stroke="#2D2D30"
-                                                            tickLine={false}
-                                                            axisLine={false}
-                                                            tick={{ fontSize: 10, fill: '#71717A', fontWeight: 500 }}
-                                                        />
-                                                        <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} cursor={{ stroke: '#2D2D30', strokeWidth: 1 }} />
-                                                        <Area
-                                                            type="monotone"
-                                                            dataKey="Kill"
-                                                            stroke="#8B5CF6"
-                                                            strokeWidth={2}
-                                                            fillOpacity={1}
-                                                            fill="url(#colorKillsNeon)"
-                                                        />
-                                                    </AreaChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                        </Card>
+                                            </Card>
 
-                                        {/* Pie Chart */}
-                                        <Card>
-                                            <div className="flex items-center justify-between mb-8">
-                                                <div>
-                                                    <h4 className="text-sm font-bold uppercase tracking-widest" style={{ color: '#FFFFFF' }}>Domínio de Terreno</h4>
-                                                    <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Distribuição de Pontos</p>
+                                            {/* Pie Chart */}
+                                            <Card>
+                                                <div className="flex items-center justify-between mb-8">
+                                                    <div>
+                                                        <h4 className="text-sm font-bold uppercase tracking-widest" style={{ color: '#FFFFFF' }}>Domínio de Terreno</h4>
+                                                        <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Distribuição de Pontos</p>
+                                                    </div>
+                                                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#A855F710', color: '#A855F7' }}>
+                                                        <Map size={16} />
+                                                    </div>
                                                 </div>
-                                                <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#06B6D410', color: '#06B6D4' }}>
-                                                    <Map size={16} />
+                                                <div className="h-72">
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <PieChart>
+                                                            <Pie
+                                                                data={data?.byMap || []}
+                                                                cx="50%" cy="45%"
+                                                                innerRadius={60} outerRadius={85}
+                                                                startAngle={90} endAngle={-270}
+                                                                dataKey="totalPontos" nameKey="mapa" paddingAngle={4}
+                                                                stroke="none"
+                                                            >
+                                                                {(data?.byMap || []).map((_: any, index: number) => (
+                                                                    <Cell key={`cell-${index}`} fill={['#A855F7', '#A855F7', '#10B981', '#F59E0B', '#EF4444'][index % 5]} />
+                                                                ))}
+                                                            </Pie>
+                                                            <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} />
+                                                            <Legend
+                                                                verticalAlign="bottom"
+                                                                height={40}
+                                                                iconType="circle"
+                                                                iconSize={6}
+                                                                formatter={(value) => (
+                                                                    <span style={{ color: '#71717A', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{value}</span>
+                                                                )}
+                                                            />
+                                                        </PieChart>
+                                                    </ResponsiveContainer>
                                                 </div>
-                                            </div>
-                                            <div className="h-72">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <PieChart>
-                                                        <Pie
-                                                            data={data?.byMap || []}
-                                                            cx="50%" cy="45%"
-                                                            innerRadius={60} outerRadius={85}
-                                                            startAngle={90} endAngle={-270}
-                                                            dataKey="totalPontos" nameKey="mapa" paddingAngle={4}
-                                                            stroke="none"
-                                                        >
-                                                            {(data?.byMap || []).map((_: any, index: number) => (
-                                                                <Cell key={`cell-${index}`} fill={['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'][index % 5]} />
-                                                            ))}
-                                                        </Pie>
-                                                        <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} />
-                                                        <Legend
-                                                            verticalAlign="bottom"
-                                                            height={40}
-                                                            iconType="circle"
-                                                            iconSize={6}
-                                                            formatter={(value) => (
-                                                                <span style={{ color: '#71717A', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{value}</span>
-                                                            )}
-                                                        />
-                                                    </PieChart>
-                                                </ResponsiveContainer>
-                                            </div>
-                                        </Card>
-                                    </div>)}
+                                            </Card>
+                                        </div>
+                                    )}
 
                                     {/* MVP Cards — exibidos quando há dados em performance_jogadores */}
-                                    {filteredPlayerRows.length > 0 && (<>
+                                    {filteredPlayerRows.length > 0 && data && (
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                            {/* MVP */}
+                                            {/* MVP da Última Partida */}
                                             <div
-                                                className="rounded-2xl p-6 transition-all hover:scale-[1.02] duration-300"
+                                                className="rounded-2xl p-6 transition-all hover:scale-[1.02] duration-300 relative overflow-hidden"
                                                 style={{
-                                                    background: 'linear-gradient(135deg, #FFD70012 0%, #161B28 60%)',
-                                                    border: '1px solid #FFD70030',
+                                                    background: 'linear-gradient(135deg, #BEF26415 0%, #161B28 75%)',
+                                                    border: '1px solid #BEF26430',
                                                 }}
                                             >
-                                                <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFD700' }}>
-                                                    MVP da Temporada
+                                                <div className="absolute -right-4 -top-4 opacity-10">
+                                                    <Trophy size={100} color="#BEF264" />
+                                                </div>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-[#BEF264]">
+                                                    Destaque da Última Partida
                                                 </p>
-                                                <h3 className="text-2xl font-black" style={{ color: '#FFFFFF' }}>
-                                                    {mvpFromPlayers.player}
-                                                </h3>
-                                                <div className="mt-4 flex items-baseline gap-2">
-                                                    <span className="text-4xl font-black" style={{ color: '#FFD700' }}>
-                                                        {mvpFromPlayers.kills}
-                                                    </span>
-                                                    <span className="text-sm font-medium" style={{ color: '#B0B8C3' }}>Kills</span>
+                                                <h4 className="text-2xl font-black text-white uppercase tracking-tighter">
+                                                    {data.playerMetrics.lastMatchMVP?.player || 'Aguardando...'}
+                                                </h4>
+                                                <div className="mt-6 flex flex-col gap-1">
+                                                    <span className="text-[9px] font-bold text-[#71717A] uppercase tracking-widest">Score de Combate</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-4xl font-black text-[#BEF264]">
+                                                            {data.playerMetrics.lastMatchMVP?.score || 0}
+                                                        </span>
+                                                        <div className="px-2 py-1 rounded bg-[#BEF26410] border border-[#BEF26420]">
+                                                            <span className="text-[10px] font-black text-[#BEF264]">MVP</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {/* Top Dano */}
-                                            <div
-                                                className="rounded-2xl p-6 transition-all hover:scale-[1.02] duration-300"
-                                                style={{
-                                                    background: 'linear-gradient(135deg, #FF005512 0%, #161B28 60%)',
-                                                    border: '1px solid #FF005530',
-                                                }}
-                                            >
-                                                <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FF0055' }}>
-                                                    Top Dano
-                                                </p>
-                                                <h3 className="text-2xl font-black" style={{ color: '#FFFFFF' }}>
-                                                    {topDanoFromPlayers.player}
-                                                </h3>
-                                                <div className="mt-4 flex items-baseline gap-2">
-                                                    <span className="text-4xl font-black" style={{ color: '#FF0055' }}>
-                                                        {topDanoFromPlayers.damage.toLocaleString()}
-                                                    </span>
-                                                    <span className="text-sm font-medium" style={{ color: '#B0B8C3' }}>Dano</span>
+                                            {/* Performance de Squad (Média) */}
+                                            <Card className="md:col-span-2">
+                                                <div className="flex items-center justify-between mb-8">
+                                                    <div>
+                                                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">Médias do Squad (Time)</h4>
+                                                        <p className="text-[11px] mt-1 text-[#71717A]">Análise consolidada por queda</p>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#A855F710] border border-[#A855F720]">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" />
+                                                            <span className="text-[9px] font-bold text-white uppercase">Dano</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#BEF26410] border border-[#BEF26420]">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-[#BEF264]" />
+                                                            <span className="text-[9px] font-bold text-white uppercase">Abates</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-
-                                            {/* Top Suporte */}
-                                            <div
-                                                className="rounded-2xl p-6 transition-all hover:scale-[1.02] duration-300"
-                                                style={{
-                                                    background: 'linear-gradient(135deg, #00BFFF12 0%, #161B28 60%)',
-                                                    border: '1px solid #00BFFF30',
-                                                }}
-                                            >
-                                                <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#00BFFF' }}>
-                                                    Melhor Suporte
-                                                </p>
-                                                <h3 className="text-2xl font-black" style={{ color: '#FFFFFF' }}>
-                                                    {topAssistsFromPlayers.player}
-                                                </h3>
-                                                <div className="mt-4 flex items-baseline gap-2">
-                                                    <span className="text-4xl font-black" style={{ color: '#00BFFF' }}>
-                                                        {topAssistsFromPlayers.assists}
-                                                    </span>
-                                                    <span className="text-sm font-medium" style={{ color: '#B0B8C3' }}>Assists</span>
+                                                <div className="grid grid-cols-3 gap-6">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[9px] font-bold text-[#71717A] uppercase tracking-widest">Dano Médio</span>
+                                                        <span className="text-2xl font-black text-[#A855F7]">{data.squadMetrics.avgDamage}</span>
+                                                        <div className="w-full h-1 bg-[#2D2D30] rounded-full overflow-hidden mt-1">
+                                                            <div className="h-full bg-[#A855F7]" style={{ width: `${Math.min(100, (data.squadMetrics.avgDamage / 2500) * 100)}%` }} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[9px] font-bold text-[#71717A] uppercase tracking-widest">Kills Squad</span>
+                                                        <span className="text-2xl font-black text-[#BEF264]">{data.squadMetrics.totalKills}</span>
+                                                        <div className="w-full h-1 bg-[#2D2D30] rounded-full overflow-hidden mt-1">
+                                                            <div className="h-full bg-[#BEF264]" style={{ width: `${Math.min(100, (data.squadMetrics.totalKills / 40) * 100)}%` }} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[9px] font-bold text-[#71717A] uppercase tracking-widest">Sobrevivência</span>
+                                                        <span className="text-2xl font-black text-white">{data.squadMetrics.survivalRate}<span className="text-[10px] text-[#71717A] ml-1">mortes/jogo</span></span>
+                                                        <div className="w-full h-1 bg-[#2D2D30] rounded-full overflow-hidden mt-1">
+                                                            <div className="h-full bg-blue-500" style={{ width: `${Math.max(10, 100 - (data.squadMetrics.survivalRate * 20))}%` }} />
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </Card>
                                         </div>
-                                    </>
                                     )}
                                 </div>
                             )}
@@ -1022,7 +994,6 @@ export const Dashboard: React.FC = () => {
                                         <>
                                             {/* Player Charts */}
                                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                                                {/* Avg Kills */}
                                                 <Card>
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div>
@@ -1045,14 +1016,13 @@ export const Dashboard: React.FC = () => {
                                                     </div>
                                                 </Card>
 
-                                                {/* Avg Damage */}
                                                 <Card>
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div>
                                                             <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#FFFFFF' }}>Média de Dano</h4>
                                                             <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Impacto em Combate</p>
                                                         </div>
-                                                        <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#8B5CF610', color: '#8B5CF6' }}>
+                                                        <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#A855F710', color: '#A855F7' }}>
                                                             <ShieldAlert size={16} />
                                                         </div>
                                                     </div>
@@ -1062,20 +1032,19 @@ export const Dashboard: React.FC = () => {
                                                                 <XAxis type="number" hide />
                                                                 <YAxis type="category" dataKey="name" stroke="#71717A" tickLine={false} axisLine={false} fontSize={10} width={80} tick={{ fill: '#A1A1AA', fontWeight: 600 }} />
                                                                 <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} cursor={false} />
-                                                                <Bar dataKey="avgDamage" fill="#8B5CF6" radius={[0, 4, 4, 0]} barSize={12} />
+                                                                <Bar dataKey="avgDamage" fill="#A855F7" radius={[0, 4, 4, 0]} barSize={12} />
                                                             </BarChart>
                                                         </ResponsiveContainer>
                                                     </div>
                                                 </Card>
 
-                                                {/* Avg Assists */}
                                                 <Card>
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div>
                                                             <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#FFFFFF' }}>Média de Apoio</h4>
                                                             <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Assistências por Jogo</p>
                                                         </div>
-                                                        <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#06B6D410', color: '#06B6D4' }}>
+                                                        <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#A855F710', color: '#A855F7' }}>
                                                             <Target size={16} />
                                                         </div>
                                                     </div>
@@ -1085,14 +1054,13 @@ export const Dashboard: React.FC = () => {
                                                                 <XAxis type="number" hide />
                                                                 <YAxis type="category" dataKey="name" stroke="#71717A" tickLine={false} axisLine={false} fontSize={10} width={80} tick={{ fill: '#A1A1AA', fontWeight: 600 }} />
                                                                 <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} cursor={false} />
-                                                                <Bar dataKey="avgAssists" fill="#06B6D4" radius={[0, 4, 4, 0]} barSize={12} />
+                                                                <Bar dataKey="avgAssists" fill="#A855F7" radius={[0, 4, 4, 0]} barSize={12} />
                                                             </BarChart>
                                                         </ResponsiveContainer>
                                                     </div>
                                                 </Card>
                                             </div>
 
-                                            {/* Radar (single player) */}
                                             {selectedPlayer !== 'Todos' && radarData.length > 0 && (
                                                 <Card>
                                                     <div className="flex items-center gap-3 mb-6">
@@ -1135,11 +1103,10 @@ export const Dashboard: React.FC = () => {
                                                 </Card>
                                             )}
 
-                                            {/* Players Table */}
                                             <Card className="overflow-hidden !p-0">
                                                 <div className="flex items-center justify-between p-6 pb-2">
                                                     <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2" style={{ color: '#FFFFFF' }}>
-                                                        <Users size={14} style={{ color: '#8B5CF6' }} /> Classificação de Elite
+                                                        <Users size={14} style={{ color: '#A855F7' }} /> Classificação de Elite
                                                     </h4>
                                                 </div>
                                                 <div className="overflow-x-auto">
@@ -1169,7 +1136,7 @@ export const Dashboard: React.FC = () => {
                                                                         <td className="px-6 py-4 text-right font-mono text-[#EF4444]">
                                                                             {p.Kill}
                                                                         </td>
-                                                                        <td className="px-6 py-4 text-right font-mono text-[#8B5CF6]">
+                                                                        <td className="px-6 py-4 text-right font-mono text-[#A855F7]">
                                                                             {p.Dano?.toLocaleString()}
                                                                         </td>
                                                                         <td className="px-6 py-4 text-right">
@@ -1201,7 +1168,7 @@ export const Dashboard: React.FC = () => {
                                 <Card className="overflow-hidden !p-0">
                                     <div className="flex items-center justify-between p-6 pb-2">
                                         <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2" style={{ color: '#FFFFFF' }}>
-                                            <FileSpreadsheet size={14} style={{ color: '#06B6D4' }} /> Cronologia de Missões
+                                            <FileSpreadsheet size={14} style={{ color: '#A855F7' }} /> Cronologia de Missões
                                         </h4>
                                     </div>
                                     <div className="overflow-x-auto relative">
@@ -1272,6 +1239,6 @@ export const Dashboard: React.FC = () => {
                     )}
                 </main>
             </div>
-        </div >
+        </div>
     );
 };
