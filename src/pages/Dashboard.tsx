@@ -122,6 +122,14 @@ const DashboardStyles = () => (
         .animate-fade-in {
             animation: fadeIn 0.4s ease-out forwards;
         }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0px); }
+        }
+        .antigravity {
+            animation: float 2.5s ease-in-out infinite;
+        }
     `}</style>
 );
 
@@ -583,13 +591,19 @@ export const Dashboard: React.FC = () => {
                 {/* Sidebar Footer */}
                 <div className="p-4 space-y-1 border-t border-[#2D2D30]">
                     <a
-                        href="https://wa.me/YOURNUMBER"
+                        href="https://wa.me/13981630304"
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all font-semibold text-xs"
-                        style={{ color: '#A855F7', backgroundColor: '#A855F708' }}
-                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#A855F715')}
-                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#A855F708')}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all font-semibold text-xs antigravity"
+                        style={{ color: '#A855F7', backgroundColor: '#161618', border: '1px solid #2D2D30' }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.backgroundColor = '#A855F710';
+                            e.currentTarget.style.borderColor = '#A855F740';
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.backgroundColor = '#161618';
+                            e.currentTarget.style.borderColor = '#2D2D30';
+                        }}
                     >
                         <span className="flex items-center gap-2">
                             <AlertCircle size={16} /> Suporte Técnico
