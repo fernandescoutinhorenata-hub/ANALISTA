@@ -7,7 +7,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
-const MAPAS = ['Bermuda', 'Purgatório', 'Alpine', 'Bermuda Remastered', 'Outro'];
+const MAPAS = ['BERMUDA', 'PURGATÓRIO', 'KALAHARI', 'ALPINE', 'NOVA TERRA', 'SOLARA'];
 const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
 // ─── Design Tokens Customizados ──────────────────────────────────────────────
