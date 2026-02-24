@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
 const MAPAS = ['Bermuda', 'Purgatório', 'Alpine', 'Bermuda Remastered', 'Outro'];
+const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
 // ─── Design Tokens Customizados ──────────────────────────────────────────────
 
@@ -88,7 +89,8 @@ export const InputData: React.FC = () => {
         mapa: '',
         rodada: '',
         colocacao: '',
-        equipe: 'SQUAD PRINCIPAL'
+        equipe: 'SQUAD PRINCIPAL',
+        totalKillsManual: '0'
     });
 
     const [players, setPlayers] = useState([
@@ -101,6 +103,17 @@ export const InputData: React.FC = () => {
     const [creditos, setCreditos] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState<any>(null);
+
+    // Cálculo de Pontos em Tempo Real
+    const pontosPosicao = PONTOS_POR_COLOCACAO[parseInt(matchData.colocacao)] || 0;
+    const totalKillsSquad = parseInt(matchData.totalKillsManual) || 0;
+    const totalPontosPartida = pontosPosicao + totalKillsSquad;
+
+    // Sincronizar kills dos jogadores com o total (opcional, mas ajuda o usuário)
+    useEffect(() => {
+        const sumKills = players.reduce((acc, p) => acc + (parseInt(p.kills) || 0), 0);
+        setMatchData(prev => ({ ...prev, totalKillsManual: String(sumKills) }));
+    }, [players]);
 
     useEffect(() => {
         if (!user) return;
@@ -143,9 +156,8 @@ export const InputData: React.FC = () => {
 
         setLoading(true);
         try {
-            const totalKills = players.reduce((acc, p) => acc + (parseInt(p.kills) || 0), 0);
-            const pontosPosicao = PONTOS_POR_COLOCACAO[parseInt(matchData.colocacao)] || 0;
-            const pontosTotal = totalKills + pontosPosicao;
+            const totalKills = totalKillsSquad;
+            const pontosTotal = totalPontosPartida;
 
             // 1. Inserir em partidas_geral
             const { error: errorGeral } = await supabase.from('partidas_geral').insert({
@@ -238,12 +250,20 @@ export const InputData: React.FC = () => {
                         <Activity size={14} className="text-[#A855F7]" />
                         <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A1A1AA]">Dados da Partida</h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-6 bg-[#161618] border border-[#2D2D30] rounded-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 p-6 bg-[#161618] border border-[#2D2D30] rounded-sm">
                         <InputField label="Data" type="date" value={matchData.data} onChange={(v: string) => setMatchData(p => ({ ...p, data: v }))} icon={Play} />
                         <InputField label="Campeonato" value={matchData.campeonato} onChange={(v: string) => setMatchData(p => ({ ...p, campeonato: v }))} placeholder="Ex: LBFF" icon={Trophy} />
                         <SelectField label="Mapa" value={matchData.mapa} onChange={(v: string) => setMatchData(p => ({ ...p, mapa: v }))} options={MAPAS} icon={Map} />
                         <InputField label="Rodada" type="number" value={matchData.rodada} onChange={(v: string) => setMatchData(p => ({ ...p, rodada: v }))} placeholder="No." icon={Hash} />
-                        <InputField label="Colocação" type="number" value={matchData.colocacao} onChange={(v: string) => setMatchData(p => ({ ...p, colocacao: v }))} placeholder="1-12" icon={Trophy} />
+                        <SelectField label="Colocação" value={matchData.colocacao} onChange={(v: string) => setMatchData(p => ({ ...p, colocacao: v }))} options={COLOCACOES} icon={Trophy} />
+                        <InputField label="Kills Squad" type="number" value={matchData.totalKillsManual} onChange={(v: string) => setMatchData(p => ({ ...p, totalKillsManual: v }))} icon={Sword} />
+
+                        <div className="flex flex-col gap-1.5 w-full">
+                            <span className="text-[9px] uppercase tracking-[0.2em] font-black text-[#BEF264]">Total de Pontos</span>
+                            <div className="bg-[#BEF26410] border border-[#BEF26430] rounded-sm py-2 px-3 flex items-center justify-center">
+                                <span className="text-xl font-black text-[#BEF264]">{totalPontosPartida}</span>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
