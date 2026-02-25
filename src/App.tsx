@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { InputData } from './pages/InputData';
+import { SharedDashboard } from './pages/SharedDashboard';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 function App() {
@@ -28,6 +29,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/view/:userId" element={<SharedDashboard />} />
         </Routes>
       </Router>
     </AuthProvider>

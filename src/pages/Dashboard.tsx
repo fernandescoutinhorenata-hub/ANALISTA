@@ -11,7 +11,7 @@ import {
     Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword, ShieldAlert,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Wallet
+    CheckCircle, XCircle, AlertCircle, Wallet, Link
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
@@ -506,6 +506,16 @@ export const Dashboard: React.FC = () => {
         reader.readAsBinaryString(file);
     };
 
+    const handleShareDashboard = () => {
+        if (!user) return;
+        const shareUrl = `${window.location.origin}/view/${user.id}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showToast('Link de compartilhamento copiado! 🔗', 'success');
+        }).catch(() => {
+            showToast('Erro ao copiar link.', 'error');
+        });
+    };
+
     // ── Layout ───────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen flex" style={{ ...S.bgMain, fontFamily: "'Inter', sans-serif", color: '#FFFFFF' }}>
@@ -696,6 +706,13 @@ export const Dashboard: React.FC = () => {
                                 <span className="text-[10px] font-bold text-[#71717A] uppercase tracking-widest">{nomeUsuario || 'Analista'}</span>
                                 <span className="text-xs font-bold text-white leading-none mt-0.5">Créditos: {creditos ?? '...'}</span>
                             </div>
+                            <button
+                                onClick={handleShareDashboard}
+                                className="p-2.5 rounded-lg bg-[#161618] border border-[#2D2D30] text-[#A1A1AA] hover:text-[#A855F7] transition-colors"
+                                title="Compartilhar Dashboard"
+                            >
+                                <Link size={18} />
+                            </button>
                             <button
                                 onClick={() => setIsImportModalOpen(true)}
                                 className="p-2.5 rounded-lg bg-[#161618] border border-[#2D2D30] text-[#A1A1AA] hover:text-white transition-colors"
