@@ -117,17 +117,25 @@ export const SharedDashboard: React.FC = () => {
             setIsDashboardLoading(true);
             setFetchError(null);
             try {
-                // Fetch profiles to get coach name
-                const { data: profile } = await supabase.from('perfis').select('nome').eq('id', userId).single();
-                if (profile) setNomeCoach(profile.nome);
+                // Fetch profiles to get coach name (independente)
+                supabase.from('perfis').select('nome').eq('id', userId).single()
+                    .then(({ data: profile }) => {
+                        if (profile) setNomeCoach(profile.nome);
+                    });
 
                 const [generalRes, playersRes] = await Promise.all([
                     supabase.from('partidas_geral').select('*').eq('user_id', userId).order('rodada', { ascending: true }),
                     supabase.from('performance_jogadores').select('*').eq('user_id', userId)
                 ]);
 
-                if (generalRes.error) throw generalRes.error;
-                if (playersRes.error) throw playersRes.error;
+                if (generalRes.error) {
+                    console.error('Erro em partidas_geral:', generalRes.error);
+                    throw new Error('Acesso negado ou erro no banco.');
+                }
+                if (playersRes.error) {
+                    console.error('Erro em performance_jogadores:', playersRes.error);
+                    throw new Error('Acesso negado ou erro no banco.');
+                }
 
                 const mappedGeneral = (generalRes.data || []).map(row => ({
                     Data: row.data,
@@ -350,7 +358,7 @@ export const SharedDashboard: React.FC = () => {
 
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                                             <Card className="lg:col-span-2">
-                                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-8 text-[#A1A1AA]">Tendência de Abates</h4>
+                                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-8 text-[#A1A1AA]">Fluxo de Performance (Kills)</h4>
                                                 <div className="h-[300px]">
                                                     <ResponsiveContainer width="100%" height="100%">
                                                         <AreaChart data={trendChartData}>
