@@ -349,10 +349,11 @@ export const SharedDashboard: React.FC = () => {
 
                                 {activeTab === 'overview' ? (
                                     <div className="space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
                                             <MetricCard title="Total Kills" value={totalKillsFromPlayers} icon={Sword} accentColor="#A855F7" />
-                                            <MetricCard title="Pontos" value={data.general.totalPontos} icon={Target} accentColor="#A855F7" />
-                                            <MetricCard title="Booyahs" value={data.general.totalBooyahs} icon={Trophy} accentColor="#A855F7" />
+                                            <MetricCard title="Dano Total" value={data.playerMetrics.totalDano.toLocaleString()} icon={Target} accentColor="#A855F7" />
+                                            <MetricCard title="MVP do Squad" value={data.playerMetrics.mvp.player} subValue={`${data.playerMetrics.mvp.kills} Kills`} icon={Trophy} accentColor="#F59E0B" />
+                                            <MetricCard title="Booyahs" value={data.general.totalBooyahs} icon={TrendingUp} accentColor="#A855F7" />
                                             <MetricCard title="Draft Success" value={`${data.general.percentSucessoCall}%`} icon={Zap} accentColor="#BEF264" />
                                         </div>
 

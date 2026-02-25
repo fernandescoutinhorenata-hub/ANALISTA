@@ -508,9 +508,9 @@ export const Dashboard: React.FC = () => {
 
     const handleShareDashboard = () => {
         if (!user) return;
-        const shareUrl = `${window.location.origin}/view/${user.id}`;
+        const shareUrl = `${window.location.origin}/share/${user.id}`;
         navigator.clipboard.writeText(shareUrl).then(() => {
-            showToast('Link de compartilhamento copiado! 🔗', 'success');
+            showToast('✅ Link copiado! Envie para o seu squad.', 'success');
         }).catch(() => {
             showToast('Erro ao copiar link.', 'error');
         });
@@ -708,8 +708,16 @@ export const Dashboard: React.FC = () => {
                             </div>
                             <button
                                 onClick={handleShareDashboard}
-                                className="p-2.5 rounded-lg bg-[#161618] border border-[#2D2D30] text-[#A1A1AA] hover:text-[#A855F7] transition-colors"
+                                className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg bg-[#161618] border border-[#2D2D30] text-[#A1A1AA] hover:text-[#A855F7] transition-all font-bold text-[10px] uppercase tracking-widest"
                                 title="Compartilhar Dashboard"
+                            >
+                                <Link size={14} />
+                                Link para Players
+                            </button>
+                            {/* Mobile version simple icon */}
+                            <button
+                                onClick={handleShareDashboard}
+                                className="md:hidden p-2.5 rounded-lg bg-[#161618] border border-[#2D2D30] text-[#A1A1AA] hover:text-[#A855F7] transition-colors"
                             >
                                 <Link size={18} />
                             </button>

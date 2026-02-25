@@ -29,7 +29,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/view/:userId" element={<SharedDashboard />} />
+          <Route path="/share/:userId" element={<SharedDashboard />} />
         </Routes>
       </Router>
     </AuthProvider>
