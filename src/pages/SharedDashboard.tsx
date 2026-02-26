@@ -111,29 +111,39 @@ export const SharedDashboard: React.FC = () => {
     }, [allGeneralRows]);
 
     useEffect(() => {
-        if (!userId) return;
+        if (!userId) {
+            setIsDashboardLoading(false);
+            return;
+        }
 
         const fetchDashboardData = async () => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                controller.abort();
+                setFetchError('❌ Erro ao carregar dados. Tempo limite excedido.');
+                setIsDashboardLoading(false);
+            }, 5000);
+
             setIsDashboardLoading(true);
             setFetchError(null);
+
             try {
+                const cleanId = userId.trim();
+
                 // Fetch profiles to get coach name (independente)
-                supabase.from('perfis').select('nome').eq('id', userId).single()
+                supabase.from('perfis').select('nome').eq('id', cleanId).single()
                     .then(({ data: profile }) => {
                         if (profile) setNomeCoach(profile.nome);
                     });
 
                 const [generalRes, playersRes] = await Promise.all([
-                    supabase.from('partidas_geral').select('*').eq('user_id', userId).order('rodada', { ascending: true }),
-                    supabase.from('performance_jogadores').select('*').eq('user_id', userId)
+                    supabase.from('partidas_geral').select('*').eq('user_id', cleanId).order('rodada', { ascending: true }),
+                    supabase.from('performance_jogadores').select('*').eq('user_id', cleanId)
                 ]);
 
-                if (generalRes.error) {
-                    console.error('Erro em partidas_geral:', generalRes.error);
-                    throw new Error('Acesso negado ou erro no banco.');
-                }
-                if (playersRes.error) {
-                    console.error('Erro em performance_jogadores:', playersRes.error);
+                clearTimeout(timeoutId);
+
+                if (generalRes.error || playersRes.error) {
                     throw new Error('Acesso negado ou erro no banco.');
                 }
 
@@ -169,10 +179,12 @@ export const SharedDashboard: React.FC = () => {
                 setAllPlayerRows(mappedPlayers);
 
             } catch (error: any) {
-                console.error('Erro ao buscar dados:', error);
-                setFetchError('Não foi possível carregar o dashboard público.');
+                if (error.name !== 'AbortError') {
+                    setFetchError('❌ Erro ao carregar dados. Tente atualizar a página.');
+                }
             } finally {
                 setIsDashboardLoading(false);
+                clearTimeout(timeoutId);
             }
         };
 
