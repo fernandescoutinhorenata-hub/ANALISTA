@@ -10,9 +10,6 @@ import { useAuth } from '../contexts/AuthContext';
 const MAPAS = ['BERMUDA', 'PURGATÓRIO', 'KALAHARI', 'ALPINE', 'NOVA TERRA', 'SOLARA'];
 const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
-// ─── Design Tokens Customizados ──────────────────────────────────────────────
-
-
 // ─── Input Técnico ──────────────────────────────────────────────────────────
 const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, required, placeholder, icon: Icon }) => {
     const [focused, setFocused] = useState(false);
