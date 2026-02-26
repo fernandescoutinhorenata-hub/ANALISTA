@@ -111,43 +111,59 @@ export const SharedDashboard: React.FC = () => {
     }, [allGeneralRows]);
 
     useEffect(() => {
-        if (!userId) {
+        const cleanId = userId?.trim();
+
+        if (!cleanId) {
             setIsDashboardLoading(false);
+            setFetchError('ID de usuário inválido.');
             return;
         }
 
-        const fetchDashboardData = async () => {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => {
-                controller.abort();
-                setFetchError('❌ Erro ao carregar dados. Tempo limite excedido.');
-                setIsDashboardLoading(false);
-            }, 5000);
+        let isMounted = true;
+        const controller = new AbortController();
 
+        const fetchDashboardData = async () => {
             setIsDashboardLoading(true);
             setFetchError(null);
 
+            const timeoutId = setTimeout(() => {
+                if (isMounted) {
+                    controller.abort();
+                    setFetchError('❌ Dados Indisponíveis (Tempo limite excedido)');
+                    setIsDashboardLoading(false);
+                }
+            }, 6000);
+
             try {
-                const cleanId = userId.trim();
+                // Perfil (Coach Name)
+                const { data: profile } = await supabase
+                    .from('perfis')
+                    .select('nome')
+                    .eq('id', cleanId)
+                    .single();
 
-                // Fetch profiles to get coach name (independente)
-                supabase.from('perfis').select('nome').eq('id', cleanId).single()
-                    .then(({ data: profile }) => {
-                        if (profile) setNomeCoach(profile.nome);
-                    });
+                if (isMounted && profile) setNomeCoach(profile.nome);
 
+                // Dados das Partidas
                 const [generalRes, playersRes] = await Promise.all([
                     supabase.from('partidas_geral').select('*').eq('user_id', cleanId).order('rodada', { ascending: true }),
                     supabase.from('performance_jogadores').select('*').eq('user_id', cleanId)
                 ]);
 
+                if (!isMounted) return;
                 clearTimeout(timeoutId);
 
                 if (generalRes.error || playersRes.error) {
-                    throw new Error('Acesso negado ou erro no banco.');
+                    throw new Error('Erro na comunicação com o banco.');
                 }
 
-                const mappedGeneral = (generalRes.data || []).map(row => ({
+                if (!generalRes.data || generalRes.data.length === 0) {
+                    setFetchError('Este squad ainda não registrou partidas públicas.');
+                    setIsDashboardLoading(false);
+                    return;
+                }
+
+                const mappedGeneral = generalRes.data.map(row => ({
                     Data: row.data,
                     Campeonato: row.campeonato,
                     Rodada: row.rodada,
@@ -159,7 +175,6 @@ export const SharedDashboard: React.FC = () => {
                     Pontos_Total: row.pontos_total,
                     Booyah: row.booyah ? 'SIM' : 'NAO',
                 }));
-                setAllGeneralRows(mappedGeneral);
 
                 const mappedPlayers = (playersRes.data || []).map(row => ({
                     Data: row.data,
@@ -176,19 +191,28 @@ export const SharedDashboard: React.FC = () => {
                     "Derrubados": row.derrubados,
                     "Ressurgimento": row.ressurgimento
                 }));
+
+                setAllGeneralRows(mappedGeneral);
                 setAllPlayerRows(mappedPlayers);
 
             } catch (error: any) {
-                if (error.name !== 'AbortError') {
-                    setFetchError('❌ Erro ao carregar dados. Tente atualizar a página.');
+                if (isMounted && error.name !== 'AbortError') {
+                    setFetchError('❌ Erro ao carregar dados. Verifique sua conexão.');
                 }
             } finally {
-                setIsDashboardLoading(false);
-                clearTimeout(timeoutId);
+                if (isMounted) {
+                    setIsDashboardLoading(false);
+                    clearTimeout(timeoutId);
+                }
             }
         };
 
         fetchDashboardData();
+
+        return () => {
+            isMounted = false;
+            controller.abort();
+        };
     }, [userId]);
 
     useEffect(() => {
