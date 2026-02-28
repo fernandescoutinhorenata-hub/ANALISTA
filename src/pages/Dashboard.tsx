@@ -244,6 +244,7 @@ export const Dashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [selectedPlayer, setSelectedPlayer] = useState<string>('Todos');
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos' });
+    const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [creditos, setCreditos] = useState<number | null>(null);
     const [nomeUsuario, setNomeUsuario] = useState<string>('');
@@ -379,23 +380,58 @@ export const Dashboard: React.FC = () => {
             setData(null);
             return;
         }
+
+        const now = new Date();
+        const timeLimit = timeFilter === '7d'
+            ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+            : timeFilter === '30d'
+                ? new Date(now.getFullYear(), now.getMonth(), 1)
+                : null;
+
+        const isInTimeRange = (dateStr: string) => {
+            if (!timeLimit || !dateStr) return true;
+            const parts = dateStr.split('/');
+            const parsed = parts.length === 3
+                ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
+                : new Date(dateStr);
+            return !isNaN(parsed.getTime()) && parsed >= timeLimit;
+        };
+
         const filteredGeneral = allGeneralRows.filter(row => {
             const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
             const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
-            return matchDate && matchChamp;
+            const matchTime = isInTimeRange(String(row.Data || ''));
+            return matchDate && matchChamp && matchTime;
         });
-        const filteredPlayers = allPlayerRows.filter(row =>
-            filters.date === 'Todos' || String(row.Data) === filters.date
-        );
+        const filteredPlayers = allPlayerRows.filter(row => {
+            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
+            const matchTime = isInTimeRange(String(row.Data || ''));
+            return matchDate && matchTime;
+        });
         setData(processData(filteredGeneral, filteredPlayers));
-    }, [filters, allGeneralRows, allPlayerRows]);
+    }, [filters, timeFilter, allGeneralRows, allPlayerRows]);
 
     // ─── Métricas derivadas de performance_jogadores ───────────────────────────
-    const filteredPlayerRows = useMemo(() =>
-        allPlayerRows.filter(row =>
-            filters.date === 'Todos' || String(row.Data) === filters.date
-        ),
-        [allPlayerRows, filters.date]);
+    const filteredPlayerRows = useMemo(() => {
+        const now = new Date();
+        const timeLimit = timeFilter === '7d'
+            ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+            : timeFilter === '30d'
+                ? new Date(now.getFullYear(), now.getMonth(), 1)
+                : null;
+
+        return allPlayerRows.filter(row => {
+            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
+            if (!matchDate) return false;
+            if (!timeLimit) return true;
+            const dateStr = String(row.Data || '');
+            const parts = dateStr.split('/');
+            const parsed = parts.length === 3
+                ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
+                : new Date(dateStr);
+            return !isNaN(parsed.getTime()) && parsed >= timeLimit;
+        });
+    }, [allPlayerRows, filters.date, timeFilter]);
 
     const playerList = useMemo(() => {
         return Array.from(new Set(filteredPlayerRows.map((p: any) => p.Player).filter(Boolean))).sort() as string[];
@@ -431,15 +467,25 @@ export const Dashboard: React.FC = () => {
             .slice(0, 10);
     }, [filteredPlayerRows, selectedPlayer]);
 
+    // Radar com 3 eixos semânticos: Agressividade, Sobrevivência, Suporte
     const radarData = useMemo(() => {
         if (!data || selectedPlayer === 'Todos' || playerChartData.length === 0) return [];
         const p = playerChartData[0];
         if (!p) return [];
+
+        // Agressividade = kill/dano normalizado (0-10)
+        const agressividade = Math.min(10,
+            ((p.avgKills / 5) * 5) + ((p.avgDamage / 1500) * 5)
+        ).toFixed(1);
+        // Sobrevivência = inverso do KD (mortes) → alto KD = alta sobrevivência
+        const sobrevivencia = Math.min(10, p.kd * 2.5).toFixed(1);
+        // Suporte = assistências por jogo (0-10)
+        const suporte = Math.min(10, p.avgAssists * 2.5).toFixed(1);
+
         return [
-            { metric: 'Média de Abates', value: p.avgKills, fullMark: 10 },
-            { metric: 'Média de Dano', value: Math.min(p.avgDamage / 300, 10), fullMark: 10 },
-            { metric: 'Média de Assistências', value: Math.min(p.avgAssists, 10), fullMark: 10 },
-            { metric: 'Relação K/D', value: Math.min(p.kd, 10), fullMark: 10 },
+            { metric: 'Agressividade', value: parseFloat(agressividade), fullMark: 10 },
+            { metric: 'Sobrevivência', value: parseFloat(sobrevivencia), fullMark: 10 },
+            { metric: 'Suporte', value: parseFloat(suporte), fullMark: 10 },
         ];
     }, [playerChartData, selectedPlayer]);
 
@@ -668,7 +714,24 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        {/* Filtros */}
+                        {/* ── Filtros de Tempo Rápido (Tabs) ── */}
+                        <div className="hidden lg:flex items-center gap-1 p-1 rounded-lg" style={{ backgroundColor: '#161618', border: '1px solid #2D2D30' }}>
+                            {([{ id: '7d', label: '7 dias' }, { id: '30d', label: 'Este Mês' }, { id: 'all', label: 'Todos' }] as const).map(t => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => setTimeFilter(t.id)}
+                                    className="px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all"
+                                    style={{
+                                        backgroundColor: timeFilter === t.id ? '#A855F7' : 'transparent',
+                                        color: timeFilter === t.id ? '#FFFFFF' : '#71717A',
+                                    }}
+                                >
+                                    {t.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Filtros por Data / Campeonato */}
                         <div className="hidden lg:flex items-center gap-2">
                             <div
                                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest"
@@ -1105,38 +1168,70 @@ export const Dashboard: React.FC = () => {
                                                     <div className="flex items-center gap-3 mb-6">
                                                         <div
                                                             className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-base shadow-lg"
-                                                            style={{ background: 'linear-gradient(135deg, #8A2BE2, #00BFFF)', color: '#FFFFFF' }}
+                                                            style={{ background: 'linear-gradient(135deg, #A855F7, #10B981)', color: '#FFFFFF' }}
                                                         >
                                                             {selectedPlayer[0]}
                                                         </div>
                                                         <div>
-                                                            <h4 className="font-bold text-lg" style={{ color: '#FFFFFF' }}>{selectedPlayer} — Perfil Completo</h4>
-                                                            <p className="text-sm" style={{ color: '#7A8291' }}>Desempenho individual detalhado</p>
+                                                            <h4 className="font-bold text-lg" style={{ color: '#FFFFFF' }}>{selectedPlayer} — Perfil de Combate</h4>
+                                                            <p className="text-[11px]" style={{ color: '#71717A' }}>Análise por eixos: Agressividade · Sobrevivência · Suporte</p>
                                                         </div>
                                                     </div>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                                        {/* Radar Chart com 3 eixos semânticos */}
                                                         <div className="h-64">
                                                             <ResponsiveContainer width="100%" height="100%">
                                                                 <RadarChart data={radarData}>
-                                                                    <PolarGrid stroke="#2A3042" />
-                                                                    <PolarAngleAxis dataKey="metric" tick={{ fontSize: 12, fill: '#B0B8C3', fontFamily: 'Inter, sans-serif' }} />
-                                                                    <Radar name={selectedPlayer} dataKey="value" stroke="#8A2BE2" fill="#8A2BE2" fillOpacity={0.2} strokeWidth={2} />
-                                                                    <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} />
+                                                                    <PolarGrid stroke="#2D2D30" strokeDasharray="3 3" />
+                                                                    <PolarAngleAxis
+                                                                        dataKey="metric"
+                                                                        tick={{ fontSize: 11, fill: '#A1A1AA', fontFamily: 'Inter, sans-serif', fontWeight: 700 }}
+                                                                    />
+                                                                    <Radar
+                                                                        name={selectedPlayer}
+                                                                        dataKey="value"
+                                                                        stroke="#A855F7"
+                                                                        fill="#A855F7"
+                                                                        fillOpacity={0.25}
+                                                                        strokeWidth={2}
+                                                                        dot={{ fill: '#A855F7', r: 4, strokeWidth: 0 }}
+                                                                    />
+                                                                    <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} formatter={(v: any) => [`${v} / 10`, 'Score']} />
                                                                 </RadarChart>
                                                             </ResponsiveContainer>
                                                         </div>
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            {playerChartData[0] && [
-                                                                { label: 'Média de Abates', val: playerChartData[0].avgKills, color: '#FF0055' },
-                                                                { label: 'Média de Dano', val: playerChartData[0].avgDamage.toLocaleString(), color: '#8A2BE2' },
-                                                                { label: 'Média de Assistências', val: playerChartData[0].avgAssists, color: '#00BFFF' },
-                                                                { label: 'Relação K/D', val: playerChartData[0].kd, color: '#00FF7F' },
-                                                            ].map((stat, i) => (
-                                                                <div key={i} className="rounded-xl p-4" style={{ backgroundColor: `${stat.color}10`, border: `1px solid ${stat.color}30` }}>
-                                                                    <p className="text-xs mb-1" style={{ color: '#7A8291' }}>{stat.label}</p>
-                                                                    <p className="text-2xl font-black" style={{ color: stat.color }}>{stat.val}</p>
+                                                        <div className="grid grid-cols-1 gap-3">
+                                                            {radarData.map((stat, i) => {
+                                                                const colors = ['#EF4444', '#10B981', '#A855F7'];
+                                                                const color = colors[i % 3];
+                                                                const pct = Math.min(100, (stat.value / 10) * 100);
+                                                                return (
+                                                                    <div key={i} className="p-4 rounded-xl" style={{ backgroundColor: `${color}0D`, border: `1px solid ${color}25` }}>
+                                                                        <div className="flex items-center justify-between mb-2">
+                                                                            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#A1A1AA' }}>{stat.metric}</span>
+                                                                            <span className="text-lg font-black" style={{ color }}>{stat.value}<span className="text-[10px] ml-0.5 opacity-60">/10</span></span>
+                                                                        </div>
+                                                                        <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#2D2D30' }}>
+                                                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: color }} />
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                            {playerChartData[0] && (
+                                                                <div className="grid grid-cols-2 gap-2 mt-1">
+                                                                    {[
+                                                                        { label: 'Avg Kills', val: playerChartData[0].avgKills, color: '#EF4444' },
+                                                                        { label: 'Avg Dano', val: playerChartData[0].avgDamage.toLocaleString(), color: '#A855F7' },
+                                                                        { label: 'Avg Assists', val: playerChartData[0].avgAssists, color: '#10B981' },
+                                                                        { label: 'K/D', val: playerChartData[0].kd, color: '#F59E0B' },
+                                                                    ].map((s, i) => (
+                                                                        <div key={i} className="p-3 rounded-lg" style={{ backgroundColor: '#161618', border: '1px solid #2D2D30' }}>
+                                                                            <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#71717A' }}>{s.label}</p>
+                                                                            <p className="text-base font-black mt-0.5" style={{ color: s.color }}>{s.val}</p>
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
-                                                            ))}
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </Card>
