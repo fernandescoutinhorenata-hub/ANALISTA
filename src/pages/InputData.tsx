@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { verificarDesbloqueioConquistas } from '../utils/conquistas';
 
 const MAPAS = ['BERMUDA', 'PURGATÓRIO', 'KALAHARI', 'ALPINE', 'NOVA TERRA', 'SOLARA'];
 const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
@@ -209,6 +210,24 @@ export const InputData: React.FC = () => {
 
             showToast('Squad Salvo com Sucesso!', 'success');
             setCreditos(prev => (prev !== null ? prev - 1 : null));
+
+            // 4. Verificar conquistas para cada jogador individualmente
+            for (const p of players) {
+                const jogadorId = user.id; // conquistas ligadas ao coach/user por enquanto
+                const stats = {
+                    kills: Math.max(0, parseInt(p.kills) || 0),
+                    dano: Math.max(0, parseInt(p.dano) || 0),
+                    assistencias: Math.max(0, parseInt(p.assistencias) || 0),
+                    derrubados: Math.max(0, parseInt(p.derrubados) || 0),
+                    ressurgimentos: Math.max(0, parseInt(p.revividos) || 0),
+                    mortes: Math.max(0, parseInt(p.morte) || 0),
+                    colocacao: Math.max(1, parseInt(matchData.colocacao) || 1),
+                };
+                const novasConquistas = await verificarDesbloqueioConquistas(jogadorId, stats);
+                novasConquistas.forEach(titulo =>
+                    showToast(`🏆 Conquista: ${titulo}`, 'success')
+                );
+            }
 
             // Limpar alguns campos mantendo o contexto da partida
             setPlayers(players.map(p => ({ ...p, kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' })));
