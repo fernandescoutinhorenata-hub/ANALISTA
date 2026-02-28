@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
 import { processData } from '../utils/data-processing';
 import { useAuth } from '../contexts/AuthContext';
+import { PainelDeConquistas } from '../components/PainelDeConquistas';
 
 // ─── SaaS Premium – Design Tokens ──────────────────────────────────────────
 // BG_MAIN:   #0B0B0C  | BG_CARD:   #161618  | BORDER:    #2D2D30
@@ -1293,6 +1294,14 @@ export const Dashboard: React.FC = () => {
                                                 Registre dados no formulário de Performance Jogadores para ver as análises.
                                             </p>
                                         </Card>
+                                    )}
+
+                                    {/* ─────── Painel de Conquistas ─────── */}
+                                    {user && (
+                                        <PainelDeConquistas
+                                            jogadorId={user.id}
+                                            nomeJogador={nomeUsuario || user.email || ''}
+                                        />
                                     )}
                                 </div>
                             )}
