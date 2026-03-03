@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import {
@@ -27,23 +28,38 @@ import { PainelDeConquistas } from '../components/PainelDeConquistas';
 // ────────────────────────────────────────────────────────────────────────────
 
 const S = {
-    bgMain: { backgroundColor: '#0B0B0C' },
-    bgCard: { backgroundColor: '#161618' },
-    border: { border: '1px solid #2D2D30' },
-    cardBox: { backgroundColor: '#161618', border: '1px solid #2D2D30', borderRadius: '12px', padding: '24px' },
+    bgMain: { backgroundColor: '#080809' },
+    bgCard: { backgroundColor: '#111113' },
+    border: { border: '1px solid #1E1E22' },
+    cardBox: { backgroundColor: '#111113', border: '1px solid #1E1E22', borderRadius: '16px', padding: '24px' },
 };
 
-// ─── Shared Card ─────────────────────────────────────────────────────────────
+// ─── Framer Motion Variants ───────────────────────────────────────────────────
+const fadeUp = (delay = 0) => ({
+    initial: { opacity: 0, y: 18 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.45, delay, ease: 'easeOut' as const },
+});
+
+// ─── Shared Card (Glassmorphism + Gradient Border) ────────────────────────────
 const Card: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({ children, className = '', style }) => (
     <div
-        className={`rounded-xl p-6 ${className}`}
-        style={{ backgroundColor: '#161618', border: '1px solid #2D2D30', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', ...style }}
+        className={`rounded-2xl p-6 relative overflow-hidden transition-all duration-300 group ${className}`}
+        style={{
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(168,85,247,0.03) 100%)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(168,85,247,0.15)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)',
+            ...style
+        }}
     >
+        {/* Gradient border top line */}
+        <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.5), transparent)' }} />
         {children}
     </div>
 );
 
-// ─── Metric Card ─────────────────────────────────────────────────────────────
+// ─── Metric Card (Cyberpunk Premium) ─────────────────────────────────────────
 const MetricCard: React.FC<{
     title: string;
     value: string | number;
@@ -52,35 +68,63 @@ const MetricCard: React.FC<{
     accentColor: string;
 }> = ({ title, value, subValue, icon: Icon, accentColor }) => (
     <div
-        className="rounded-xl p-6 flex flex-col gap-4 transition-all duration-200 hover:border-[#A855F7]/50"
-        style={{ backgroundColor: '#161618', border: '1px solid #2D2D30' }}
+        className="rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 cursor-default"
+        style={{
+            background: `linear-gradient(145deg, rgba(255,255,255,0.02) 0%, ${accentColor}08 100%)`,
+            border: `1px solid ${accentColor}22`,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
+        }}
+        onMouseEnter={e => {
+            const el = e.currentTarget as HTMLDivElement;
+            el.style.boxShadow = `0 0 32px 0 ${accentColor}25, 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)`;
+            el.style.borderColor = `${accentColor}55`;
+        }}
+        onMouseLeave={e => {
+            const el = e.currentTarget as HTMLDivElement;
+            el.style.boxShadow = '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)';
+            el.style.borderColor = `${accentColor}22`;
+        }}
     >
-        <div className="flex justify-between items-start">
+        {/* Top gradient shimmer */}
+        <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accentColor}60, transparent)` }} />
+        {/* Background glow */}
+        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-10 blur-2xl" style={{ backgroundColor: accentColor }} />
+
+        <div className="flex justify-between items-start relative z-10">
             <div
-                className="p-2.5 rounded-lg"
-                style={{ backgroundColor: `${accentColor}10`, color: accentColor }}
+                className="p-2.5 rounded-xl"
+                style={{
+                    background: `linear-gradient(135deg, ${accentColor}20, ${accentColor}10)`,
+                    border: `1px solid ${accentColor}30`,
+                    color: accentColor,
+                    boxShadow: `0 0 12px ${accentColor}20`,
+                }}
             >
                 <Icon size={20} />
             </div>
             {subValue && (
                 <span
-                    className="text-[10px] font-semibold px-2 py-1 rounded-md uppercase tracking-wider"
-                    style={{ color: '#A1A1AA', backgroundColor: '#2D2D30' }}
+                    className="text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-[0.12em]"
+                    style={{
+                        color: accentColor,
+                        background: `${accentColor}12`,
+                        border: `1px solid ${accentColor}25`,
+                    }}
                 >
                     {subValue}
                 </span>
             )}
         </div>
-        <div>
+        <div className="relative z-10">
             <h3
-                className="text-3xl font-bold tracking-tight"
-                style={{ color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}
+                className="text-4xl font-black tracking-tighter leading-none"
+                style={{ color: '#FFFFFF', fontFamily: "'Inter', sans-serif", textShadow: `0 0 20px ${accentColor}40` }}
             >
                 {value}
             </h3>
             <p
-                className="text-sm font-medium mt-1"
-                style={{ color: '#71717A', fontFamily: "'Inter', sans-serif" }}
+                className="text-[11px] font-bold mt-2 uppercase tracking-widest"
+                style={{ color: '#5A5A60', fontFamily: "'Inter', sans-serif" }}
             >
                 {title}
             </p>
@@ -90,47 +134,43 @@ const MetricCard: React.FC<{
 
 // ─── Tooltip customizado ──────────────────────────────────────────────────────
 const neonTooltipStyle = {
-    backgroundColor: '#1A1A1A',
-    border: '1px solid #333333',
-    borderRadius: '8px',
+    backgroundColor: '#111113',
+    border: '1px solid rgba(168,85,247,0.25)',
+    borderRadius: '10px',
     color: '#FFFFFF',
     fontFamily: "'Inter', sans-serif",
     fontSize: '12px',
-    padding: '12px',
-    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
+    padding: '12px 16px',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(168,85,247,0.1)',
+    backdropFilter: 'blur(10px)',
 };
 
 // ─── Estilos Globais do Dashboard ──────────────────────────────────────────
 const DashboardStyles = () => (
     <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(139, 92, 246, 0.2);
+            background: linear-gradient(180deg, #A855F7, #6D28D9);
             border-radius: 10px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(139, 92, 246, 0.4);
-        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #A855F7; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
         @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-3px); }
-            100% { transform: translateY(0px); }
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
         }
-        .antigravity {
-            animation: float 2.5s ease-in-out infinite;
+        .antigravity { animation: float 2.5s ease-in-out infinite; }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(168,85,247,0.1); }
+            50% { box-shadow: 0 0 25px rgba(168,85,247,0.3), 0 0 50px rgba(168,85,247,0.1); }
         }
+        .glow-pulse { animation: pulse-glow 3s ease-in-out infinite; }
+        select option { background-color: #111113; color: #FFFFFF; }
     `}</style>
 );
 
@@ -844,7 +884,12 @@ export const Dashboard: React.FC = () => {
                         <>
                             {/* ══════════ OVERVIEW TAB ══════════ */}
                             {activeTab === 'overview' && (
-                                <div className="space-y-6">
+                                <motion.div
+                                    className="space-y-6"
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
+                                >
                                     {/* ── Empty State ── */}
                                     {!data && (
                                         <div className="flex flex-col items-center justify-center py-20 text-center bg-[#161618] rounded-xl border border-[#2D2D30] border-dashed">
@@ -868,34 +913,34 @@ export const Dashboard: React.FC = () => {
                                     {/* Top Metric Cards — só renderiza se houver dados */}
                                     {data && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                                            <MetricCard
+                                            <motion.div {...fadeUp(0)}><MetricCard
                                                 title="Total de Kills"
                                                 value={totalKillsFromPlayers}
                                                 subValue={filteredPlayerRows.length > 0 ? `${filteredPlayerRows.length} registros` : data ? `${data.general.mediaKills}/queda` : '-'}
                                                 icon={Sword}
-                                                accentColor="#8A2BE2"
-                                            />
-                                            <MetricCard
+                                                accentColor="#A855F7"
+                                            /></motion.div>
+                                            <motion.div {...fadeUp(0.07)}><MetricCard
                                                 title="Pontuação Total"
                                                 value={data.general.totalPontos}
                                                 subValue={`Avg: ${data.general.mediaPontos}`}
                                                 icon={Target}
-                                                accentColor="#8A2BE2"
-                                            />
-                                            <MetricCard
+                                                accentColor="#A855F7"
+                                            /></motion.div>
+                                            <motion.div {...fadeUp(0.14)}><MetricCard
                                                 title="Booyahs"
                                                 value={data.general.totalBooyahs}
                                                 subValue={`${data.general.percentBooyah}% Win Rate`}
                                                 icon={Trophy}
-                                                accentColor="#8A2BE2"
-                                            />
-                                            <MetricCard
+                                                accentColor="#BEF264"
+                                            /></motion.div>
+                                            <motion.div {...fadeUp(0.21)}><MetricCard
                                                 title="Call Success"
                                                 value={`${data.general.percentSucessoCall}%`}
                                                 subValue={`${data.general.callsGanhas}W / ${data.general.callsPerdidas}L`}
                                                 icon={Zap}
-                                                accentColor="#00FF7F"
-                                            />
+                                                accentColor="#10B981"
+                                            /></motion.div>
                                         </div>
                                     )}
 
@@ -916,39 +961,22 @@ export const Dashboard: React.FC = () => {
                                                 </div>
                                                 <div className="h-72">
                                                     <ResponsiveContainer width="100%" height="100%">
-                                                        <AreaChart data={trendChartData}>
+                                                        <AreaChart data={trendChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                                                             <defs>
-                                                                <linearGradient id="colorKillsNeon" x1="0" y1="0" x2="0" y2="1">
-                                                                    <stop offset="5%" stopColor="#A855F7" stopOpacity={0.15} />
-                                                                    <stop offset="95%" stopColor="#A855F7" stopOpacity={0} />
+                                                                <linearGradient id="gradKills" x1="0" y1="0" x2="0" y2="1">
+                                                                    <stop offset="0%" stopColor="#A855F7" stopOpacity={0.4} />
+                                                                    <stop offset="60%" stopColor="#A855F7" stopOpacity={0.08} />
+                                                                    <stop offset="100%" stopColor="#A855F7" stopOpacity={0} />
                                                                 </linearGradient>
                                                             </defs>
-                                                            <XAxis
-                                                                dataKey="Data"
-                                                                stroke="#2D2D30"
-                                                                tickLine={false}
-                                                                axisLine={false}
-                                                                tick={{ fontSize: 10, fill: '#71717A', fontWeight: 500 }}
-                                                                dy={10}
-                                                            />
-                                                            <YAxis
-                                                                stroke="#2D2D30"
-                                                                tickLine={false}
-                                                                axisLine={false}
-                                                                tick={{ fontSize: 10, fill: '#71717A', fontWeight: 500 }}
-                                                            />
-                                                            <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} cursor={{ stroke: '#2D2D30', strokeWidth: 1 }} />
-                                                            <Area
-                                                                type="monotone"
-                                                                dataKey="Kill"
-                                                                stroke="#A855F7"
-                                                                strokeWidth={2}
-                                                                fillOpacity={1}
-                                                                fill="url(#colorKillsNeon)"
-                                                            />
+                                                            <XAxis dataKey="Data" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#4A4A50', fontWeight: 600 }} dy={10} />
+                                                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#4A4A50', fontWeight: 600 }} />
+                                                            <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#A855F7' }} cursor={{ stroke: 'rgba(168,85,247,0.2)', strokeWidth: 1 }} />
+                                                            <Area type="monotone" dataKey="Kill" stroke="#A855F7" strokeWidth={2.5} fillOpacity={1} fill="url(#gradKills)" dot={{ fill: '#A855F7', r: 3, strokeWidth: 0 }} activeDot={{ r: 5, fill: '#A855F7', stroke: 'rgba(168,85,247,0.3)', strokeWidth: 6 }} />
                                                         </AreaChart>
                                                     </ResponsiveContainer>
                                                 </div>
+
                                             </Card>
 
                                             {/* Pie Chart */}
@@ -1071,7 +1099,7 @@ export const Dashboard: React.FC = () => {
                                             </Card>
                                         </div>
                                     )}
-                                </div>
+                                </motion.div>
                             )}
 
                             {/* ══════════ PLAYERS TAB ══════════ */}
