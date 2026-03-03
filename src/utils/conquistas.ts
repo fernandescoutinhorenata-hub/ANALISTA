@@ -56,7 +56,7 @@ const REGRAS: RegraConquista[] = [
         condicao: (s) => s.mortes === 0 && s.colocacao <= 3,
     },
     {
-        titulo: 'Mestre do Apoio',
+        titulo: 'Mestre da Assistência',
         descricao: 'Concedeu 8 ou mais assistências no mesmo jogo.',
         icone: 'Users',
         condicao: (s) => s.assistencias >= 8,

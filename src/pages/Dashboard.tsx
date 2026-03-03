@@ -1207,7 +1207,7 @@ export const Dashboard: React.FC = () => {
                                                 <Card>
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div>
-                                                            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#FFFFFF' }}>Média de Apoio</h4>
+                                                            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#FFFFFF' }}>Média de Assistências</h4>
                                                             <p className="text-[11px] mt-1" style={{ color: '#71717A' }}>Assistências por Jogo</p>
                                                         </div>
                                                         <div className="p-2.5 rounded-lg" style={{ backgroundColor: '#A855F710', color: '#A855F7' }}>
