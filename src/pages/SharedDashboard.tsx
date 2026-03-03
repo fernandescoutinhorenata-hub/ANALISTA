@@ -22,55 +22,84 @@ const S = {
     border: { border: '1px solid #2D2D30' },
 };
 
-// ─── Shared Card ─────────────────────────────────────────────────────────────
+// ─── Shared Card (Glassmorphism) ───────────────────────────────────────────────────────────
 const Card: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({ children, className = '', style }) => (
     <div
-        className={`rounded-xl p-6 ${className}`}
-        style={{ backgroundColor: '#161618', border: '1px solid #2D2D30', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', ...style }}
+        className={`rounded-2xl p-6 relative overflow-hidden ${className}`}
+        style={{
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(168,85,247,0.03) 100%)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(168,85,247,0.15)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)',
+            ...style
+        }}
     >
+        <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.5), transparent)' }} />
         {children}
     </div>
 );
 
-// ─── Metric Card ─────────────────────────────────────────────────────────────
+// ─── Metric Card (Cyberpunk Premium) ───────────────────────────────────────────────────────
 const MetricCard: React.FC<{
     title: string;
     value: string | number;
     subValue?: string;
     icon: any;
     accentColor: string;
-}> = ({ title, value, subValue, icon: Icon, accentColor }) => (
+    glow?: boolean;
+}> = ({ title, value, subValue, icon: Icon, accentColor, glow = false }) => (
     <div
-        className="rounded-xl p-6 flex flex-col gap-4"
-        style={{ backgroundColor: '#161618', border: '1px solid #2D2D30' }}
+        className="rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 cursor-default"
+        style={{
+            background: `linear-gradient(145deg, rgba(255,255,255,0.02) 0%, ${accentColor}08 100%)`,
+            border: `1px solid ${accentColor}22`,
+            boxShadow: `0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)${glow ? `, 0 0 24px ${accentColor}15` : ''}`,
+        }}
+        onMouseEnter={e => {
+            const el = e.currentTarget as HTMLDivElement;
+            el.style.boxShadow = `0 0 32px 0 ${accentColor}25, 0 4px 24px rgba(0,0,0,0.5)`;
+            el.style.borderColor = `${accentColor}55`;
+        }}
+        onMouseLeave={e => {
+            const el = e.currentTarget as HTMLDivElement;
+            el.style.boxShadow = '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)';
+            el.style.borderColor = `${accentColor}22`;
+        }}
     >
-        <div className="flex justify-between items-start">
+        {/* Top shimmer */}
+        <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accentColor}60, transparent)` }} />
+        {/* Corner glow */}
+        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-10 blur-2xl" style={{ backgroundColor: accentColor }} />
+
+        <div className="flex justify-between items-start relative z-10">
             <div
-                className="p-2.5 rounded-lg"
-                style={{ backgroundColor: `${accentColor}10`, color: accentColor }}
+                className="p-2.5 rounded-xl"
+                style={{
+                    background: `linear-gradient(135deg, ${accentColor}20, ${accentColor}10)`,
+                    border: `1px solid ${accentColor}30`,
+                    color: accentColor,
+                    boxShadow: `0 0 12px ${accentColor}20`,
+                }}
             >
                 <Icon size={20} />
             </div>
             {subValue && (
                 <span
-                    className="text-[10px] font-semibold px-2 py-1 rounded-md uppercase tracking-wider"
-                    style={{ color: '#A1A1AA', backgroundColor: '#2D2D30' }}
+                    className="text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-[0.12em]"
+                    style={{ color: accentColor, background: `${accentColor}12`, border: `1px solid ${accentColor}25` }}
                 >
                     {subValue}
                 </span>
             )}
         </div>
-        <div>
+        <div className="relative z-10">
             <h3
-                className="text-3xl font-bold tracking-tight"
-                style={{ color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}
+                className="text-4xl font-black tracking-tighter leading-none"
+                style={{ color: '#FFFFFF', fontFamily: "'Inter', sans-serif", textShadow: glow ? `0 0 20px ${accentColor}50` : 'none' }}
             >
                 {value}
             </h3>
-            <p
-                className="text-sm font-medium mt-1"
-                style={{ color: '#71717A', fontFamily: "'Inter', sans-serif" }}
-            >
+            <p className="text-[11px] font-bold mt-2 uppercase tracking-widest" style={{ color: '#5A5A60' }}>
                 {title}
             </p>
         </div>
@@ -283,6 +312,27 @@ export const SharedDashboard: React.FC = () => {
             .map(([data, kills]) => ({ Data: data, Kill: kills }));
     }, [filteredPlayerRows]);
 
+    // Métricas de Derrubados
+    const totalDerrubados = useMemo(() =>
+        filteredPlayerRows.reduce((sum, p) => sum + (Number(p['derrubados'] ?? p['Derrubados']) || 0), 0),
+        [filteredPlayerRows]);
+
+    const mediaDerrubados = useMemo(() => {
+        const partidas = new Set(filteredPlayerRows.map((p: any) => `${p.Data}-${p.Mapa}`)).size || 1;
+        return parseFloat((totalDerrubados / partidas).toFixed(2));
+    }, [filteredPlayerRows, totalDerrubados]);
+
+    // Tooltip estilo neon
+    const neonTooltip = {
+        backgroundColor: '#111113',
+        border: '1px solid rgba(168,85,247,0.25)',
+        borderRadius: '10px',
+        color: '#FFFFFF',
+        fontSize: '12px',
+        padding: '10px 14px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.7)',
+    };
+
     return (
         <div className="min-h-screen flex flex-col" style={{ ...S.bgMain, fontFamily: "'Inter', sans-serif", color: '#FFFFFF' }}>
             <DashboardStyles />
@@ -386,11 +436,17 @@ export const SharedDashboard: React.FC = () => {
                                 {activeTab === 'overview' ? (
                                     <div className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
-                                            <MetricCard title="Total Kills" value={totalKillsFromPlayers} icon={Sword} accentColor="#A855F7" />
-                                            <MetricCard title="Dano Total" value={data.playerMetrics.totalDano.toLocaleString()} icon={Target} accentColor="#A855F7" />
+                                            <MetricCard title="Total Kills" value={totalKillsFromPlayers} icon={Sword} accentColor="#A855F7" glow />
+                                            <MetricCard title="Dano Total" value={data.playerMetrics.totalDano.toLocaleString()} icon={Target} accentColor="#A855F7" glow />
                                             <MetricCard title="MVP do Squad" value={data.playerMetrics.mvp.player} subValue={`${data.playerMetrics.mvp.kills} Kills`} icon={Trophy} accentColor="#F59E0B" />
-                                            <MetricCard title="Booyahs" value={data.general.totalBooyahs} icon={TrendingUp} accentColor="#A855F7" />
+                                            <MetricCard title="Booyahs" value={data.general.totalBooyahs} icon={TrendingUp} accentColor="#10B981" />
                                             <MetricCard title="Draft Success" value={`${data.general.percentSucessoCall}%`} icon={Zap} accentColor="#BEF264" />
+                                        </div>
+
+                                        {/* Cards de Derrubados */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            <MetricCard title="Total de Derrubados (Knockdowns)" value={totalDerrubados} icon={Sword} accentColor="#A855F7" />
+                                            <MetricCard title="Média de Derrubados por Partida" value={mediaDerrubados.toFixed(2)} icon={Target} accentColor="#BEF264" />
                                         </div>
 
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -398,17 +454,18 @@ export const SharedDashboard: React.FC = () => {
                                                 <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-8 text-[#A1A1AA]">Fluxo de Performance (Kills)</h4>
                                                 <div className="h-[300px]">
                                                     <ResponsiveContainer width="100%" height="100%">
-                                                        <AreaChart data={trendChartData}>
+                                                        <AreaChart data={trendChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                                                             <defs>
-                                                                <linearGradient id="colorKill" x1="0" y1="0" x2="0" y2="1">
-                                                                    <stop offset="5%" stopColor="#A855F7" stopOpacity={0.3} />
-                                                                    <stop offset="95%" stopColor="#A855F7" stopOpacity={0} />
+                                                                <linearGradient id="gradKillShared" x1="0" y1="0" x2="0" y2="1">
+                                                                    <stop offset="0%" stopColor="#A855F7" stopOpacity={0.4} />
+                                                                    <stop offset="60%" stopColor="#A855F7" stopOpacity={0.08} />
+                                                                    <stop offset="100%" stopColor="#A855F7" stopOpacity={0} />
                                                                 </linearGradient>
                                                             </defs>
-                                                            <XAxis dataKey="Data" axisLine={false} tickLine={false} tick={{ fill: '#71717A', fontSize: 10 }} />
-                                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#71717A', fontSize: 10 }} />
-                                                            <Tooltip contentStyle={{ backgroundColor: '#161618', border: '1px solid #2D2D30', borderRadius: '8px' }} />
-                                                            <Area type="monotone" dataKey="Kill" stroke="#A855F7" strokeWidth={3} fillOpacity={1} fill="url(#colorKill)" />
+                                                            <XAxis dataKey="Data" axisLine={false} tickLine={false} tick={{ fill: '#4A4A50', fontSize: 10, fontWeight: 600 }} />
+                                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#4A4A50', fontSize: 10, fontWeight: 600 }} />
+                                                            <Tooltip contentStyle={neonTooltip} itemStyle={{ color: '#A855F7' }} cursor={{ stroke: 'rgba(168,85,247,0.2)', strokeWidth: 1 }} />
+                                                            <Area type="monotone" dataKey="Kill" stroke="#A855F7" strokeWidth={2.5} fillOpacity={1} fill="url(#gradKillShared)" dot={{ fill: '#A855F7', r: 3, strokeWidth: 0 }} activeDot={{ r: 5, fill: '#A855F7', stroke: 'rgba(168,85,247,0.3)', strokeWidth: 6 }} />
                                                         </AreaChart>
                                                     </ResponsiveContainer>
                                                 </div>
