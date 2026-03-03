@@ -440,18 +440,19 @@ export const Dashboard: React.FC = () => {
 
     const playerChartData = useMemo(() => {
         if (filteredPlayerRows.length === 0) return [];
-        interface PlayerAgg { name: string; kills: number; damage: number; assists: number; deaths: number; games: number; }
+        interface PlayerAgg { name: string; kills: number; damage: number; assists: number; deaths: number; derrubados: number; games: number; }
         const agg: Record<string, PlayerAgg> = {};
         const rows = selectedPlayer === 'Todos'
             ? filteredPlayerRows
             : filteredPlayerRows.filter((p: any) => p.Player === selectedPlayer);
         rows.forEach((p: any) => {
             if (!p.Player) return;
-            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, games: 0 };
+            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0, games: 0 };
             agg[p.Player].kills += Number(p.Kill) || 0;
             agg[p.Player].damage += Number(p['Dano causado']) || 0;
             agg[p.Player].assists += Number(p.Assistencia) || 0;
             agg[p.Player].deaths += Number(p.Morte) || 0;
+            agg[p.Player].derrubados += Number(p['Derrubados']) || 0;
             agg[p.Player].games += 1;
         });
         return Object.values(agg)
@@ -460,8 +461,10 @@ export const Dashboard: React.FC = () => {
                 avgKills: p.games > 0 ? parseFloat((p.kills / p.games).toFixed(2)) : 0,
                 avgDamage: p.games > 0 ? Math.round(p.damage / p.games) : 0,
                 avgAssists: p.games > 0 ? parseFloat((p.assists / p.games).toFixed(2)) : 0,
+                avgDerrubados: p.games > 0 ? parseFloat((p.derrubados / p.games).toFixed(2)) : 0,
                 totalKills: p.kills,
                 totalDamage: p.damage,
+                totalDerrubados: p.derrubados,
                 kd: parseFloat((p.kills / (p.deaths || 1)).toFixed(2)),
             }))
             .sort((a, b) => b.avgKills - a.avgKills)
@@ -494,6 +497,20 @@ export const Dashboard: React.FC = () => {
     const totalKillsFromPlayers = useMemo(() =>
         filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0),
         [filteredPlayerRows]);
+
+    // Métricas de Derrubados
+    const totalDerrubados = useMemo(() =>
+        filteredPlayerRows.reduce((sum, p) => sum + (Number(p['Derrubados']) || 0), 0),
+        [filteredPlayerRows]);
+
+    const mediaDerrubados = useMemo(() => {
+        const rows = selectedPlayer === 'Todos'
+            ? filteredPlayerRows
+            : filteredPlayerRows.filter((p: any) => p.Player === selectedPlayer);
+        const partidas = new Set(rows.map((p: any) => `${p.Data}-${p.Mapa}`)).size || 1;
+        const total = rows.reduce((sum, p) => sum + (Number(p['Derrubados']) || 0), 0);
+        return parseFloat((total / partidas).toFixed(2));
+    }, [filteredPlayerRows, selectedPlayer]);
 
     // Gráfico de Tendência: kills totais de todos os jogadores agrupadas por data
     const trendChartData = useMemo(() => {
@@ -1095,6 +1112,24 @@ export const Dashboard: React.FC = () => {
 
                                     {filteredPlayerRows.length > 0 ? (
                                         <>
+                                            {/* ─ Cards de Métricas de Derrubados ─ */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                                <MetricCard
+                                                    title="Total de Derrubados (Knockdowns)"
+                                                    value={totalDerrubados}
+                                                    subValue={`${filteredPlayerRows.length} registros`}
+                                                    icon={Sword}
+                                                    accentColor="#A855F7"
+                                                />
+                                                <MetricCard
+                                                    title="Média de Derrubados por Partida"
+                                                    value={mediaDerrubados.toFixed(2)}
+                                                    subValue={selectedPlayer !== 'Todos' ? selectedPlayer : 'Todos os Jogadores'}
+                                                    icon={Target}
+                                                    accentColor="#BEF264"
+                                                />
+                                            </div>
+
                                             {/* Player Charts */}
                                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                                                 <Card>
