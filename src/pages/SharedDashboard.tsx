@@ -477,7 +477,7 @@ export const SharedDashboard: React.FC = () => {
                                                     <ResponsiveContainer width="100%" height="100%">
                                                         <PieChart>
                                                             <Pie data={data.byMap.map(m => ({ name: m.mapa, value: m.totalPontos }))} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                                                                {data.byMap.map((_, index) => (
+                                                                {data.byMap.map((_: any, index: number) => (
                                                                     <Cell key={`cell-${index}`} fill={['#A855F7', '#BEF264', '#EF4444', '#F59E0B', '#10B981'][index % 5]} />
                                                                 ))}
                                                             </Pie>

@@ -1002,7 +1002,7 @@ export const Dashboard: React.FC = () => {
                                                                 stroke="none"
                                                             >
                                                                 {(data?.byMap || []).map((_: any, index: number) => (
-                                                                    <Cell key={`cell-${index}`} fill={['#A855F7', '#A855F7', '#10B981', '#F59E0B', '#EF4444'][index % 5]} />
+                                                                    <Cell key={`cell-${index}`} fill={['#A855F7', '#BEF264', '#EF4444', '#F59E0B', '#10B981'][index % 5]} />
                                                                 ))}
                                                             </Pie>
                                                             <Tooltip contentStyle={neonTooltipStyle} itemStyle={{ color: '#FFFFFF' }} />
