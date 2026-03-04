@@ -12,7 +12,7 @@
 }
 
 body {
-  background-color: var(--bg-main);
+  background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(80, 80, 80, 0.08) 0%, transparent 60%), #09090B;
   color: var(--text-pri);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
