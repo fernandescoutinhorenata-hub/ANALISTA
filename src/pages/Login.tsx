@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Mail, AlertCircle, Shield, ArrowRight } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface LoginProps {
     mode?: 'login' | 'register';
@@ -35,9 +35,6 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                 });
                 if (signUpError) throw signUpError;
                 
-                // Nota: O trigger de auth do Supabase geralmente cria o perfil,
-                // mas mantemos a inserção manual se o banco não tiver o trigger configurado.
-                // Alterado de 'profiles' para 'perfis' para consistência.
                 if (data?.user) {
                     await supabase.from('perfis').insert([{
                         id: data.user.id,
@@ -67,21 +64,19 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                 <div className="absolute inset-0 opacity-10 pointer-events-none"
                     style={{ backgroundImage: 'radial-gradient(var(--border-strong) 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
 
-                <div className="relative z-10 animate-reveal">
-                    <div className="relative">
-                        <img
-                            src="/image_10.png"
-                            alt="Celo Logo"
-                            className="w-64 h-auto transition-all duration-700 hover:scale-105"
-                        />
-                        <div className="mt-12 space-y-4">
-                            <h2 className="text-5xl font-extrabold text-[var(--text-primary)] leading-tight tracking-tight">
-                                Métricas Precisas.<br />Domínio Absoluto.
-                            </h2>
-                            <p className="text-[var(--text-secondary)] max-w-md text-lg leading-relaxed font-medium">
-                                Operando no núcleo do cenário competitivo para entregar inteligência bruta e vantagem estratégica.
-                            </p>
-                        </div>
+                <div className="relative z-10 flex flex-col items-center text-center animate-reveal">
+                    <img
+                        src="/image_10.png"
+                        alt="Celo Logo"
+                        className="w-56 h-auto mb-10 transition-all duration-700 hover:scale-105"
+                    />
+                    <div className="space-y-4">
+                        <h2 className="text-5xl font-extrabold text-[var(--text-primary)] leading-tight tracking-tight">
+                            Métricas Precisas.<br />Domínio Absoluto.
+                        </h2>
+                        <p className="text-[var(--text-secondary)] max-w-sm text-lg leading-relaxed font-medium">
+                            A plataforma de análise para times competitivos de Free Fire.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -90,9 +85,9 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
             <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-16 bg-[var(--bg-surface)] relative z-20">
                 <div className="w-full max-w-[360px] animate-reveal">
 
-                    <header className="mb-10">
+                    <header className="mb-10 text-center md:text-left">
                         <div className="md:hidden flex justify-center mb-10">
-                            <img src="/image_10.png" alt="Logo" className="h-20 w-auto" />
+                            <img src="/image_10.png" alt="Logo" className="h-16 w-auto" />
                         </div>
                         <h3 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
                             {activeTab === 'login' ? 'Entrar' : 'Criar conta'}
@@ -103,7 +98,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                     </header>
 
                     {/* Navigation Tab */}
-                    <div className="flex gap-4 mb-10 border-b border-[var(--border-subtle)] pb-2 text-label">
+                    <div className="flex gap-4 mb-8 text-label relative">
                         {[
                             { id: 'login', label: 'Entrar', path: '/login' },
                             { id: 'register', label: 'Cadastro', path: '/register' }
@@ -112,13 +107,16 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                                 key={tab.id}
                                 to={tab.path}
                                 onClick={() => { setActiveTab(tab.id as any); setError(null); }}
-                                className={`transition-all pb-2 ${activeTab === tab.id ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
+                                className={`transition-all pb-2 z-10 ${activeTab === tab.id ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
                                 style={{ textDecoration: 'none' }}
                             >
                                 {tab.label}
                             </Link>
                         ))}
                     </div>
+                    
+                    {/* Separador Sutil */}
+                    <div className="w-full h-px bg-[var(--border-subtle)] -mt-10 mb-10" />
 
                     {error && (
                         <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-md flex gap-3 items-start animate-reveal">
@@ -131,62 +129,50 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         {activeTab === 'register' && (
                             <div className="space-y-2 group">
                                 <label className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-tertiary)] group-focus-within:text-[var(--accent)] transition-colors">Nome do time</label>
-                                <div className="relative">
-                                    <Shield size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
-                                    <input
-                                        type="text"
-                                        value={teamName}
-                                        onChange={e => setTeamName(e.target.value)}
-                                        placeholder="Nome da sua equipe"
-                                        className="input-base pl-12"
-                                        required={activeTab === 'register'}
-                                    />
-                                </div>
+                                <input
+                                    type="text"
+                                    value={teamName}
+                                    onChange={e => setTeamName(e.target.value)}
+                                    placeholder="Nome da sua equipe"
+                                    className="input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)]"
+                                    required={activeTab === 'register'}
+                                />
                             </div>
                         )}
 
                         <div className="space-y-2 group">
                             <label className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-tertiary)] group-focus-within:text-[var(--accent)] transition-colors">Email</label>
-                            <div className="relative">
-                                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={e => setEmail(e.target.value)}
-                                    placeholder="seu@email.com"
-                                    className="input-base pl-12"
-                                    required
-                                />
-                            </div>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                placeholder="seu@email.com"
+                                className="input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)]"
+                                required
+                            />
                         </div>
 
                         <div className="space-y-2 group">
                             <label className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-tertiary)] group-focus-within:text-[var(--accent)] transition-colors">Senha</label>
-                            <div className="relative">
-                                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={e => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="input-base pl-12"
-                                    required
-                                />
-                            </div>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                className="input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)]"
+                                required
+                            />
                         </div>
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="btn-primary w-full py-4 flex items-center justify-center gap-2 mt-4"
+                            className="btn-primary w-full py-3.5 flex items-center justify-center font-semibold text-sm rounded-[var(--radius-md)] mt-4"
                         >
                             {loading ? (
                                 <div className="h-5 w-5 border-2 border-white/30 border-t-white animate-spin rounded-full" />
                             ) : (
-                                <>
-                                    <span>{activeTab === 'login' ? 'Entrar' : 'Criar conta'}</span>
-                                    <ArrowRight size={16} />
-                                </>
+                                <span>{activeTab === 'login' ? 'Entrar' : 'Criar conta'}</span>
                             )}
                         </button>
                     </form>
