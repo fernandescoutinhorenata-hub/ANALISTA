@@ -32,11 +32,11 @@ interface PainelDeConquistasProps {
 }
 
 // ─── Chip de Raridade ─────────────────────────────────────────────────────────
-const getRaridade = (index: number): { label: string; color: string; glow: string } => {
-    if (index === 0) return { label: 'Lendária', color: '#F59E0B', glow: '#F59E0B40' };
-    if (index === 1) return { label: 'Épica', color: '#A855F7', glow: '#A855F740' };
-    if (index === 2) return { label: 'Rara', color: '#3B82F6', glow: '#3B82F640' };
-    return { label: 'Comum', color: '#10B981', glow: '#10B98140' };
+const getRaridade = (index: number): { label: string; color: string; classes: string } => {
+    if (index === 0) return { label: 'Lendária', color: '#F59E0B', classes: 'badge-purple !text-[#F59E0B] !bg-[#F59E0B15]' };
+    if (index === 1) return { label: 'Épica', color: '#A855F7', classes: 'badge-purple' };
+    if (index === 2) return { label: 'Rara', color: '#3B82F6', classes: 'badge-blue' };
+    return { label: 'Comum', color: '#10B981', classes: 'badge-green' };
 };
 
 // ─── Card de Conquista ────────────────────────────────────────────────────────
@@ -46,58 +46,29 @@ const ConquistaCard: React.FC<{ conquista: Conquista; index: number }> = ({ conq
     const dataFormatada = new Date(conquista.created_at).toLocaleDateString('pt-BR');
 
     return (
-        <div
-            className="grupo relative flex flex-col gap-4 rounded-xl p-5 transition-all duration-300 cursor-default"
-            style={{
-                backgroundColor: '#0F0F11',
-                border: `1px solid ${raridade.color}30`,
-                boxShadow: '0 0 0 0 transparent',
-            }}
-            onMouseEnter={(e) => {
-                (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 24px 0 ${raridade.glow}`;
-                (e.currentTarget as HTMLDivElement).style.borderColor = `${raridade.color}80`;
-                (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 0 0 transparent';
-                (e.currentTarget as HTMLDivElement).style.borderColor = `${raridade.color}30`;
-                (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-            }}
-        >
+        <div className="card relative flex flex-col gap-4 p-5 transition-all duration-300 hover:border-[var(--accent-glow)] !bg-[var(--bg-card)]">
             {/* Chip de raridade */}
-            <span
-                className="absolute top-3 right-3 text-[9px] font-black uppercase tracking-[0.15em] px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: `${raridade.color}15`, color: raridade.color }}
-            >
+            <span className={`absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full ${raridade.classes}`}>
                 {raridade.label}
             </span>
 
             {/* Ícone */}
-            <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{
-                    backgroundColor: `${raridade.color}15`,
-                    boxShadow: `0 0 16px 0 ${raridade.glow}`,
-                }}
-            >
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[var(--bg-hover)] border border-[var(--border-subtle)]">
                 <IconComponent size={22} style={{ color: raridade.color }} />
             </div>
 
             {/* Texto */}
             <div className="flex flex-col gap-1 flex-1">
-                <h3
-                    className="text-sm font-black uppercase tracking-tight leading-tight"
-                    style={{ color: '#FFFFFF' }}
-                >
+                <h3 className="text-sm font-bold text-[var(--text-primary)]">
                     {conquista.titulo}
                 </h3>
-                <p className="text-[11px] leading-relaxed" style={{ color: '#71717A' }}>
+                <p className="text-[11px] leading-relaxed text-[var(--text-secondary)]">
                     {conquista.descricao}
                 </p>
             </div>
 
             {/* Data */}
-            <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#3D3D40' }}>
+            <p className="text-[10px] font-medium text-[var(--text-tertiary)] mt-2">
                 Desbloqueada em {dataFormatada}
             </p>
         </div>
@@ -135,12 +106,9 @@ export const PainelDeConquistas: React.FC<PainelDeConquistasProps> = ({ jogadorI
 
     if (loading) {
         return (
-            <div
-                className="rounded-xl p-8 flex flex-col items-center gap-4"
-                style={{ backgroundColor: '#161618', border: '1px solid #2D2D30' }}
-            >
-                <div className="w-8 h-8 border-2 border-[#A855F7]/20 border-t-[#A855F7] rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#71717A]">
+            <div className="card p-8 flex flex-col items-center gap-4">
+                <div className="w-8 h-8 border-2 border-[var(--accent-muted)] border-t-[var(--accent)] rounded-full animate-spin" />
+                <p className="text-xs font-medium text-[var(--text-tertiary)]">
                     Carregando Conquistas...
                 </p>
             </div>
@@ -149,37 +117,25 @@ export const PainelDeConquistas: React.FC<PainelDeConquistasProps> = ({ jogadorI
 
     if (erro) {
         return (
-            <div
-                className="rounded-xl p-8 text-center"
-                style={{ backgroundColor: '#161618', border: '1px solid #2D2D30' }}
-            >
-                <p className="text-[11px] text-[#EF4444] font-bold">{erro}</p>
+            <div className="card p-8 text-center border-red-500/20">
+                <p className="text-sm text-red-500 font-medium">{erro}</p>
             </div>
         );
     }
 
     return (
-        <div
-            className="rounded-xl p-6"
-            style={{ backgroundColor: '#161618', border: '1px solid #2D2D30' }}
-        >
+        <div className="card p-6 !bg-transparent border-none">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <div
-                        className="p-2.5 rounded-lg"
-                        style={{ backgroundColor: '#A855F710', color: '#A855F7' }}
-                    >
-                        <Award size={18} />
+                    <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
+                        <Award size={20} />
                     </div>
                     <div>
-                        <h2
-                            className="text-sm font-black uppercase tracking-[0.15em]"
-                            style={{ color: '#FFFFFF' }}
-                        >
+                        <h2 className="text-lg font-bold text-[var(--text-primary)]">
                             Conquistas
                         </h2>
-                        <p className="text-[10px]" style={{ color: '#71717A' }}>
+                        <p className="text-xs text-[var(--text-tertiary)]">
                             {nomeJogador ? `${nomeJogador} · ` : ''}{conquistas.length} medalha{conquistas.length !== 1 ? 's' : ''} desbloqueada{conquistas.length !== 1 ? 's' : ''}
                         </p>
                     </div>
@@ -195,8 +151,7 @@ export const PainelDeConquistas: React.FC<PainelDeConquistasProps> = ({ jogadorI
                     ].map((r, i) => (
                         <span
                             key={i}
-                            className="text-[10px] font-black px-2 py-1 rounded-lg"
-                            style={{ backgroundColor: '#0B0B0C', border: '1px solid #2D2D30', color: '#A1A1AA' }}
+                            className="badge border border-[var(--border-default)] bg-[var(--bg-hover)] text-[var(--text-secondary)] px-3 py-1"
                         >
                             {r.label} {r.count}
                         </span>
@@ -206,16 +161,13 @@ export const PainelDeConquistas: React.FC<PainelDeConquistasProps> = ({ jogadorI
 
             {/* Grid de Conquistas */}
             {conquistas.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 gap-4">
-                    <div
-                        className="p-5 rounded-2xl"
-                        style={{ backgroundColor: '#0B0B0C', border: '1px solid #2D2D30' }}
-                    >
-                        <Lock size={32} style={{ color: '#3D3D40' }} />
+                <div className="card flex flex-col items-center justify-center py-12 gap-4 bg-[var(--bg-surface)]/50">
+                    <div className="p-5 rounded-2xl bg-[var(--bg-hover)] border border-[var(--border-subtle)]">
+                        <Lock size={32} className="text-[var(--text-tertiary)]" />
                     </div>
                     <div className="text-center">
-                        <p className="text-sm font-bold text-[#71717A]">Nenhuma conquista ainda</p>
-                        <p className="text-[11px] text-[#3D3D40] mt-1">
+                        <p className="text-sm font-bold text-[var(--text-secondary)]">Nenhuma conquista ainda</p>
+                        <p className="text-xs text-[var(--text-tertiary)] mt-1">
                             Registre partidas incríveis para desbloquear medalhas!
                         </p>
                     </div>

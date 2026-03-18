@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
-    Wallet, Play, Target, Hash, Map, Trophy, Users, Sword, HeartPulse, Activity
+    Wallet, Users, Activity
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,12 +12,10 @@ const MAPAS = ['BERMUDA', 'PURGATÓRIO', 'KALAHARI', 'ALPINE', 'NOVA TERRA', 'SO
 const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
 // ─── Input Técnico ──────────────────────────────────────────────────────────
-const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, required, placeholder, icon: Icon }) => {
-    const [focused, setFocused] = useState(false);
+const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, required, placeholder }) => {
     return (
         <div className="flex flex-col gap-1.5 animate-reveal w-full">
-            <label htmlFor={id} className="text-[9px] uppercase tracking-[0.2em] font-black text-[#A1A1AA] flex items-center gap-1.5">
-                {Icon && <Icon size={10} className={focused ? 'text-[#A855F7]' : 'text-[#71717A]'} />}
+            <label htmlFor={id} className="text-[11px] font-semibold text-[var(--text-secondary)] flex items-center gap-1.5">
                 {label} {required && <span className="text-rose-500">*</span>}
             </label>
             <div className="relative">
@@ -32,9 +30,7 @@ const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, 
                         if (type === 'number' && parseInt(val) < 0) return;
                         onChange(val);
                     }}
-                    onFocus={() => setFocused(true)}
-                    onBlur={() => setFocused(false)}
-                    className={`w-full bg-[#161618] border ${focused ? 'border-[#A855F7] ring-1 ring-[#A855F7]/30' : 'border-[#2D2D30]'} rounded-sm py-2 px-3 text-xs text-white placeholder:text-zinc-800 transition-all outline-none font-medium`}
+                    className="input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)]"
                 />
             </div>
         </div>
@@ -42,25 +38,21 @@ const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, 
 };
 
 // ─── Select Técnico ──────────────────────────────────────────────────────────
-const SelectField: React.FC<any> = ({ label, id, value, onChange, options, required, icon: Icon }) => {
-    const [focused, setFocused] = useState(false);
+const SelectField: React.FC<any> = ({ label, id, value, onChange, options, required }) => {
     return (
         <div className="flex flex-col gap-1.5 animate-reveal w-full">
-            <label htmlFor={id} className="text-[9px] uppercase tracking-[0.2em] font-black text-[#A1A1AA] flex items-center gap-1.5">
-                {Icon && <Icon size={10} className={focused ? 'text-[#A855F7]' : 'text-[#71717A]'} />}
+            <label htmlFor={id} className="text-[11px] font-semibold text-[var(--text-secondary)] flex items-center gap-1.5">
                 {label} {required && <span className="text-rose-500">*</span>}
             </label>
             <select
                 id={id}
                 value={value}
                 onChange={e => onChange(e.target.value)}
-                onFocus={() => setFocused(true)}
-                onBlur={() => setFocused(false)}
-                className={`w-full bg-[#161618] border ${focused ? 'border-[#A855F7]' : 'border-[#2D2D30]'} rounded-sm py-2 px-3 text-xs ${value ? 'text-white' : 'text-[#71717A]'} transition-all outline-none cursor-pointer font-bold appearance-none`}
-                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2371717A' stroke-width='3'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.6rem' }}
+                className="input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)] appearance-none"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2371717A' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.6rem' }}
             >
-                <option value="">SELECIONAR</option>
-                {options.map((o: any) => <option key={o} value={o}>{o.toUpperCase()}</option>)}
+                <option value="">Selecionar</option>
+                {options.map((o: any) => <option key={o} value={o}>{o}</option>)}
             </select>
         </div>
     );
@@ -261,34 +253,34 @@ export const InputData: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0B0B0C] text-white font-['Inter',sans-serif] selection:bg-[#A3E635] selection:text-black">
+        <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-['Inter',sans-serif]">
             {toast && <Toast message={toast.message} type={toast.type} />}
 
             {/* Tactical Header */}
-            <header className="sticky top-0 z-50 bg-[#0B0B0CEE] backdrop-blur-xl border-b border-[#2D2D30]">
+            <header className="sticky top-0 z-50 bg-[var(--bg-main)]/80 backdrop-blur-xl border-b border-[var(--border-subtle)]">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => navigate('/')} className="p-1.5 border border-[#2D2D30] rounded-sm hover:bg-[#1A1A1C] transition-colors">
-                            <ChevronLeft size={16} className="text-[#A1A1AA]" />
+                        <button onClick={() => navigate('/')} className="p-2 border border-[var(--border-default)] rounded-md hover:bg-[var(--bg-hover)] transition-colors">
+                            <ChevronLeft size={18} className="text-[var(--text-secondary)]" />
                         </button>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A855F7]">Unified Squad Input</span>
-                            <span className="text-[9px] font-bold text-[#71717A] uppercase tracking-tighter">Terminal de Métricas Elite</span>
+                            <span className="text-sm font-bold text-[var(--text-primary)]">Inserir Dados da Partida</span>
+                            <span className="text-[11px] font-medium text-[var(--text-tertiary)]">Preencha os dados do squad</span>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setIsResetModalOpen(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-red-500/5 border border-red-500/20 rounded-sm hover:bg-red-500/10 hover:border-red-500/40 transition-all group"
+                            className="btn-ghost flex items-center gap-2 px-3 py-1.5"
                         >
-                            <Trash2 size={12} className="text-red-500/70 group-hover:text-red-500" />
-                            <span className="text-[9px] font-black text-red-500/70 group-hover:text-red-500 uppercase tracking-widest">Reiniciar Tabela</span>
+                            <Trash2 size={14} className="text-red-500/70" />
+                            <span className="text-xs font-semibold text-red-500/70">Reiniciar Tabela</span>
                         </button>
 
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-[#161618] border border-[#2D2D30] rounded-sm">
-                            <Wallet size={12} className="text-amber-500" />
-                            <span className="text-[10px] font-black">{creditos ?? '--'} CRÉDITOS</span>
+                        <div className="badge border border-[var(--border-default)] bg-[var(--bg-hover)] text-[var(--text-secondary)] py-1.5 px-3">
+                            <Wallet size={12} className="text-[var(--accent)] mr-2" />
+                            <span className="text-[10px] font-bold">{creditos ?? '--'} CRÉDITOS</span>
                         </div>
                     </div>
                 </div>
@@ -298,21 +290,21 @@ export const InputData: React.FC = () => {
                 {/* 1. Dados da Partida */}
                 <section className="animate-reveal">
                     <div className="flex items-center gap-2 mb-4">
-                        <Activity size={14} className="text-[#A855F7]" />
-                        <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A1A1AA]">Dados da Partida</h2>
+                        <Activity size={16} className="text-[var(--accent)]" />
+                        <h2 className="text-sm font-bold text-[var(--text-primary)]">Dados da Partida</h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 p-6 bg-[#161618] border border-[#2D2D30] rounded-sm">
-                        <InputField label="Data" type="date" value={matchData.data} onChange={(v: string) => setMatchData(p => ({ ...p, data: v }))} icon={Play} />
-                        <InputField label="Campeonato" value={matchData.campeonato} onChange={(v: string) => setMatchData(p => ({ ...p, campeonato: v }))} placeholder="Ex: LBFF" icon={Trophy} />
-                        <SelectField label="Mapa" value={matchData.mapa} onChange={(v: string) => setMatchData(p => ({ ...p, mapa: v }))} options={MAPAS} icon={Map} />
-                        <InputField label="Rodada" type="number" value={matchData.rodada} onChange={(v: string) => setMatchData(p => ({ ...p, rodada: v }))} placeholder="No." icon={Hash} />
-                        <SelectField label="Colocação" value={matchData.colocacao} onChange={(v: string) => setMatchData(p => ({ ...p, colocacao: v }))} options={COLOCACOES} icon={Trophy} />
-                        <InputField label="Kills Squad" type="number" value={matchData.totalKillsManual} onChange={(v: string) => setMatchData(p => ({ ...p, totalKillsManual: v }))} icon={Sword} />
+                    <div className="card p-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                        <InputField label="Data" type="date" value={matchData.data} onChange={(v: string) => setMatchData(p => ({ ...p, data: v }))} />
+                        <InputField label="Campeonato" value={matchData.campeonato} onChange={(v: string) => setMatchData(p => ({ ...p, campeonato: v }))} placeholder="Ex: LBFF" />
+                        <SelectField label="Mapa" value={matchData.mapa} onChange={(v: string) => setMatchData(p => ({ ...p, mapa: v }))} options={MAPAS} />
+                        <InputField label="Rodada" type="number" value={matchData.rodada} onChange={(v: string) => setMatchData(p => ({ ...p, rodada: v }))} placeholder="No." />
+                        <SelectField label="Colocação" value={matchData.colocacao} onChange={(v: string) => setMatchData(p => ({ ...p, colocacao: v }))} options={COLOCACOES} />
+                        <InputField label="Kills Squad" type="number" value={matchData.totalKillsManual} onChange={(v: string) => setMatchData(p => ({ ...p, totalKillsManual: v }))} />
 
                         <div className="flex flex-col gap-1.5 w-full">
-                            <span className="text-[9px] uppercase tracking-[0.2em] font-black text-[#BEF264]">Total de Pontos</span>
-                            <div className="bg-[#BEF26410] border border-[#BEF26430] rounded-sm py-2 px-3 flex items-center justify-center">
-                                <span className="text-xl font-black text-[#BEF264]">{totalPontosPartida}</span>
+                            <span className="text-[11px] font-semibold text-[var(--text-tertiary)]">Total de Pontos</span>
+                            <div className="badge badge-purple w-full py-4 flex items-center justify-center bg-[var(--accent-muted)] border-[var(--accent-glow)]">
+                                <span className="text-xl font-bold text-[var(--accent-hover)]">{totalPontosPartida}</span>
                             </div>
                         </div>
                     </div>
@@ -321,30 +313,29 @@ export const InputData: React.FC = () => {
                 {/* 2. Squad Container */}
                 <section className="animate-reveal">
                     <div className="flex items-center gap-2 mb-4">
-                        <Users size={14} className="text-[#A855F7]" />
-                        <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A1A1AA]">Integrantes do Squad</h2>
+                        <Users size={16} className="text-[var(--accent)]" />
+                        <h2 className="text-sm font-bold text-[var(--text-primary)]">Integrantes do Squad</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {players.map((player, idx) => (
-                            <div key={idx} className="flex flex-col gap-4 p-5 bg-[#161618] border border-[#2D2D30] rounded-sm transition-all hover:border-[#A855F7]/30">
-                                <div className="pb-3 border-b border-[#2D2D30]">
+                            <div key={idx} className="card p-5 !bg-[var(--bg-surface)] hover:border-[var(--accent-glow)] transition-all">
+                                <div className="pb-4 mb-4 border-b border-[var(--border-subtle)]">
                                     <InputField
                                         label={`Jogador ${idx + 1}`}
-                                        placeholder="NOME DO PLAYER"
+                                        placeholder="Nome do Player"
                                         value={player.nome}
                                         onChange={(v: string) => updatePlayer(idx, 'nome', v)}
-                                        icon={Users}
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <InputField label="Kills" type="number" value={player.kills} onChange={(v: string) => updatePlayer(idx, 'kills', v)} icon={Sword} />
-                                    <InputField label="Assists" type="number" value={player.assistencias} onChange={(v: string) => updatePlayer(idx, 'assistencias', v)} icon={Target} />
-                                    <InputField label="Derrub." type="number" value={player.derrubados} onChange={(v: string) => updatePlayer(idx, 'derrubados', v)} icon={Activity} />
-                                    <InputField label="Dano" type="number" value={player.dano} onChange={(v: string) => updatePlayer(idx, 'dano', v)} icon={Activity} />
-                                    <InputField label="Mortes" type="number" value={player.morte} onChange={(v: string) => updatePlayer(idx, 'morte', v)} icon={XCircle} />
-                                    <InputField label="Reviv." type="number" value={player.revividos} onChange={(v: string) => updatePlayer(idx, 'revividos', v)} icon={HeartPulse} />
+                                    <InputField label="Kills" type="number" value={player.kills} onChange={(v: string) => updatePlayer(idx, 'kills', v)} />
+                                    <InputField label="Assists" type="number" value={player.assistencias} onChange={(v: string) => updatePlayer(idx, 'assistencias', v)} />
+                                    <InputField label="Derrub." type="number" value={player.derrubados} onChange={(v: string) => updatePlayer(idx, 'derrubados', v)} />
+                                    <InputField label="Dano" type="number" value={player.dano} onChange={(v: string) => updatePlayer(idx, 'dano', v)} />
+                                    <InputField label="Mortes" type="number" value={player.morte} onChange={(v: string) => updatePlayer(idx, 'morte', v)} />
+                                    <InputField label="Reviv." type="number" value={player.revividos} onChange={(v: string) => updatePlayer(idx, 'revividos', v)} />
                                 </div>
                             </div>
                         ))}
@@ -356,9 +347,9 @@ export const InputData: React.FC = () => {
                     <button
                         onClick={handleSaveSquad}
                         disabled={loading}
-                        className="w-full max-w-2xl bg-[#BEF264] text-black py-4 px-8 rounded-sm font-black text-sm uppercase tracking-[0.4em] hover:bg-[#A855F7] hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none shadow-[0_0_30px_rgba(190,242,100,0.2)]"
+                        className="btn-primary w-full max-w-2xl py-4 font-bold text-sm tracking-widest text-white rounded-[8px]"
                     >
-                        {loading ? 'PROCESSANDO PROTOCOLO...' : 'SALVAR MÉTRICAS'}
+                        {loading ? 'PROCESSANDO...' : 'SALVAR MÉTRICAS'}
                     </button>
                 </div>
             </main>
@@ -366,26 +357,26 @@ export const InputData: React.FC = () => {
             {/* ⚠️ Reset Modal */}
             {isResetModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="w-full max-w-sm bg-[#0B0B0C] border border-[#2D2D30] rounded-2xl p-8 shadow-2xl animate-reveal">
+                    <div className="w-full max-w-sm bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl animate-reveal">
                         <div className="flex flex-col items-center text-center gap-4">
                             <div className="p-4 rounded-full bg-red-500/10 text-red-500 mb-2">
                                 <AlertTriangle size={32} />
                             </div>
-                            <h3 className="text-xl font-black text-white uppercase tracking-tighter">⚠️ Ação Irreversível</h3>
-                            <p className="text-[11px] text-[#71717A] leading-relaxed uppercase font-bold tracking-tight">
+                            <h3 className="text-lg font-bold text-[var(--text-primary)]">Ação Irreversível</h3>
+                            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                                 Após você aceitar, sua planilha será resetada e você não terá mais acesso aos resultados passados. Deseja continuar?
                             </p>
                             <div className="grid grid-cols-2 gap-3 w-full mt-6">
                                 <button
                                     onClick={() => setIsResetModalOpen(false)}
-                                    className="py-3 px-4 rounded-lg border border-[#2D2D30] text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[#161618] transition-colors"
+                                    className="btn-ghost border border-[var(--border-default)] text-sm font-semibold"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={handleResetData}
                                     disabled={resetLoading}
-                                    className="py-3 px-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                                    className="py-3 px-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-bold hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
                                 >
                                     {resetLoading ? 'LIMPENDO...' : 'CONFIRMAR'}
                                 </button>

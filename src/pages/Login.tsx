@@ -128,12 +128,12 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                     <form onSubmit={handleAuth} className="space-y-6">
                         {activeTab === 'register' && (
                             <div className="space-y-2 group">
-                                <label className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-tertiary)] group-focus-within:text-[var(--accent)] transition-colors">Nome do time</label>
+                                <label className="text-[13px] font-semibold text-[var(--text-secondary)] group-focus-within:text-[var(--accent)] transition-colors">Nome do time</label>
                                 <input
                                     type="text"
                                     value={teamName}
                                     onChange={e => setTeamName(e.target.value)}
-                                    placeholder="Nome da sua equipe"
+                                    placeholder="Ex: LOUD, Team Liquid..."
                                     className="input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)]"
                                     required={activeTab === 'register'}
                                 />
@@ -141,7 +141,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         )}
 
                         <div className="space-y-2 group">
-                            <label className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-tertiary)] group-focus-within:text-[var(--accent)] transition-colors">Email</label>
+                            <label className="text-[13px] font-semibold text-[var(--text-secondary)] group-focus-within:text-[var(--accent)] transition-colors">Email</label>
                             <input
                                 type="email"
                                 value={email}
@@ -153,7 +153,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         </div>
 
                         <div className="space-y-2 group">
-                            <label className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-tertiary)] group-focus-within:text-[var(--accent)] transition-colors">Senha</label>
+                            <label className="text-[13px] font-semibold text-[var(--text-secondary)] group-focus-within:text-[var(--accent)] transition-colors">Senha</label>
                             <input
                                 type="password"
                                 value={password}
@@ -167,7 +167,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="btn-primary w-full py-3.5 flex items-center justify-center font-semibold text-sm rounded-[var(--radius-md)] mt-4"
+                            className="btn-primary w-full py-3.5 flex items-center justify-center font-semibold text-sm rounded-[8px] mt-4"
                         >
                             {loading ? (
                                 <div className="h-5 w-5 border-2 border-white/30 border-t-white animate-spin rounded-full" />
