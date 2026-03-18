@@ -34,13 +34,16 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                     options: { data: { team_name: teamName } }
                 });
                 if (signUpError) throw signUpError;
+                
+                // Nota: O trigger de auth do Supabase geralmente cria o perfil,
+                // mas mantemos a inserção manual se o banco não tiver o trigger configurado.
+                // Alterado de 'profiles' para 'perfis' para consistência.
                 if (data?.user) {
-                    await supabase.from('profiles').insert([{
+                    await supabase.from('perfis').insert([{
                         id: data.user.id,
                         email: email,
-                        team_name: teamName,
-                        creditos: 5,
-                        is_admin: false,
+                        nome: teamName,
+                        usos_restantes: 5
                     }]);
                 }
                 navigate('/');
@@ -57,76 +60,59 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0B0B0C] flex flex-col md:flex-row overflow-hidden font-['Inter',sans-serif]">
+        <div className="min-h-screen bg-[var(--bg-main)] flex flex-col md:flex-row overflow-hidden font-['Inter',sans-serif]">
 
-            {/* Background Narrative Section - Fragmented Depth */}
-            <div className="hidden md:flex md:w-[65%] relative items-center justify-center p-20 overflow-hidden">
-                <div className="absolute inset-0 opacity-20 pointer-events-none"
-                    style={{ backgroundImage: 'radial-gradient(#2D2D30 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            {/* Background Narrative Section */}
+            <div className="hidden md:flex md:w-[60%] relative items-center justify-center p-20 overflow-hidden border-r border-[var(--border-subtle)]">
+                <div className="absolute inset-0 opacity-10 pointer-events-none"
+                    style={{ backgroundImage: 'radial-gradient(var(--border-strong) 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
 
                 <div className="relative z-10 animate-reveal">
-                    <h1 className="text-[14vw] font-black tracking-tighter leading-[0.8] mix-blend-difference text-white/5 select-none absolute -left-20 -top-20">
-                        CELO<br />TRACKER
-                    </h1>
-
                     <div className="relative">
                         <img
                             src="/image_10.png"
                             alt="Celo Logo"
-                            className="w-80 h-auto grayscale brightness-125 transition-all duration-700 hover:grayscale-0 hover:scale-105 cursor-pointer"
+                            className="w-64 h-auto transition-all duration-700 hover:scale-105"
                         />
                         <div className="mt-12 space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="h-[1px] w-12 bg-[#A855F7]" />
-                                <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#A855F7]">Advanced Analytics System</span>
-                            </div>
-                            <h2 className="text-5xl font-black text-white leading-tight">Métricas Precisas.<br />Domínio Absoluto.</h2>
-                            <p className="text-zinc-500 max-w-md text-lg leading-relaxed font-medium">
+                            <h2 className="text-5xl font-extrabold text-[var(--text-primary)] leading-tight tracking-tight">
+                                Métricas Precisas.<br />Domínio Absoluto.
+                            </h2>
+                            <p className="text-[var(--text-secondary)] max-w-md text-lg leading-relaxed font-medium">
                                 Operando no núcleo do cenário competitivo para entregar inteligência bruta e vantagem estratégica.
                             </p>
                         </div>
                     </div>
                 </div>
-
-                <div className="absolute bottom-12 left-12 flex gap-8">
-                    {[
-                        { label: 'Uptime', val: '99.9%' },
-                        { label: 'Latency', val: '12ms' },
-                        { label: 'Signal', val: 'Encrypted' }
-                    ].map((stat, i) => (
-                        <div key={i} className="flex flex-col gap-1">
-                            <span className="text-[9px] uppercase tracking-widest text-zinc-600 font-bold">{stat.label}</span>
-                            <span className="text-xs font-mono text-zinc-400">{stat.val}</span>
-                        </div>
-                    ))}
-                </div>
             </div>
 
-            {/* Content Section - Asymmetric Alignment */}
-            <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-16 bg-[#161618] border-l border-[#2D2D30] relative z-20">
-                <div className="w-full max-w-[340px] animate-reveal" style={{ animationDelay: '0.2s' }}>
+            {/* Content Section */}
+            <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-16 bg-[var(--bg-surface)] relative z-20">
+                <div className="w-full max-w-[360px] animate-reveal">
 
-                    <header className="mb-12">
-                        <div className="md:hidden flex justify-center mb-8">
-                            <img src="/image_10.png" alt="Logo" className="h-16 w-auto" />
+                    <header className="mb-10">
+                        <div className="md:hidden flex justify-center mb-10">
+                            <img src="/image_10.png" alt="Logo" className="h-20 w-auto" />
                         </div>
-                        <h3 className="text-2xl font-black text-white tracking-tight mb-2">
-                            {activeTab === 'login' ? 'Identificação Necessária' : 'Codificar Nova Conta'}
+                        <h3 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
+                            {activeTab === 'login' ? 'Entrar' : 'Criar conta'}
                         </h3>
-                        <p className="text-zinc-500 text-sm font-medium">Acesse a central de comando.</p>
+                        <p className="text-[var(--text-secondary)] text-sm font-medium">
+                            {activeTab === 'login' ? 'Bem-vindo ao Celo Tracker' : 'Crie sua conta gratuitamente'}
+                        </p>
                     </header>
 
-                    {/* Navigation Tab Brutalism */}
-                    <div className="flex gap-2 mb-10 border-b border-[#2D2D30] pb-2">
+                    {/* Navigation Tab */}
+                    <div className="flex gap-4 mb-10 border-b border-[var(--border-subtle)] pb-2 text-label">
                         {[
-                            { id: 'login', label: 'Login', path: '/login' },
+                            { id: 'login', label: 'Entrar', path: '/login' },
                             { id: 'register', label: 'Cadastro', path: '/register' }
                         ].map(tab => (
                             <Link
                                 key={tab.id}
                                 to={tab.path}
                                 onClick={() => { setActiveTab(tab.id as any); setError(null); }}
-                                className={`text-[10px] uppercase tracking-[0.2em] font-black transition-all px-2 py-1 ${activeTab === tab.id ? 'text-[#A855F7] border-b-2 border-[#A855F7]' : 'text-zinc-600 hover:text-white'}`}
+                                className={`transition-all pb-2 ${activeTab === tab.id ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
                                 style={{ textDecoration: 'none' }}
                             >
                                 {tab.label}
@@ -135,24 +121,24 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                     </div>
 
                     {error && (
-                        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-sm flex gap-3 items-start animate-reveal">
-                            <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
-                            <span className="text-red-500 text-xs font-bold leading-relaxed">{error}</span>
+                        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-md flex gap-3 items-start animate-reveal">
+                            <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
+                            <span className="text-red-500 text-sm font-medium leading-relaxed">{error}</span>
                         </div>
                     )}
 
                     <form onSubmit={handleAuth} className="space-y-6">
                         {activeTab === 'register' && (
                             <div className="space-y-2 group">
-                                <label className="text-[9px] uppercase tracking-widest font-black text-zinc-500 group-focus-within:text-[#A855F7] transition-colors">Nome da Unidade / Time</label>
+                                <label className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-tertiary)] group-focus-within:text-[var(--accent)] transition-colors">Nome do time</label>
                                 <div className="relative">
-                                    <Shield size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" />
+                                    <Shield size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
                                     <input
                                         type="text"
                                         value={teamName}
                                         onChange={e => setTeamName(e.target.value)}
-                                        placeholder="Ex: LOUD ALPHA"
-                                        className="w-full bg-[#161618] border border-[#2D2D30] rounded-sm py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#A855F7] transition-all placeholder:text-zinc-700 placeholder:font-bold"
+                                        placeholder="Nome da sua equipe"
+                                        className="input-base pl-12"
                                         required={activeTab === 'register'}
                                     />
                                 </div>
@@ -160,30 +146,30 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         )}
 
                         <div className="space-y-2 group">
-                            <label className="text-[9px] uppercase tracking-widest font-black text-zinc-500 group-focus-within:text-[#A855F7] transition-colors">Credential Email</label>
+                            <label className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-tertiary)] group-focus-within:text-[var(--accent)] transition-colors">Email</label>
                             <div className="relative">
-                                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" />
+                                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    placeholder="agente@celo.io"
-                                    className="w-full bg-[#161618] border border-[#2D2D30] rounded-sm py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#A855F7] transition-all placeholder:text-zinc-700 placeholder:font-bold"
+                                    placeholder="seu@email.com"
+                                    className="input-base pl-12"
                                     required
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2 group">
-                            <label className="text-[9px] uppercase tracking-widest font-black text-zinc-500 group-focus-within:text-[#A855F7] transition-colors">Access Override / Senha</label>
+                            <label className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-tertiary)] group-focus-within:text-[var(--accent)] transition-colors">Senha</label>
                             <div className="relative">
-                                <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" />
+                                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
                                 <input
                                     type="password"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
-                                    placeholder="••••••••••••"
-                                    className="w-full bg-[#161618] border border-[#2D2D30] rounded-sm py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-[#A855F7] transition-all placeholder:text-zinc-700 placeholder:font-bold"
+                                    placeholder="••••••••"
+                                    className="input-base pl-12"
                                     required
                                 />
                             </div>
@@ -192,26 +178,18 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-[#BEF264] text-black py-4 rounded-sm font-black text-[11px] uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-[#A855F7] hover:text-white transition-all duration-300 disabled:opacity-50 mt-4 overflow-hidden relative group"
+                            className="btn-primary w-full py-4 flex items-center justify-center gap-2 mt-4"
                         >
-                            <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[-20deg] -translate-x-full group-hover:translate-x-[300%] transition-transform duration-700" />
                             {loading ? (
-                                <div className="h-4 w-4 border-2 border-black/30 border-t-black animate-spin rounded-full" />
+                                <div className="h-5 w-5 border-2 border-white/30 border-t-white animate-spin rounded-full" />
                             ) : (
                                 <>
-                                    <span>{activeTab === 'login' ? 'Conectar Filtro' : 'Inicializar Protocolo'}</span>
-                                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                    <span>{activeTab === 'login' ? 'Entrar' : 'Criar conta'}</span>
+                                    <ArrowRight size={16} />
                                 </>
                             )}
                         </button>
                     </form>
-
-                    <footer className="mt-16 pt-8 border-t border-[#2D2D30]">
-                        <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest text-center leading-relaxed">
-                            Celo Tracker v2.5.4 // <br className="md:hidden" />
-                            Authorized Personnel Only
-                        </p>
-                    </footer>
                 </div>
             </div>
         </div>
