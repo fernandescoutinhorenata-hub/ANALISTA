@@ -884,7 +884,7 @@ export const Dashboard: React.FC = () => {
                                                             </div>
                                                             <div className="flex gap-2">
                                                                 <span className="badge badge-purple">Dano</span>
-                                                                <span className="badge badge-green">Abates</span>
+                                                                <span className="badge badge-purple">Abates</span>
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-3 gap-6">
