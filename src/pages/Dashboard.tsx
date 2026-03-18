@@ -612,15 +612,7 @@ export const Dashboard: React.FC = () => {
             {/* ── Content ── */}
             <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[var(--bg-main)]">
 
-                {/* 🚀 Beta Banner */}
-                <div className="py-2 px-4 text-center border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-                    <span className="text-label opacity-50 mr-2">Status:</span>
-                    <span className="text-label text-[var(--accent)] mr-4">v2.0 Beta Protocol</span>
-                    <span className="text-label opacity-50 mr-2">Feedback:</span>
-                    <a href="https://instagram.com/celocoach" target="_blank" rel="noreferrer" className="text-label text-[var(--accent)] hover:text-[var(--text-primary)] transition-colors">
-                        @CeloCoach
-                    </a>
-                </div>
+
 
 
                 {/* Header / Top Bar */}
@@ -798,8 +790,8 @@ export const Dashboard: React.FC = () => {
                                                 <Card className="lg:col-span-2">
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div>
-                                                            <h4 className="text-heading text-sm">Fluxo de Performance</h4>
-                                                            <p className="text-label mt-1">Consolidado de Kills / Partida</p>
+                                                            <h4 className="text-heading text-sm font-bold">Fluxo de performance</h4>
+                                                            <p className="text-label mt-1">Consolidado de kills por partida</p>
                                                         </div>
                                                         <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
                                                             <TrendingUp size={16} />
@@ -827,8 +819,8 @@ export const Dashboard: React.FC = () => {
                                                 <Card>
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div>
-                                                            <h4 className="text-heading text-sm">Domínio de Terreno</h4>
-                                                            <p className="text-label mt-1">Distribuição de Pontos</p>
+                                                            <h4 className="text-heading text-sm font-bold">Domínio de terreno</h4>
+                                                            <p className="text-label mt-1">Distribuição de pontos</p>
                                                         </div>
                                                         <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
                                                             <Map size={16} />
@@ -868,11 +860,8 @@ export const Dashboard: React.FC = () => {
                                             {/* MVP & Squad Metrics */}
                                             {filteredPlayerRows.length > 0 && (
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                                    <div className="card p-6 bg-gradient-to-br from-[var(--accent-muted)] to-transparent border-[var(--accent)]/20 relative overflow-hidden">
-                                                        <div className="absolute -right-4 -top-4 opacity-10">
-                                                            <Trophy size={100} className="text-[var(--accent)]" />
-                                                        </div>
-                                                        <p className="badge badge-purple mb-4">Destaque da Última Partida</p>
+                                                    <div className="card p-6 !bg-[var(--bg-card)]">
+                                                        <p className="badge badge-purple mb-4">Destaque da última partida</p>
                                                         <h4 className="text-heading text-2xl uppercase">
                                                             {data.playerMetrics.lastMatchMVP?.player || 'Aguardando...'}
                                                         </h4>
@@ -890,7 +879,7 @@ export const Dashboard: React.FC = () => {
                                                     <Card className="md:col-span-2">
                                                         <div className="flex items-center justify-between mb-8">
                                                             <div>
-                                                                <h4 className="text-heading text-sm">Médias do Squad</h4>
+                                                                <h4 className="text-heading text-sm font-bold">Médias do squad</h4>
                                                                 <p className="text-label mt-1">Análise consolidada por queda</p>
                                                             </div>
                                                             <div className="flex gap-2">
@@ -900,14 +889,14 @@ export const Dashboard: React.FC = () => {
                                                         </div>
                                                         <div className="grid grid-cols-3 gap-6">
                                                             <div className="space-y-2">
-                                                                <span className="text-label">Dano Médio</span>
+                                                                <span className="text-label">Dano médio</span>
                                                                 <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.avgDamage}</div>
                                                                 <div className="w-full h-1 bg-[var(--bg-surface)] rounded-full overflow-hidden">
                                                                     <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.min(100, (data.squadMetrics.avgDamage / 2500) * 100)}%` }} />
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-2">
-                                                                <span className="text-label">Kills Squad</span>
+                                                                <span className="text-label">Kills squad</span>
                                                                 <div className="text-heading text-2xl text-[var(--accent-green)]">{data.squadMetrics.totalKills}</div>
                                                                 <div className="w-full h-1 bg-[var(--bg-surface)] rounded-full overflow-hidden">
                                                                     <div className="h-full bg-[var(--accent-green)]" style={{ width: `${Math.min(100, (data.squadMetrics.totalKills / 40) * 100)}%` }} />
