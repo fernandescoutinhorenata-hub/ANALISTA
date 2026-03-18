@@ -1046,14 +1046,18 @@ export const Dashboard: React.FC = () => {
                                                     <div className="h-80">
                                                         <ResponsiveContainer width="100%" height="100%">
                                                             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                                                                <PolarGrid stroke="var(--border-subtle)" />
-                                                                <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-tertiary)', fontSize: 10 }} />
+                                                                <PolarGrid stroke="#27272D" />
+                                                                <PolarAngleAxis 
+                                                                    dataKey="subject" 
+                                                                    tick={{ fill: '#A1A1AA', fontSize: 11, fontWeight: 500 }} 
+                                                                />
                                                                 <Radar
                                                                     name={selectedPlayer}
-                                                                    dataKey="A"
-                                                                    stroke="var(--accent)"
-                                                                    fill="var(--accent)"
-                                                                    fillOpacity={0.5}
+                                                                    dataKey="value"
+                                                                    stroke="#9333EA"
+                                                                    fill="#9333EA"
+                                                                    fillOpacity={0.15}
+                                                                    strokeWidth={1.5}
                                                                 />
                                                                 <Tooltip contentStyle={neonTooltipStyle} />
                                                             </RadarChart>
