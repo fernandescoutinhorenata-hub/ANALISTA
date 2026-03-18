@@ -366,28 +366,31 @@ export const Dashboard: React.FC = () => {
 
     const playerChartData = useMemo(() => {
         if (filteredPlayerRows.length === 0) return [];
-        interface PlayerAgg { name: string; kills: number; damage: number; assists: number; deaths: number; derrubados: number; games: number; }
+        interface PlayerAgg { name: string; kills: number; damage: number; assists: number; deaths: number; derrubados: number; ressurgimentos: number; games: number; }
         const agg: Record<string, PlayerAgg> = {};
         const rows = selectedPlayer === 'Todos'
             ? filteredPlayerRows
             : filteredPlayerRows.filter((p: any) => p.Player === selectedPlayer);
         rows.forEach((p: any) => {
             if (!p.Player) return;
-            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0, games: 0 };
+            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0, ressurgimentos: 0, games: 0 };
             agg[p.Player].kills += Number(p.Kill) || 0;
             agg[p.Player].damage += Number(p['Dano causado']) || 0;
             agg[p.Player].assists += Number(p.Assistencia) || 0;
             agg[p.Player].deaths += Number(p.Morte) || 0;
             agg[p.Player].derrubados += Number(p['Derrubados']) || 0;
+            agg[p.Player].ressurgimentos += Number(p['Ressurgimento']) || 0;
             agg[p.Player].games += 1;
         });
         return Object.values(agg)
             .map((p: PlayerAgg) => ({
                 name: p.name,
-                avgKills: p.games > 0 ? parseFloat((p.kills / p.games).toFixed(2)) : 0,
-                avgDamage: p.games > 0 ? Math.round(p.damage / p.games) : 0,
-                avgAssists: p.games > 0 ? parseFloat((p.assists / p.games).toFixed(2)) : 0,
-                avgDerrubados: p.games > 0 ? parseFloat((p.derrubados / p.games).toFixed(2)) : 0,
+                avgKills: p.games > 0 ? parseFloat((p.kills / p.games).toFixed(1)) : 0,
+                avgDamage: p.games > 0 ? parseFloat((p.damage / p.games).toFixed(1)) : 0,
+                avgAssists: p.games > 0 ? parseFloat((p.assists / p.games).toFixed(1)) : 0,
+                avgDerrubados: p.games > 0 ? parseFloat((p.derrubados / p.games).toFixed(1)) : 0,
+                avgDeaths: p.games > 0 ? parseFloat((p.deaths / p.games).toFixed(1)) : 0,
+                avgRessurgimentos: p.games > 0 ? parseFloat((p.ressurgimentos / p.games).toFixed(1)) : 0,
                 totalKills: p.kills,
                 totalDamage: p.damage,
                 totalDerrubados: p.derrubados,
@@ -403,19 +406,13 @@ export const Dashboard: React.FC = () => {
         const p = playerChartData[0];
         if (!p) return [];
 
-        // Agressividade = kill/dano normalizado (0-10)
-        const agressividade = Math.min(10,
-            ((p.avgKills / 5) * 5) + ((p.avgDamage / 1500) * 5)
-        ).toFixed(1);
-        // Sobrevivência = inverso do KD (mortes) → alto KD = alta sobrevivência
-        const sobrevivencia = Math.min(10, p.kd * 2.5).toFixed(1);
-        // Suporte = assistências por jogo (0-10)
-        const suporte = Math.min(10, p.avgAssists * 2.5).toFixed(1);
-
         return [
-            { metric: 'Agressividade', value: parseFloat(agressividade), fullMark: 10, subject: 'Agressividade' },
-            { metric: 'Sobrevivência', value: parseFloat(sobrevivencia), fullMark: 10, subject: 'Sobrevivência' },
-            { metric: 'Suporte', value: parseFloat(suporte), fullMark: 10, subject: 'Suporte' },
+            { subject: 'Abates', value: p.avgKills },
+            { subject: 'Dano', value: parseFloat((p.avgDamage / 1000).toFixed(1)) },
+            { subject: 'Assistências', value: p.avgAssists },
+            { subject: 'Sobrevivência', value: Math.max(0, parseFloat((10 - (p.avgDeaths || 0)).toFixed(1))) },
+            { subject: 'Suporte', value: p.avgRessurgimentos },
+            { subject: 'Derrubadas', value: p.avgDerrubados },
         ];
     }, [playerChartData, selectedPlayer, data]);
 
@@ -1049,7 +1046,7 @@ export const Dashboard: React.FC = () => {
                                                                 <PolarGrid stroke="#27272D" />
                                                                 <PolarAngleAxis 
                                                                     dataKey="subject" 
-                                                                    tick={{ fill: '#A1A1AA', fontSize: 11, fontWeight: 500 }} 
+                                                                    tick={{ fill: '#A1A1AA', fontSize: 11 }} 
                                                                 />
                                                                 <Radar
                                                                     name={selectedPlayer}
@@ -1059,7 +1056,15 @@ export const Dashboard: React.FC = () => {
                                                                     fillOpacity={0.15}
                                                                     strokeWidth={1.5}
                                                                 />
-                                                                <Tooltip contentStyle={neonTooltipStyle} />
+                                                                <Tooltip 
+                                                                    contentStyle={{
+                                                                        backgroundColor: 'var(--bg-card)',
+                                                                        border: '1px solid var(--border-default)',
+                                                                        borderRadius: '8px',
+                                                                        color: 'var(--text-primary)'
+                                                                    }}
+                                                                    itemStyle={{ color: 'var(--text-primary)' }}
+                                                                />
                                                             </RadarChart>
                                                         </ResponsiveContainer>
                                                     </div>
