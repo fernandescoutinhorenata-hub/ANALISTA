@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
-    Wallet, Users, Activity
+    Wallet
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,10 +12,10 @@ const MAPAS = ['BERMUDA', 'PURGATÓRIO', 'KALAHARI', 'ALPINE', 'NOVA TERRA', 'SO
 const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
 // ─── Input Técnico ──────────────────────────────────────────────────────────
-const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, required, placeholder }) => {
+const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, required, placeholder, className = "rounded-lg" }) => {
     return (
         <div className="flex flex-col gap-1.5 animate-reveal w-full">
-            <label htmlFor={id} className="text-[11px] font-semibold text-[var(--text-secondary)] flex items-center gap-1.5">
+            <label htmlFor={id} className="text-[11px] font-medium text-[var(--text-secondary)] flex items-center gap-1.5">
                 {label} {required && <span className="text-rose-500">*</span>}
             </label>
             <div className="relative">
@@ -30,7 +30,7 @@ const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, 
                         if (type === 'number' && parseInt(val) < 0) return;
                         onChange(val);
                     }}
-                    className="input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)]"
+                    className={`input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)] ${className}`}
                 />
             </div>
         </div>
@@ -38,17 +38,17 @@ const InputField: React.FC<any> = ({ label, id, type = 'text', value, onChange, 
 };
 
 // ─── Select Técnico ──────────────────────────────────────────────────────────
-const SelectField: React.FC<any> = ({ label, id, value, onChange, options, required }) => {
+const SelectField: React.FC<any> = ({ label, id, value, onChange, options, required, className = "rounded-lg" }) => {
     return (
         <div className="flex flex-col gap-1.5 animate-reveal w-full">
-            <label htmlFor={id} className="text-[11px] font-semibold text-[var(--text-secondary)] flex items-center gap-1.5">
+            <label htmlFor={id} className="text-[11px] font-medium text-[var(--text-secondary)] flex items-center gap-1.5">
                 {label} {required && <span className="text-rose-500">*</span>}
             </label>
             <select
                 id={id}
                 value={value}
                 onChange={e => onChange(e.target.value)}
-                className="input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)] appearance-none"
+                className={`input-base px-4 border-[var(--border-default)] bg-[var(--bg-surface)] appearance-none ${className}`}
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2371717A' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.6rem' }}
             >
                 <option value="">Selecionar</option>
@@ -64,9 +64,9 @@ const Toast: React.FC<any> = ({ message, type }) => {
         error: { border: '#F43F5E30', color: '#F43F5E', Icon: XCircle },
     }[type as 'success' | 'error' || 'success'];
     return (
-        <div className="fixed top-6 right-6 z-[9999] flex items-center gap-3 px-5 py-3 bg-[#161618] border rounded-sm animate-reveal shadow-2xl" style={{ borderColor: config.border }}>
+        <div className="fixed top-6 right-6 z-[9999] flex items-center gap-3 px-5 py-3 bg-[var(--bg-surface)] border rounded-md animate-reveal shadow-2xl" style={{ borderColor: config.border }}>
             <config.Icon size={16} color={config.color} />
-            <span className="text-white text-[10px] font-black uppercase tracking-widest">{message}</span>
+            <span className="text-[var(--text-primary)] text-xs font-semibold">{message}</span>
         </div>
     );
 };
@@ -264,22 +264,22 @@ export const InputData: React.FC = () => {
                             <ChevronLeft size={18} className="text-[var(--text-secondary)]" />
                         </button>
                         <div className="flex flex-col">
-                            <span className="text-sm font-bold text-[var(--text-primary)]">Inserir Dados da Partida</span>
-                            <span className="text-[11px] font-medium text-[var(--text-tertiary)]">Preencha os dados do squad</span>
+                            <h1 className="text-sm font-bold text-[var(--text-primary)]">Inserir Partida</h1>
+                            <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Preencha os dados do squad</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setIsResetModalOpen(true)}
-                            className="btn-ghost flex items-center gap-2 px-3 py-1.5"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-transparent border border-[var(--border-default)] rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all"
                         >
-                            <Trash2 size={14} className="text-red-500/70" />
-                            <span className="text-xs font-semibold text-red-500/70">Reiniciar Tabela</span>
+                            <Trash2 size={14} />
+                            <span className="text-xs font-semibold">Reiniciar Tabela</span>
                         </button>
 
-                        <div className="badge border border-[var(--border-default)] bg-[var(--bg-hover)] text-[var(--text-secondary)] py-1.5 px-3">
-                            <Wallet size={12} className="text-[var(--accent)] mr-2" />
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-hover)] border border-[var(--border-subtle)] rounded-md text-[var(--text-secondary)]">
+                            <Wallet size={12} className="text-[var(--accent)]" />
                             <span className="text-[10px] font-bold">{creditos ?? '--'} CRÉDITOS</span>
                         </div>
                     </div>
@@ -290,20 +290,19 @@ export const InputData: React.FC = () => {
                 {/* 1. Dados da Partida */}
                 <section className="animate-reveal">
                     <div className="flex items-center gap-2 mb-4">
-                        <Activity size={16} className="text-[var(--accent)]" />
-                        <h2 className="text-sm font-bold text-[var(--text-primary)]">Dados da Partida</h2>
+                        <h2 className="text-sm font-bold text-[var(--text-primary)]">Dados da partida</h2>
                     </div>
                     <div className="card p-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                        <InputField label="Data" type="date" value={matchData.data} onChange={(v: string) => setMatchData(p => ({ ...p, data: v }))} />
-                        <InputField label="Campeonato" value={matchData.campeonato} onChange={(v: string) => setMatchData(p => ({ ...p, campeonato: v }))} placeholder="Ex: LBFF" />
-                        <SelectField label="Mapa" value={matchData.mapa} onChange={(v: string) => setMatchData(p => ({ ...p, mapa: v }))} options={MAPAS} />
-                        <InputField label="Rodada" type="number" value={matchData.rodada} onChange={(v: string) => setMatchData(p => ({ ...p, rodada: v }))} placeholder="No." />
-                        <SelectField label="Colocação" value={matchData.colocacao} onChange={(v: string) => setMatchData(p => ({ ...p, colocacao: v }))} options={COLOCACOES} />
-                        <InputField label="Kills Squad" type="number" value={matchData.totalKillsManual} onChange={(v: string) => setMatchData(p => ({ ...p, totalKillsManual: v }))} />
+                        <InputField label="Data" type="date" value={matchData.data} onChange={(v: string) => setMatchData(p => ({ ...p, data: v }))} className="rounded-lg" />
+                        <InputField label="Campeonato" value={matchData.campeonato} onChange={(v: string) => setMatchData(p => ({ ...p, campeonato: v }))} placeholder="Ex: LBFF" className="rounded-lg" />
+                        <SelectField label="Mapa" value={matchData.mapa} onChange={(v: string) => setMatchData(p => ({ ...p, mapa: v }))} options={MAPAS} className="rounded-lg" />
+                        <InputField label="Rodada" type="number" value={matchData.rodada} onChange={(v: string) => setMatchData(p => ({ ...p, rodada: v }))} placeholder="No." className="rounded-lg" />
+                        <SelectField label="Colocação" value={matchData.colocacao} onChange={(v: string) => setMatchData(p => ({ ...p, colocacao: v }))} options={COLOCACOES} className="rounded-lg" />
+                        <InputField label="Kills Squad" type="number" value={matchData.totalKillsManual} onChange={(v: string) => setMatchData(p => ({ ...p, totalKillsManual: v }))} className="rounded-lg" />
 
                         <div className="flex flex-col gap-1.5 w-full">
-                            <span className="text-[11px] font-semibold text-[var(--text-tertiary)]">Total de Pontos</span>
-                            <div className="badge badge-purple w-full py-4 flex items-center justify-center bg-[var(--accent-muted)] border-[var(--accent-glow)]">
+                            <span className="text-[11px] font-medium text-[var(--text-secondary)]">Total de Pontos</span>
+                            <div className="w-full h-[38px] flex items-center justify-center bg-[var(--accent-muted)] rounded-lg">
                                 <span className="text-xl font-bold text-[var(--accent-hover)]">{totalPontosPartida}</span>
                             </div>
                         </div>
@@ -313,29 +312,30 @@ export const InputData: React.FC = () => {
                 {/* 2. Squad Container */}
                 <section className="animate-reveal">
                     <div className="flex items-center gap-2 mb-4">
-                        <Users size={16} className="text-[var(--accent)]" />
-                        <h2 className="text-sm font-bold text-[var(--text-primary)]">Integrantes do Squad</h2>
+                        <h2 className="text-sm font-bold text-[var(--text-primary)]">Integrantes do squad</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {players.map((player, idx) => (
-                            <div key={idx} className="card p-5 !bg-[var(--bg-surface)] hover:border-[var(--accent-glow)] transition-all">
+                            <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 hover:border-[var(--accent-glow)] transition-all">
                                 <div className="pb-4 mb-4 border-b border-[var(--border-subtle)]">
                                     <InputField
                                         label={`Jogador ${idx + 1}`}
                                         placeholder="Nome do Player"
                                         value={player.nome}
                                         onChange={(v: string) => updatePlayer(idx, 'nome', v)}
+                                        className="rounded-md"
                                     />
+                                    <span className="text-[11px] text-[var(--text-tertiary)] font-medium mt-1 inline-block">Métricas de partida</span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <InputField label="Kills" type="number" value={player.kills} onChange={(v: string) => updatePlayer(idx, 'kills', v)} />
-                                    <InputField label="Assists" type="number" value={player.assistencias} onChange={(v: string) => updatePlayer(idx, 'assistencias', v)} />
-                                    <InputField label="Derrub." type="number" value={player.derrubados} onChange={(v: string) => updatePlayer(idx, 'derrubados', v)} />
-                                    <InputField label="Dano" type="number" value={player.dano} onChange={(v: string) => updatePlayer(idx, 'dano', v)} />
-                                    <InputField label="Mortes" type="number" value={player.morte} onChange={(v: string) => updatePlayer(idx, 'morte', v)} />
-                                    <InputField label="Reviv." type="number" value={player.revividos} onChange={(v: string) => updatePlayer(idx, 'revividos', v)} />
+                                    <InputField label="Kills" type="number" value={player.kills} onChange={(v: string) => updatePlayer(idx, 'kills', v)} className="rounded-[6px]" />
+                                    <InputField label="Assists" type="number" value={player.assistencias} onChange={(v: string) => updatePlayer(idx, 'assistencias', v)} className="rounded-[6px]" />
+                                    <InputField label="Derrub." type="number" value={player.derrubados} onChange={(v: string) => updatePlayer(idx, 'derrubados', v)} className="rounded-[6px]" />
+                                    <InputField label="Dano" type="number" value={player.dano} onChange={(v: string) => updatePlayer(idx, 'dano', v)} className="rounded-[6px]" />
+                                    <InputField label="Mortes" type="number" value={player.morte} onChange={(v: string) => updatePlayer(idx, 'morte', v)} className="rounded-[6px]" />
+                                    <InputField label="Reviv." type="number" value={player.revividos} onChange={(v: string) => updatePlayer(idx, 'revividos', v)} className="rounded-[6px]" />
                                 </div>
                             </div>
                         ))}
@@ -347,7 +347,7 @@ export const InputData: React.FC = () => {
                     <button
                         onClick={handleSaveSquad}
                         disabled={loading}
-                        className="btn-primary w-full max-w-2xl py-4 font-bold text-sm tracking-widest text-white rounded-[8px]"
+                        className="w-full max-w-2xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-semibold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10"
                     >
                         {loading ? 'PROCESSANDO...' : 'SALVAR MÉTRICAS'}
                     </button>
@@ -369,14 +369,14 @@ export const InputData: React.FC = () => {
                             <div className="grid grid-cols-2 gap-3 w-full mt-6">
                                 <button
                                     onClick={() => setIsResetModalOpen(false)}
-                                    className="btn-ghost border border-[var(--border-default)] text-sm font-semibold"
+                                    className="px-4 py-2 border border-[var(--border-default)] rounded-md text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={handleResetData}
                                     disabled={resetLoading}
-                                    className="py-3 px-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-bold hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                                    className="py-2 px-4 rounded-md bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-bold hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
                                 >
                                     {resetLoading ? 'LIMPENDO...' : 'CONFIRMAR'}
                                 </button>
