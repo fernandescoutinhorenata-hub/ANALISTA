@@ -1125,13 +1125,13 @@ export const Dashboard: React.FC = () => {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <h3 className="text-heading text-xl">Cronologia de Partidas</h3>
-                                            <p className="text-label mt-1">Logs permanentes e histórico do sistema</p>
+                                            <p className="text-label mt-1">Histórico completo de partidas registradas</p>
                                         </div>
                                     </div>
                                     
-                                    <Card className="overflow-hidden p-0!">
+                                    <Card className="overflow-hidden p-0">
                                         <div className="overflow-x-auto">
-                                            {!data || data.rawData.length === 0 ? (
+                                            {(!data || data.rawData.length === 0) ? (
                                                 <div className="flex flex-col items-center justify-center p-16 text-center">
                                                     <AlertCircle size={32} className="mb-4 text-[var(--text-tertiary)] opacity-20" />
                                                     <p className="text-label uppercase tracking-widest">Nenhum dado encontrado</p>
