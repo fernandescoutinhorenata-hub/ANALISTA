@@ -891,22 +891,22 @@ export const Dashboard: React.FC = () => {
                                                             <div className="space-y-2">
                                                                 <span className="text-label">Dano médio</span>
                                                                 <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.avgDamage}</div>
-                                                                <div className="w-full h-1 bg-[var(--bg-surface)] rounded-full overflow-hidden">
+                                                                <div className="w-full h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
                                                                     <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.min(100, (data.squadMetrics.avgDamage / 2500) * 100)}%` }} />
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-2">
                                                                 <span className="text-label">Kills squad</span>
-                                                                <div className="text-heading text-2xl text-[var(--accent-green)]">{data.squadMetrics.totalKills}</div>
-                                                                <div className="w-full h-1 bg-[var(--bg-surface)] rounded-full overflow-hidden">
-                                                                    <div className="h-full bg-[var(--accent-green)]" style={{ width: `${Math.min(100, (data.squadMetrics.totalKills / 40) * 100)}%` }} />
+                                                                <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.totalKills}</div>
+                                                                <div className="w-full h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
+                                                                    <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.min(100, (data.squadMetrics.totalKills / 40) * 100)}%` }} />
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-2">
                                                                 <span className="text-label">Sobrevivência</span>
-                                                                <div className="text-heading text-2xl">{data.squadMetrics.survivalRate}<span className="text-xs text-[var(--text-tertiary)] ml-1">mortes/jogo</span></div>
-                                                                <div className="w-full h-1 bg-[var(--bg-surface)] rounded-full overflow-hidden">
-                                                                    <div className="h-full bg-[var(--accent-blue)]" style={{ width: `${Math.max(10, 100 - (data.squadMetrics.survivalRate * 20))}%` }} />
+                                                                <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.survivalRate}<span className="text-xs text-[var(--text-tertiary)] ml-1">mortes/jogo</span></div>
+                                                                <div className="w-full h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
+                                                                    <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.max(10, 100 - (data.squadMetrics.survivalRate * 20))}%` }} />
                                                                 </div>
                                                             </div>
                                                         </div>
