@@ -6,8 +6,10 @@ import { InputData } from './pages/InputData';
 // import { SharedDashboard } from './pages/SharedDashboard';
 import { Maintenance } from './pages/Maintenance';
 import { Planos } from './pages/Planos';
+import { AdminPanel } from './pages/AdminPanel';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute } from './components/AdminRoute';
 function App() {
   return (
     <AuthProvider>
@@ -43,6 +45,15 @@ function App() {
               <ProtectedRoute>
                 <Planos />
               </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/celo-master" 
+            element={
+              <AdminRoute>
+                <AdminPanel />
+              </AdminRoute>
             } 
           />
 
