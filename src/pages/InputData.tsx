@@ -8,7 +8,6 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { verificarDesbloqueioConquistas } from '../utils/conquistas';
 import { readScreenshot } from '../lib/vision';
-import { parseScreenshot } from '../utils/ocr-processing';
 
 const MAPAS = ['BERMUDA', 'PURGATÓRIO', 'KALAHARI', 'ALPINE', 'NOVA TERRA', 'SOLARA'];
 const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
@@ -136,7 +135,7 @@ export const InputData: React.FC = () => {
         setPlayers(newPlayers);
     };
 
-    // ─── OCR via Google Vision ────────────────────────────────────────────────
+    // ─── OCR via Claude Vision (Anthropic) ─────────────────────────────────────
     const handleScreenshot = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -160,16 +159,25 @@ export const InputData: React.FC = () => {
                 reader.readAsDataURL(file);
             });
 
-            // Chamar Google Vision API
-            const rawText = await readScreenshot(base64);
+            // Extrair mediaType do arquivo (ex: "image/jpeg", "image/png")
+            const mediaType = file.type || 'image/jpeg';
 
-            if (!rawText) {
-                showToast('Não foi possível extrair texto da imagem.', 'error');
+            // Chamar Claude Vision API
+            const rawJson = await readScreenshot(base64, mediaType);
+
+            if (!rawJson || rawJson === '{}') {
+                showToast('Não foi possível extrair dados da imagem.', 'error');
                 return;
             }
 
-            // Parsear resultado
-            const result = parseScreenshot(rawText);
+            // Claude retorna JSON estruturado diretamente
+            let result: any;
+            try {
+                result = JSON.parse(rawJson);
+            } catch {
+                showToast('Resposta inesperada do Claude. Tente novamente.', 'error');
+                return;
+            }
 
             // Preencher campos automaticamente
             setMatchData(prev => ({
