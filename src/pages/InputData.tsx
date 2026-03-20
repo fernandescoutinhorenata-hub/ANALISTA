@@ -171,11 +171,17 @@ export const InputData: React.FC = () => {
             }
 
             // Claude retorna JSON estruturado diretamente
+            // (a Edge Function já limpa markdown, mas fazemos fallback aqui também)
             let result: any;
             try {
-                result = JSON.parse(rawJson);
+                const cleaned = rawJson
+                    .replace(/^```(?:json)?\s*/i, '')
+                    .replace(/\s*```$/i, '')
+                    .trim();
+                result = JSON.parse(cleaned);
             } catch {
-                showToast('Resposta inesperada do Claude. Tente novamente.', 'error');
+                console.error('[OCR] JSON inválido recebido:', rawJson);
+                showToast(`Resposta inválida: ${rawJson.substring(0, 120)}`, 'error');
                 return;
             }
 
