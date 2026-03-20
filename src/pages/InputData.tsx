@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
-    Wallet
+    Wallet, Camera, Loader2
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { verificarDesbloqueioConquistas } from '../utils/conquistas';
+import { readScreenshot } from '../lib/vision';
+import { parseScreenshot } from '../utils/ocr-processing';
 
 const MAPAS = ['BERMUDA', 'PURGATÓRIO', 'KALAHARI', 'ALPINE', 'NOVA TERRA', 'SOLARA'];
 const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
@@ -97,9 +99,11 @@ export const InputData: React.FC = () => {
 
     const [creditos, setCreditos] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
+    const [ocrLoading, setOcrLoading] = useState(false);
     const [toast, setToast] = useState<any>(null);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
+    const screenshotInputRef = useRef<HTMLInputElement>(null);
 
     // Cálculo de Pontos em Tempo Real
     const pontosPosicao = PONTOS_POR_COLOCACAO[parseInt(matchData.colocacao)] || 0;
@@ -130,6 +134,80 @@ export const InputData: React.FC = () => {
         const newPlayers = [...players];
         newPlayers[index] = { ...newPlayers[index], [field]: value };
         setPlayers(newPlayers);
+    };
+
+    // ─── OCR via Google Vision ────────────────────────────────────────────────
+    const handleScreenshot = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (creditos !== null && creditos <= 0) {
+            showToast('Sem créditos. Adquira mais para usar esta função.', 'error');
+            return;
+        }
+
+        setOcrLoading(true);
+        try {
+            // Converter para base64
+            const base64 = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = reader.result as string;
+                    // Remove o prefixo data:image/...;base64,
+                    resolve(result.split(',')[1]);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            // Chamar Google Vision API
+            const rawText = await readScreenshot(base64);
+
+            if (!rawText) {
+                showToast('Não foi possível extrair texto da imagem.', 'error');
+                return;
+            }
+
+            // Parsear resultado
+            const result = parseScreenshot(rawText);
+
+            // Preencher campos automaticamente
+            setMatchData(prev => ({
+                ...prev,
+                mapa: result.mapa,
+                colocacao: String(result.colocacao),
+            }));
+
+            setPlayers(prev => prev.map((p, i) => {
+                const j = result.jogadores[i];
+                if (!j) return p;
+                return {
+                    ...p,
+                    nome:        j.nome !== `Jogador ${i + 1}` ? j.nome : p.nome,
+                    kills:       String(j.kills),
+                    assistencias: String(j.assists),
+                    derrubados:  String(j.derrubados),
+                    dano:        String(j.dano),
+                    morte:       String(j.mortes),
+                    revividos:   String(j.ressurgimentos),
+                };
+            }));
+
+            // Descontar 1 crédito
+            if (user) {
+                const novosSaldo = Math.max(0, (creditos ?? 1) - 1);
+                await supabase.from('perfis').update({ usos_restantes: novosSaldo }).eq('id', user.id);
+                setCreditos(novosSaldo);
+            }
+
+            showToast('Screenshot lida! Revise os dados antes de salvar.', 'success');
+        } catch (err: any) {
+            showToast(err.message || 'Erro ao processar screenshot.', 'error');
+        } finally {
+            setOcrLoading(false);
+            // Limpar o input para permitir reusar o mesmo arquivo
+            if (screenshotInputRef.current) screenshotInputRef.current.value = '';
+        }
     };
 
     const handleSaveSquad = async () => {
@@ -269,7 +347,28 @@ export const InputData: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        {/* Botão Ler Screenshot */}
+                        <button
+                            onClick={() => screenshotInputRef.current?.click()}
+                            disabled={ocrLoading}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-transparent border border-[var(--border-default)] rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--accent)] transition-all disabled:opacity-50"
+                            title="Ler dados automaticamente de um screenshot"
+                        >
+                            {ocrLoading
+                                ? <><Loader2 size={14} className="animate-spin" /><span className="text-xs font-semibold">Lendo...</span></>
+                                : <><Camera size={14} /><span className="text-xs font-semibold">Ler Screenshot</span></>
+                            }
+                        </button>
+                        {/* Input oculto para a imagem */}
+                        <input
+                            ref={screenshotInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleScreenshot}
+                        />
+
                         <button
                             onClick={() => setIsResetModalOpen(true)}
                             className="flex items-center gap-2 px-3 py-1.5 bg-transparent border border-[var(--border-default)] rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all"
