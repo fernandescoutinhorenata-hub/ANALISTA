@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-// import { Login } from './pages/Login';
+import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
-// import { InputData } from './pages/InputData';
+import { InputData } from './pages/InputData';
 // import { SharedDashboard } from './pages/SharedDashboard';
 import { Maintenance } from './pages/Maintenance';
 
@@ -14,7 +14,9 @@ function App() {
         <Routes>
           {/* ────── MODO MANUTENÇÃO ATIVO ────── */}
           
-          {/* Rota Secreta Admin para acesso interno */}
+          {/* Rotas administrativas permitidas */}
+          <Route path="/login" element={<Login mode="login" />} />
+          
           <Route 
             path="/admin-celo" 
             element={
@@ -24,11 +26,19 @@ function App() {
             } 
           />
 
-          {/* Todas as rotas públicas redirecionam para Manutenção */}
+          <Route 
+            path="/admin-celo/input" 
+            element={
+              <ProtectedRoute>
+                <InputData />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Todas as outras rotas redirecionam para Manutenção */}
           <Route path="*" element={<Maintenance />} />
 
-          {/* ROTAS ORIGINAIS (DESATIVADAS TEMPORARIAMENTE)
-          <Route path="/login" element={<Login mode="login" />} />
+          {/* ROTAS ORIGINAIS (DESATIVADAS PARA O PÚBLICO)
           <Route path="/register" element={<Login mode="register" />} />
           <Route
             path="/"
