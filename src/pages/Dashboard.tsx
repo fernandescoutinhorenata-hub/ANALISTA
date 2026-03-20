@@ -11,7 +11,7 @@ import {
     Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword, ShieldAlert,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Wallet, Link
+    CheckCircle, XCircle, AlertCircle, Wallet, Link, CreditCard
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
@@ -568,6 +568,14 @@ export const Dashboard: React.FC = () => {
                             </button>
                         );
                     })}
+
+                    <button
+                        onClick={() => { navigate('/admin-celo/planos'); setIsSidebarOpen(false); }}
+                        className="nav-item w-full"
+                    >
+                        <CreditCard size={18} />
+                        Planos
+                    </button>
 
                     <div className="pt-4 mt-4 border-t border-[var(--border-subtle)]">
                         <button

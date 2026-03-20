@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard';
 import { InputData } from './pages/InputData';
 // import { SharedDashboard } from './pages/SharedDashboard';
 import { Maintenance } from './pages/Maintenance';
+import { Planos } from './pages/Planos';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 function App() {
@@ -16,6 +17,7 @@ function App() {
           
           {/* Rotas administrativas permitidas */}
           <Route path="/login" element={<Login mode="login" />} />
+          <Route path="/planos" element={<Planos />} />
           
           <Route 
             path="/admin-celo" 
@@ -31,6 +33,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <InputData />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/admin-celo/planos" 
+            element={
+              <ProtectedRoute>
+                <Planos />
               </ProtectedRoute>
             } 
           />

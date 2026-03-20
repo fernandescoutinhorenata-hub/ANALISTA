@@ -147,6 +147,21 @@ export const InputData: React.FC = () => {
 
         setOcrLoading(true);
         try {
+            // Verificar Assinatura Ativa (Paywall OCR)
+            const { data: sub, error: subError } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('user_id', user!.id)
+                .eq('status', 'ativo')
+                .gt('data_fim', new Date().toISOString())
+                .maybeSingle();
+
+            if (subError || !sub) {
+                showToast('Recurso exclusivo para assinantes. Acesse /admin-celo/planos para assinar.', 'error');
+                setOcrLoading(false);
+                return;
+            }
+
             // Converter para base64
             const base64 = await new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
