@@ -3,23 +3,42 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { InputData } from './pages/InputData';
-import { Maintenance } from './pages/Maintenance';
+import { SharedDashboard } from './pages/SharedDashboard';
 import { Planos } from './pages/Planos';
 import { AdminPanel } from './pages/AdminPanel';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
+
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {/* ────── MODO MANUTENÇÃO ATIVO ────── */}
-          
-          {/* Rotas administrativas permitidas */}
+          {/* Rotas Públicas */}
           <Route path="/login" element={<Login mode="login" />} />
+          <Route path="/register" element={<Login mode="register" />} />
           <Route path="/planos" element={<Planos />} />
           
+          {/* Dashboard e Input Principal */}
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/input" 
+            element={
+              <ProtectedRoute>
+                <InputData />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Rotas Administrativas de Acesso Rápido */}
           <Route 
             path="/admin-celo" 
             element={
@@ -28,7 +47,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-
           <Route 
             path="/admin-celo/input" 
             element={
@@ -37,7 +55,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-
           <Route 
             path="/admin-celo/planos" 
             element={
@@ -47,6 +64,7 @@ function App() {
             } 
           />
 
+          {/* Painel Administrativo Mestre (Restrito por Senha) */}
           <Route 
             path="/celo-master" 
             element={
@@ -56,29 +74,8 @@ function App() {
             } 
           />
 
-          {/* Todas as outras rotas redirecionam para Manutenção */}
-          <Route path="*" element={<Maintenance />} />
-
-          {/* ROTAS ORIGINAIS (DESATIVADAS PARA O PÚBLICO)
-          <Route path="/register" element={<Login mode="register" />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/input"
-            element={
-              <ProtectedRoute>
-                <InputData />
-              </ProtectedRoute>
-            }
-          />
+          {/* Links de Compartilhamento */}
           <Route path="/share/:userId" element={<SharedDashboard />} />
-          */}
         </Routes>
       </Router>
     </AuthProvider>
