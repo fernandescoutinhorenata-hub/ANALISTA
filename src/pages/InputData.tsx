@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
-    Wallet, Camera, Loader2, Lock
+    Wallet, Camera, Loader2, Lock, Zap
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -100,6 +100,7 @@ export const InputData: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [ocrLoading, setOcrLoading] = useState(false);
     const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
+    const [isUpsellModalOpen, setIsUpsellModalOpen] = useState(false);
     const [toast, setToast] = useState<any>(null);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
@@ -395,7 +396,7 @@ export const InputData: React.FC = () => {
                                 if (assinaturaAtiva) {
                                     screenshotInputRef.current?.click();
                                 } else {
-                                    navigate('/admin-celo/planos');
+                                    setIsUpsellModalOpen(true);
                                 }
                             }}
                             disabled={ocrLoading}
@@ -411,8 +412,7 @@ export const InputData: React.FC = () => {
                             ) : (
                                 <>
                                     {!assinaturaAtiva && <Lock size={14} className="text-[var(--accent)]" />}
-                                    <Camera size={14} />
-                                    <span className="text-xs font-semibold">Ler Screenshot</span>
+                                    <span className="text-xs font-semibold">📸 Ler Screenshot</span>
                                     {!assinaturaAtiva && <span className="text-[9px] font-black bg-[var(--accent)] text-white px-1.5 py-0.5 rounded ml-1 tracking-tight">PRO</span>}
                                 </>
                             )}
@@ -535,6 +535,62 @@ export const InputData: React.FC = () => {
                                     className="py-2 px-4 rounded-md bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-bold hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
                                 >
                                     {resetLoading ? 'LIMPENDO...' : 'CONFIRMAR'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 💎 Upsell Modal (Plano Pro) */}
+            {isUpsellModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-reveal">
+                    <div className="w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                            <Camera size={120} />
+                        </div>
+                        
+                        <div className="flex flex-col items-center text-center gap-6 relative z-10">
+                            <div className="w-16 h-16 rounded-2xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] shrink-0">
+                                <Zap size={32} fill="currentColor" />
+                            </div>
+                            
+                            <div>
+                                <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2 uppercase tracking-tight">
+                                    Recurso exclusivo do Plano Pro
+                                </h3>
+                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                                    Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos.
+                                </p>
+                            </div>
+
+                            <ul className="text-left w-full space-y-3 bg-[var(--bg-main)]/50 p-5 rounded-xl border border-[var(--border-subtle)]">
+                                {[
+                                    'Leitura automática de screenshots',
+                                    'Preenchimento instantâneo do formulário',
+                                    'Economize tempo em cada partida'
+                                ].map((item, i) => (
+                                    <li key={i} className="flex items-center gap-3 text-xs font-semibold text-[var(--text-secondary)]">
+                                        <div className="w-5 h-5 rounded-full bg-[var(--accent-green-muted)] flex items-center justify-center">
+                                            <CheckCircle size={12} className="text-[var(--accent-green)]" />
+                                        </div>
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <div className="flex flex-col gap-3 w-full">
+                                <button
+                                    onClick={() => navigate('/admin-celo/planos')}
+                                    className="btn-primary w-full py-4 text-sm font-black uppercase tracking-widest shadow-xl shadow-[var(--accent-glow)]"
+                                >
+                                    Assinar agora — R$10/semana
+                                </button>
+                                <button
+                                    onClick={() => setIsUpsellModalOpen(false)}
+                                    className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-xs font-bold uppercase transition-colors py-2"
+                                >
+                                    Preencher manualmente
                                 </button>
                             </div>
                         </div>
