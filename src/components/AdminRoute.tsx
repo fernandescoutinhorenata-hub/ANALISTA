@@ -1,62 +1,64 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import React, { useState } from 'react';
 
-interface AdminRouteProps {
-  children: React.ReactNode;
-}
+export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const [senha, setSenha] = useState('');
+  const [autenticado, setAutenticado] = useState(false);
+  const [erro, setErro] = useState(false);
 
-export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { user, loading: authLoading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Senha secreta para acesso ao Painel Admin
+  const SENHA_SECRETA = 'celomaster2025';
 
-  useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) {
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('perfis')
-          .select('is_admin')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Erro ao verificar Admin:', error);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(data?.is_admin || false);
-        }
-      } catch (error) {
-        setIsAdmin(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (!authLoading) {
-      checkAdmin();
+  const handleLogin = () => {
+    if (senha === SENHA_SECRETA) {
+      setAutenticado(true);
+      setErro(false);
+    } else {
+      setErro(true);
     }
-  }, [user, authLoading]);
+  };
 
-  if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-[var(--bg-main)] flex flex-col items-center justify-center p-12">
-        <div className="w-12 h-12 rounded-lg border-2 border-[var(--accent)]/20 border-t-[var(--accent)] animate-spin mb-4" />
-        <p className="text-label animate-pulse">Autenticando Permissões...</p>
+  if (autenticado) return <>{children}</>;
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: 'var(--bg-main)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+      backgroundSize: '40px 40px',
+      fontFamily: "'Inter', sans-serif"
+    }}>
+      <div className="card" style={{ width: 360, padding: 32, textAlign: 'center' }}>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: 8, fontSize: 20, fontWeight: 700 }}>
+          Protocolo Celo Master
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 24 }}>
+          Insira a chave de criptografia para acessar o painel restrito.
+        </p>
+        <input
+          type="password"
+          className="input-base"
+          placeholder="Senha secreta"
+          value={senha}
+          onChange={e => setSenha(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleLogin()}
+          style={{ marginBottom: 12, textAlign: 'center' }}
+        />
+        {erro && (
+          <p style={{ color: 'var(--accent-red)', fontSize: 12, marginBottom: 16, fontWeight: 600 }}>
+            ACESSO NEGADO: Senha Incorreta.
+          </p>
+        )}
+        <button 
+          className="btn-primary" 
+          style={{ width: '100%', padding: '14px' }} 
+          onClick={handleLogin}
+        >
+          Autenticar Acesso
+        </button>
       </div>
-    );
-  }
-
-  if (!user || isAdmin === false) {
-    return <Navigate to="/admin-celo" replace />;
-  }
-
-  return <>{children}</>;
+    </div>
+  );
 };
