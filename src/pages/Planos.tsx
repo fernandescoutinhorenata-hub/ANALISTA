@@ -71,7 +71,7 @@ export const Planos: React.FC = () => {
         {
             id: 'mensal',
             nome: 'Plano Mensal',
-            preco: '20',
+            preco: '25',
             badge: '30 dias (Melhor valor)',
             popular: true,
             recursos: [
@@ -81,7 +81,7 @@ export const Planos: React.FC = () => {
                 { texto: 'Inserir dados manualmente', check: true },
                 { texto: 'Leitura via IA (OCR)', check: true },
             ],
-            botao: 'Assinar por R$20'
+            botao: 'Assinar por R$25'
         }
     ];
 

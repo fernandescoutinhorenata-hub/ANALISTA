@@ -24,7 +24,7 @@ serve(async (req) => {
       })
     }
 
-    const valor = plano === 'semanal' ? 10 : 20
+    const valor = plano === 'semanal' ? 10 : 25
     const titulo = plano === 'semanal' ? 'Celo Tracker - Plano Semanal' : 'Celo Tracker - Plano Mensal'
     const dias = plano === 'semanal' ? 7 : 30
 
