@@ -44,7 +44,10 @@ serve(async (req) => {
       },
       auto_return: 'approved',
       payment_methods: {
-        excluded_payment_types: [],
+        excluded_payment_types: [
+          { id: "ticket" },
+          { id: "debit_card" }
+        ],
         installments: 1
       }
     }
