@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
-    Wallet, Camera, Loader2, Lock, Zap
+    Wallet, Camera, Loader2, Zap
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -483,20 +483,12 @@ export const InputData: React.FC = () => {
                             }
                         }}
                         disabled={ocrLoading}
-                        className={`w-full py-3.5 rounded-[10px] font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                            assinaturaAtiva 
-                            ? "bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white shadow-lg shadow-purple-500/10" 
-                            : "opacity-60 cursor-not-allowed bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-tertiary)]"
-                        }`}
+                        className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10 flex items-center justify-center gap-2"
                     >
                         {ocrLoading ? (
                             <><Loader2 size={16} className="animate-spin" /><span>LENDO...</span></>
                         ) : (
-                            <>
-                                {!assinaturaAtiva && <Lock size={14} strokeWidth={3} className="text-[var(--accent)]" />}
-                                <span>📸 Ler Screenshot</span>
-                                {!assinaturaAtiva && <span className="text-[10px] font-black bg-[var(--accent)] text-white px-2 py-0.5 rounded ml-1 tracking-tight">PRO</span>}
-                            </>
+                            <span>Ler Screenshot</span>
                         )}
                     </button>
 
