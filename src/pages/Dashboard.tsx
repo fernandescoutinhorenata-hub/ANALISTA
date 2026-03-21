@@ -260,7 +260,7 @@ export const Dashboard: React.FC = () => {
                 setAllPlayerRows(mappedPlayers);
 
             } catch (error: any) {
-                console.error('Erro ao buscar dados do Supabase:', error);
+                // Erro de carregamento silenciado (fetchError e toast gerenciam a UI)
                 setFetchError('Não foi possível carregar os dados. Verifique sua conexão.');
                 showToast('Erro de conexão com o banco.', 'error');
             } finally {

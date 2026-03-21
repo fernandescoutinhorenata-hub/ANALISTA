@@ -3,7 +3,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { InputData } from './pages/InputData';
-// import { SharedDashboard } from './pages/SharedDashboard';
 import { Maintenance } from './pages/Maintenance';
 import { Planos } from './pages/Planos';
 import { AdminPanel } from './pages/AdminPanel';

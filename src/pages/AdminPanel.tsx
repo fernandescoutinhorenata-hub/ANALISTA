@@ -46,7 +46,7 @@ export const AdminPanel: React.FC = () => {
             .gt('data_fim', new Date().toISOString())
             .order('data_fim', { ascending: false });
 
-        if (error) console.error('Erro ao buscar assinantes:', error);
+        if (error) { /* Erro silenciado */ }
         else setAssinantesAtivos(data || []);
     };
 
@@ -83,10 +83,10 @@ export const AdminPanel: React.FC = () => {
                 .gt('data_fim', new Date().toISOString())
                 .maybeSingle();
 
-            if (sError) console.error('Erro ao buscar sub:', sError);
+            if (sError) { /* Erro silenciado */ }
             setAssinaturaAtual(sub);
         } catch (error) {
-            console.error('Erro na busca:', error);
+            // Erro na busca silenciado
             showToast('Erro ao realizar busca.', 'error');
         } finally {
             setLoading(false);
@@ -121,7 +121,7 @@ export const AdminPanel: React.FC = () => {
             buscarUsuario(); // Recalcula status na tela
             fetchAssinantesAtivos(); // Atualiza lista global
         } catch (error: any) {
-            console.error('Erro ao ativar:', error);
+            // Erro ao ativar silenciado
             showToast('Erro ao ativar assinatura.', 'error');
         } finally {
             setBtnLoading(null);
