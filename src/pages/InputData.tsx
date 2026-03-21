@@ -390,33 +390,6 @@ export const InputData: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Botão Ler Screenshot */}
-                        <button
-                            onClick={() => {
-                                if (assinaturaAtiva) {
-                                    screenshotInputRef.current?.click();
-                                } else {
-                                    setIsUpsellModalOpen(true);
-                                }
-                            }}
-                            disabled={ocrLoading}
-                            className={`flex items-center gap-2 px-3 py-1.5 border rounded-md transition-all ${
-                                assinaturaAtiva 
-                                ? "bg-transparent border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--accent)]" 
-                                : "opacity-50 cursor-not-allowed border-[var(--border-subtle)] text-[var(--text-tertiary)] bg-[var(--bg-surface)]"
-                            }`}
-                            title={assinaturaAtiva ? "Ler dados automaticamente de um screenshot" : "Recurso exclusivo para assinantes"}
-                        >
-                            {ocrLoading ? (
-                                <><Loader2 size={14} className="animate-spin" /><span className="text-xs font-semibold">Lendo...</span></>
-                            ) : (
-                                <>
-                                    {!assinaturaAtiva && <Lock size={14} className="text-[var(--accent)]" />}
-                                    <span className="text-xs font-semibold">📸 Ler Screenshot</span>
-                                    {!assinaturaAtiva && <span className="text-[9px] font-black bg-[var(--accent)] text-white px-1.5 py-0.5 rounded ml-1 tracking-tight">PRO</span>}
-                                </>
-                            )}
-                        </button>
                         {/* Input oculto para a imagem */}
                         <input
                             ref={screenshotInputRef}
@@ -498,12 +471,39 @@ export const InputData: React.FC = () => {
                     </div>
                 </section>
 
-                {/* 3. Botão de Ação */}
-                <div className="flex justify-center pt-8 animate-reveal">
+                {/* 3. Botões de Ação */}
+                <div className="flex flex-col items-center gap-3 pt-8 animate-reveal max-w-2xl mx-auto w-full">
+                    {/* Botão Ler Screenshot */}
+                    <button
+                        onClick={() => {
+                            if (assinaturaAtiva) {
+                                screenshotInputRef.current?.click();
+                            } else {
+                                setIsUpsellModalOpen(true);
+                            }
+                        }}
+                        disabled={ocrLoading}
+                        className={`w-full py-3.5 rounded-[10px] font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                            assinaturaAtiva 
+                            ? "bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white shadow-lg shadow-purple-500/10" 
+                            : "opacity-60 cursor-not-allowed bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-tertiary)]"
+                        }`}
+                    >
+                        {ocrLoading ? (
+                            <><Loader2 size={16} className="animate-spin" /><span>LENDO...</span></>
+                        ) : (
+                            <>
+                                {!assinaturaAtiva && <Lock size={14} strokeWidth={3} className="text-[var(--accent)]" />}
+                                <span>📸 Ler Screenshot</span>
+                                {!assinaturaAtiva && <span className="text-[10px] font-black bg-[var(--accent)] text-white px-2 py-0.5 rounded ml-1 tracking-tight">PRO</span>}
+                            </>
+                        )}
+                    </button>
+
                     <button
                         onClick={handleSaveSquad}
                         disabled={loading}
-                        className="w-full max-w-2xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-semibold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10"
+                        className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10"
                     >
                         {loading ? 'PROCESSANDO...' : 'SALVAR MÉTRICAS'}
                     </button>
