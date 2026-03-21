@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
-    Wallet, Camera, Loader2
+    Wallet, Camera, Loader2, Lock
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -99,6 +99,7 @@ export const InputData: React.FC = () => {
     const [creditos, setCreditos] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [ocrLoading, setOcrLoading] = useState(false);
+    const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
     const [toast, setToast] = useState<any>(null);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
@@ -121,7 +122,18 @@ export const InputData: React.FC = () => {
             const { data } = await supabase.from('perfis').select('usos_restantes').eq('id', user.id).single();
             if (data) setCreditos(data.usos_restantes);
         };
+        const checkSub = async () => {
+            const { data } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('status', 'ativo')
+                .gt('data_fim', new Date().toISOString())
+                .maybeSingle();
+            setAssinaturaAtiva(!!data);
+        };
         fetchPerfil();
+        checkSub();
     }, [user]);
 
     const showToast = (message: string, type: string) => {
@@ -379,15 +391,31 @@ export const InputData: React.FC = () => {
                     <div className="flex items-center gap-3">
                         {/* Botão Ler Screenshot */}
                         <button
-                            onClick={() => screenshotInputRef.current?.click()}
+                            onClick={() => {
+                                if (assinaturaAtiva) {
+                                    screenshotInputRef.current?.click();
+                                } else {
+                                    navigate('/admin-celo/planos');
+                                }
+                            }}
                             disabled={ocrLoading}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-transparent border border-[var(--border-default)] rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--accent)] transition-all disabled:opacity-50"
-                            title="Ler dados automaticamente de um screenshot"
+                            className={`flex items-center gap-2 px-3 py-1.5 border rounded-md transition-all ${
+                                assinaturaAtiva 
+                                ? "bg-transparent border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--accent)]" 
+                                : "opacity-50 cursor-not-allowed border-[var(--border-subtle)] text-[var(--text-tertiary)] bg-[var(--bg-surface)]"
+                            }`}
+                            title={assinaturaAtiva ? "Ler dados automaticamente de um screenshot" : "Recurso exclusivo para assinantes"}
                         >
-                            {ocrLoading
-                                ? <><Loader2 size={14} className="animate-spin" /><span className="text-xs font-semibold">Lendo...</span></>
-                                : <><Camera size={14} /><span className="text-xs font-semibold">Ler Screenshot</span></>
-                            }
+                            {ocrLoading ? (
+                                <><Loader2 size={14} className="animate-spin" /><span className="text-xs font-semibold">Lendo...</span></>
+                            ) : (
+                                <>
+                                    {!assinaturaAtiva && <Lock size={14} className="text-[var(--accent)]" />}
+                                    <Camera size={14} />
+                                    <span className="text-xs font-semibold">Ler Screenshot</span>
+                                    {!assinaturaAtiva && <span className="text-[9px] font-black bg-[var(--accent)] text-white px-1.5 py-0.5 rounded ml-1 tracking-tight">PRO</span>}
+                                </>
+                            )}
                         </button>
                         {/* Input oculto para a imagem */}
                         <input
