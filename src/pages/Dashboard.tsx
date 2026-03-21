@@ -18,6 +18,7 @@ import type { DashboardData } from '../types';
 import { processData } from '../utils/data-processing';
 import { useAuth } from '../contexts/AuthContext';
 import { PainelDeConquistas } from '../components/PainelDeConquistas';
+import { OnboardingModal } from '../components/OnboardingModal';
 
 // ─── Componentes de UI (Design System) ──────────────────────────────────────────
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -510,6 +511,8 @@ export const Dashboard: React.FC = () => {
     return (
         <div className="min-h-screen flex bg-[var(--bg-main)]">
 
+            {/* Controle de Onboarding */}
+            <OnboardingModal />
 
             {/* Toast Feedback */}
             {toast && <Toast message={toast.message} type={toast.type} />}
