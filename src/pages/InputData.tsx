@@ -120,8 +120,8 @@ export const InputData: React.FC = () => {
     useEffect(() => {
         if (!user) return;
         const fetchPerfil = async () => {
-            const { data } = await supabase.from('perfis').select('usos_restantes').eq('id', user.id).single();
-            if (data) setCreditos(data.usos_restantes);
+            const { data } = await supabase.from('perfis').select('creditos').eq('id', user.id).single();
+            if (data) setCreditos(data.creditos);
         };
         const checkSub = async () => {
             const { data } = await supabase
@@ -153,44 +153,28 @@ export const InputData: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (creditos !== null && creditos <= 0) {
-            showToast('Sem créditos. Adquira mais para usar esta função.', 'error');
+        // 1. Verificar Assinatura Ativa (Paywall OCR)
+        // Se NÃO for Pro e tiver 0 créditos, abre Upsell
+        if (!assinaturaAtiva && (creditos === null || creditos <= 0)) {
+            setIsUpsellModalOpen(true);
+            if (screenshotInputRef.current) screenshotInputRef.current.value = '';
             return;
         }
 
         setOcrLoading(true);
         try {
-            // Verificar Assinatura Ativa (Paywall OCR)
-            const { data: sub, error: subError } = await supabase
-                .from('subscriptions')
-                .select('*')
-                .eq('user_id', user!.id)
-                .eq('status', 'ativo')
-                .gt('data_fim', new Date().toISOString())
-                .maybeSingle();
-
-            if (subError || !sub) {
-                showToast('Recurso exclusivo para assinantes. Acesse /admin-celo/planos para assinar.', 'error');
-                setOcrLoading(false);
-                return;
-            }
-
             // Converter para base64
             const base64 = await new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
                     const result = reader.result as string;
-                    // Remove o prefixo data:image/...;base64,
                     resolve(result.split(',')[1]);
                 };
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
 
-            // Extrair mediaType do arquivo (ex: "image/jpeg", "image/png")
             const mediaType = file.type || 'image/jpeg';
-
-            // Chamar Claude Vision API
             const rawJson = await readScreenshot(base64, mediaType);
 
             if (!rawJson || rawJson === '{}') {
@@ -198,8 +182,6 @@ export const InputData: React.FC = () => {
                 return;
             }
 
-            // Claude retorna JSON estruturado diretamente
-            // (a Edge Function já limpa markdown, mas fazemos fallback aqui também)
             let result: any;
             try {
                 const cleaned = rawJson
@@ -209,7 +191,7 @@ export const InputData: React.FC = () => {
                 result = JSON.parse(cleaned);
             } catch {
                 console.error('[OCR] JSON inválido recebido:', rawJson);
-                showToast(`Resposta inválida: ${rawJson.substring(0, 120)}`, 'error');
+                showToast(`Resposta inválida. Tente novamente.`, 'error');
                 return;
             }
 
@@ -235,10 +217,10 @@ export const InputData: React.FC = () => {
                 };
             }));
 
-            // Descontar 1 crédito
-            if (user) {
-                const novosSaldo = Math.max(0, (creditos ?? 1) - 1);
-                await supabase.from('perfis').update({ usos_restantes: novosSaldo }).eq('id', user.id);
+            // 2. Descontar 1 crédito APENAS se não for PRO
+            if (!assinaturaAtiva && user) {
+                const novosSaldo = Math.max(0, (creditos ?? 0) - 1);
+                await supabase.from('perfis').update({ creditos: novosSaldo }).eq('id', user.id);
                 setCreditos(novosSaldo);
             }
 
@@ -247,7 +229,6 @@ export const InputData: React.FC = () => {
             showToast(err.message || 'Erro ao processar screenshot.', 'error');
         } finally {
             setOcrLoading(false);
-            // Limpar o input para permitir reusar o mesmo arquivo
             if (screenshotInputRef.current) screenshotInputRef.current.value = '';
         }
     };
@@ -314,14 +295,7 @@ export const InputData: React.FC = () => {
             const { error: errorPerf } = await supabase.from('performance_jogadores').insert(performanceRecords);
             if (errorPerf) throw errorPerf;
 
-            // 3. Decrementar Crédito
-            const { error: errorCred } = await supabase.from('perfis')
-                .update({ usos_restantes: Math.max(0, (creditos || 1) - 1) })
-                .eq('id', user.id);
-            if (errorCred) throw errorCred;
-
             showToast('Squad Salvo com Sucesso!', 'success');
-            setCreditos(prev => (prev !== null ? prev - 1 : null));
 
             // 4. Verificar conquistas para cada jogador individualmente
             for (const p of players) {
@@ -544,15 +518,18 @@ export const InputData: React.FC = () => {
                         
                         <div className="flex flex-col items-center text-center gap-6 relative z-10">
                             <div className="w-16 h-16 rounded-2xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] shrink-0">
-                                <Zap size={32} fill="currentColor" />
+                                {creditos === 0 ? <Camera size={32} className="opacity-50" /> : <Zap size={32} fill="currentColor" />}
                             </div>
                             
                             <div>
                                 <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2 uppercase tracking-tight">
-                                    Recurso exclusivo do Plano Pro
+                                    {creditos === 0 ? "Seus créditos acabaram" : "Recurso exclusivo do Plano Pro"}
                                 </h3>
                                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                                    Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos.
+                                    {creditos === 0 
+                                        ? "Você usou todos os seus créditos gratuitos. Assine o Plano Pro para continuar usando a leitura automática de screenshots sem limite."
+                                        : "Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos."
+                                    }
                                 </p>
                             </div>
 

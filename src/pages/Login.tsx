@@ -40,7 +40,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         id: data.user.id,
                         email: email,
                         nome: teamName,
-                        usos_restantes: 5
+                        creditos: 4
                     }]);
                 }
                 navigate('/');

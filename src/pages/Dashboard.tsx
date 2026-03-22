@@ -11,7 +11,7 @@ import {
     Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword, ShieldAlert,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Wallet, Link, CreditCard
+    CheckCircle, XCircle, AlertCircle, Wallet, Link, CreditCard, Camera
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
@@ -175,6 +175,7 @@ export const Dashboard: React.FC = () => {
     const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [creditos, setCreditos] = useState<number | null>(null);
+    const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
     const [nomeUsuario, setNomeUsuario] = useState<string>('');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
 
@@ -203,13 +204,24 @@ export const Dashboard: React.FC = () => {
         const fetchPerfil = async () => {
             const { data } = await supabase
                 .from('perfis')
-                .select('usos_restantes, nome, email')
+                .select('creditos, nome, email')
                 .eq('id', user.id)
                 .single();
             if (data) {
-                setCreditos(data.usos_restantes);
+                setCreditos(data.creditos);
                 setNomeUsuario(data.nome || data.email || user.email || '');
             }
+        };
+
+        const checkSub = async () => {
+            const { data } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('status', 'ativo')
+                .gt('data_fim', new Date().toISOString())
+                .maybeSingle();
+            setAssinaturaAtiva(!!data);
         };
 
         const fetchDashboardData = async () => {
@@ -269,11 +281,12 @@ export const Dashboard: React.FC = () => {
         };
 
         fetchPerfil();
+        checkSub();
         fetchDashboardData();
 
         const channelPerfil = supabase.channel('perfil-changes-dash')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'perfis', filter: `id=eq.${user.id}` },
-                payload => setCreditos((payload.new as any).usos_restantes))
+                payload => setCreditos((payload.new as any).creditos))
             .subscribe();
 
         const channelData = supabase.channel('dashboard-data-changes')
@@ -687,9 +700,28 @@ export const Dashboard: React.FC = () => {
 
                         {/* Profile & Wallet */}
                         <div className="flex items-center gap-4 pl-4 border-l border-[var(--border-subtle)]">
-                            <div className="hidden sm:flex flex-col text-right">
-                                <span className="text-label">{nomeUsuario || 'Analista'}</span>
-                                <span className="text-heading text-xs mt-0.5">Créditos: {creditos ?? '...'}</span>
+                            <div className="hidden sm:flex flex-col text-right items-end gap-1">
+                                <span className="text-label text-[10px] opacity-70 leading-none">{nomeUsuario || 'Analista'}</span>
+                                {assinaturaAtiva ? (
+                                    <div className="badge badge-green flex items-center gap-1.5 py-1 px-3">
+                                        <CheckCircle size={10} strokeWidth={3} />
+                                        <span className="font-bold tracking-tight">PRO</span>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={() => navigate('/admin-celo/planos')}
+                                        className={`badge flex items-center gap-1.5 py-1 px-3 transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                                            (creditos ?? 0) > 1 ? 'badge-purple' : 
+                                            (creditos ?? 0) === 1 ? 'badge-amber' : 'badge-red'
+                                        }`}
+                                    >
+                                        <Camera size={10} />
+                                        <span className="font-bold tracking-tight text-[10px]">
+                                            {(creditos ?? 0) > 1 ? `${creditos} CRÉDITOS` : 
+                                             (creditos ?? 0) === 1 ? '1 CRÉDITO RESTANTE' : 'SEM CRÉDITOS'}
+                                        </span>
+                                    </button>
+                                )}
                             </div>
                             <button
                                 onClick={handleShareDashboard}
