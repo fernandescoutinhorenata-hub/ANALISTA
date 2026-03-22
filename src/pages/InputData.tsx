@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
-    Wallet, Camera, Loader2, Zap
+    Camera, Loader2, Zap
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -96,7 +96,6 @@ export const InputData: React.FC = () => {
         { nome: '', kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' },
     ]);
 
-    const [creditos, setCreditos] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [ocrLoading, setOcrLoading] = useState(false);
     const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
@@ -119,10 +118,6 @@ export const InputData: React.FC = () => {
 
     useEffect(() => {
         if (!user) return;
-        const fetchPerfil = async () => {
-            const { data } = await supabase.from('perfis').select('creditos').eq('id', user.id).single();
-            if (data) setCreditos(data.creditos);
-        };
         const checkSub = async () => {
             const { data } = await supabase
                 .from('subscriptions')
@@ -133,7 +128,6 @@ export const InputData: React.FC = () => {
                 .maybeSingle();
             setAssinaturaAtiva(!!data);
         };
-        fetchPerfil();
         checkSub();
     }, [user]);
 
@@ -154,8 +148,8 @@ export const InputData: React.FC = () => {
         if (!file) return;
 
         // 1. Verificar Assinatura Ativa (Paywall OCR)
-        // Se NÃO for Pro e tiver 0 créditos, abre Upsell
-        if (!assinaturaAtiva && (creditos === null || creditos <= 0)) {
+        // Se NÃO for Pro, abre Upsell
+        if (!assinaturaAtiva) {
             setIsUpsellModalOpen(true);
             if (screenshotInputRef.current) screenshotInputRef.current.value = '';
             return;
@@ -217,12 +211,7 @@ export const InputData: React.FC = () => {
                 };
             }));
 
-            // 2. Descontar 1 crédito APENAS se não for PRO
-            if (!assinaturaAtiva && user) {
-                const novosSaldo = Math.max(0, (creditos ?? 0) - 1);
-                await supabase.from('perfis').update({ creditos: novosSaldo }).eq('id', user.id);
-                setCreditos(novosSaldo);
-            }
+
 
             showToast('Screenshot lida! Revise os dados antes de salvar.', 'success');
         } catch (err: any) {
@@ -247,10 +236,7 @@ export const InputData: React.FC = () => {
             return;
         }
 
-        if (creditos !== null && creditos <= 0) {
-            showToast('Créditos insuficientes', 'error');
-            return;
-        }
+
 
         setLoading(true);
         try {
@@ -381,10 +367,7 @@ export const InputData: React.FC = () => {
                             <span className="text-xs font-semibold">Reiniciar Tabela</span>
                         </button>
 
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-hover)] border border-[var(--border-subtle)] rounded-md text-[var(--text-secondary)]">
-                            <Wallet size={12} className="text-[var(--accent)]" />
-                            <span className="text-[10px] font-bold">{creditos ?? '--'} CRÉDITOS</span>
-                        </div>
+
                     </div>
                 </div>
             </header>
@@ -518,18 +501,15 @@ export const InputData: React.FC = () => {
                         
                         <div className="flex flex-col items-center text-center gap-6 relative z-10">
                             <div className="w-16 h-16 rounded-2xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] shrink-0">
-                                {creditos === 0 ? <Camera size={32} className="opacity-50" /> : <Zap size={32} fill="currentColor" />}
+                                <Zap size={32} fill="currentColor" />
                             </div>
                             
                             <div>
                                 <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2 uppercase tracking-tight">
-                                    {creditos === 0 ? "Seus créditos acabaram" : "Recurso exclusivo do Plano Pro"}
+                                    Recurso exclusivo do Plano Pro
                                 </h3>
                                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                                    {creditos === 0 
-                                        ? "Você usou todos os seus créditos gratuitos. Assine o Plano Pro para continuar usando a leitura automática de screenshots sem limite."
-                                        : "Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos."
-                                    }
+                                    Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos.
                                 </p>
                             </div>
 

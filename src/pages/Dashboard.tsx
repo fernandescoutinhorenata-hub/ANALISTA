@@ -11,7 +11,7 @@ import {
     Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword, ShieldAlert,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Wallet, Link, CreditCard
+    CheckCircle, XCircle, AlertCircle, Link, CreditCard
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
@@ -94,8 +94,7 @@ const ImportModal: React.FC<{
     onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onDownloadTemplate: () => void;
     loading: boolean;
-    creditos: number | null;
-}> = ({ isOpen, onClose, onUpload, onDownloadTemplate, loading, creditos }) => {
+}> = ({ isOpen, onClose, onUpload, onDownloadTemplate, loading }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -116,14 +115,6 @@ const ImportModal: React.FC<{
                 </div>
 
                 <div className="space-y-5">
-                    <div className="p-4 rounded-xl flex items-center justify-between bg-[var(--bg-surface)] border border-[var(--border-default)]">
-                        <div className="flex items-center gap-2">
-                            <Wallet size={14} className="text-[var(--accent-amber)]" />
-                            <span className="text-label">Custo fixo</span>
-                        </div>
-                        <span className="badge badge-red">1 CRÉDITO</span>
-                    </div>
-
                     <label
                         className={`group flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 bg-[var(--bg-surface)] border-[var(--border-default)] hover:border-[var(--accent)] ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
@@ -147,12 +138,6 @@ const ImportModal: React.FC<{
                             <span className="text-label">Calculando...</span>
                         </div>
                     )}
-
-                    <div className="pt-4 border-t border-[var(--border-subtle)] text-center">
-                        <p className="text-label">
-                            Saldo: <span className={(creditos ?? 0) > 0 ? 'text-[var(--accent-green)]' : 'text-[var(--accent-red)]'}>{creditos ?? '0'} CRÉDITOS</span>
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -174,7 +159,6 @@ export const Dashboard: React.FC = () => {
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos' });
     const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-    const [creditos, setCreditos] = useState<number | null>(null);
     const [nomeUsuario, setNomeUsuario] = useState<string>('');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
 
@@ -203,11 +187,10 @@ export const Dashboard: React.FC = () => {
         const fetchPerfil = async () => {
             const { data } = await supabase
                 .from('perfis')
-                .select('creditos, nome, email')
+                .select('nome, email')
                 .eq('id', user.id)
                 .single();
             if (data) {
-                setCreditos(data.creditos);
                 setNomeUsuario(data.nome || data.email || user.email || '');
             }
         };
@@ -273,37 +256,20 @@ export const Dashboard: React.FC = () => {
         fetchPerfil();
         fetchDashboardData();
 
-        const channelPerfil = supabase.channel('perfil-changes-dash')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'perfis', filter: `id=eq.${user.id}` },
-                payload => setCreditos((payload.new as any).creditos))
-            .subscribe();
-
         const channelData = supabase.channel('dashboard-data-changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'partidas_geral', filter: `user_id=eq.${user.id}` }, () => fetchDashboardData())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'performance_jogadores', filter: `user_id=eq.${user.id}` }, () => fetchDashboardData())
             .subscribe();
 
         return () => {
-            supabase.removeChannel(channelPerfil);
             supabase.removeChannel(channelData);
         };
     }, [user]);
 
 
-    const checkCreditos = async (): Promise<boolean> => {
-        const { data: pData } = await supabase.from('perfis').select('usos_restantes').eq('id', user!.id).single();
-        if (!pData || pData.usos_restantes === 0) {
-            showToast('Saldo Insuficiente! Recarregue seus usos.', 'warning');
-            return false;
-        }
-        return true;
-    };
 
-    const decrementarCredito = async () => {
-        if (!user) return;
-        const current = creditos ?? 1;
-        await supabase.from('perfis').update({ usos_restantes: Math.max(0, current - 1) }).eq('id', user.id);
-    };
+
+
 
     useEffect(() => {
         if (allGeneralRows.length === 0 && allPlayerRows.length === 0) {
@@ -474,8 +440,6 @@ export const Dashboard: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file || !user) return;
 
-        if (!(await checkCreditos())) return;
-
         setLoading(true);
         const reader = new FileReader();
         reader.onload = async evt => {
@@ -487,7 +451,6 @@ export const Dashboard: React.FC = () => {
                 let rawJsonPlayers: any[] = [];
                 if (wb.SheetNames.length > 1) rawJsonPlayers = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]]);
 
-                await decrementarCredito();
                 setAllGeneralRows(rawJsonGlobal);
                 setAllPlayerRows(rawJsonPlayers);
                 setIsImportModalOpen(false);
@@ -526,7 +489,6 @@ export const Dashboard: React.FC = () => {
                 onUpload={handleFileUpload}
                 onDownloadTemplate={handleTemplateDownload}
                 loading={loading}
-                creditos={creditos}
             />
 
             {/* Overlay para Mobile quando a sidebar estiver aberta */}
@@ -687,7 +649,7 @@ export const Dashboard: React.FC = () => {
                         </div>
 
 
-                        {/* Profile & Wallet */}
+                        {/* Profile */}
                         <div className="flex items-center gap-4 pl-4 border-l border-[var(--border-subtle)]">
                             <div className="hidden sm:flex flex-col text-right items-end gap-1">
                                 <span className="text-label text-[10px] opacity-70 leading-none">{nomeUsuario || 'Analista'}</span>

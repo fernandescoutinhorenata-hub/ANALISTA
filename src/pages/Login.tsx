@@ -39,8 +39,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                     await supabase.from('perfis').insert([{
                         id: data.user.id,
                         email: email,
-                        nome: teamName,
-                        creditos: 4
+                        nome: teamName
                     }]);
                 }
                 navigate('/');
