@@ -455,6 +455,23 @@ export const InputData: React.FC = () => {
 
                 {/* 3. Botões de Ação */}
                 <div className="flex flex-col items-center gap-3 pt-8 animate-reveal max-w-2xl mx-auto w-full">
+                    {/* Contador de usos gratuitos */}
+                    {!assinaturaAtiva && (
+                        <p style={{
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            textAlign: 'center',
+                            color: ocrUses >= 3
+                                ? 'var(--accent-red)'
+                                : ocrUses >= 2
+                                    ? 'var(--accent-amber)'
+                                    : 'var(--text-secondary)',
+                            marginBottom: '-4px'
+                        }}>
+                            {ocrUses} de 4 leituras gratuitas utilizadas
+                        </p>
+                    )}
+
                     {/* Botão Ler Screenshot */}
                     <button
                         onClick={() => {
