@@ -11,7 +11,7 @@ import {
     Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword, ShieldAlert,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Wallet, Link, CreditCard, Camera
+    CheckCircle, XCircle, AlertCircle, Wallet, Link, CreditCard
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
@@ -175,7 +175,6 @@ export const Dashboard: React.FC = () => {
     const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [creditos, setCreditos] = useState<number | null>(null);
-    const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
     const [nomeUsuario, setNomeUsuario] = useState<string>('');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
 
@@ -213,16 +212,7 @@ export const Dashboard: React.FC = () => {
             }
         };
 
-        const checkSub = async () => {
-            const { data } = await supabase
-                .from('subscriptions')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('status', 'ativo')
-                .gt('data_fim', new Date().toISOString())
-                .maybeSingle();
-            setAssinaturaAtiva(!!data);
-        };
+
 
         const fetchDashboardData = async () => {
             if (!user) return;
@@ -281,7 +271,6 @@ export const Dashboard: React.FC = () => {
         };
 
         fetchPerfil();
-        checkSub();
         fetchDashboardData();
 
         const channelPerfil = supabase.channel('perfil-changes-dash')
