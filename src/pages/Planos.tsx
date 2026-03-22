@@ -50,7 +50,7 @@ export const Planos: React.FC = () => {
                 { texto: 'Histórico de partidas', check: true },
                 { texto: 'Radar de habilidades', check: true },
                 { texto: 'Inserir dados manualmente', check: true },
-                { texto: 'Leitura via IA (OCR)', check: false },
+                { texto: '4 leituras de screenshot gratuitas', check: false },
             ],
             botao: 'Plano atual'
         },
@@ -64,7 +64,7 @@ export const Planos: React.FC = () => {
                 { texto: 'Histórico de partidas', check: true },
                 { texto: 'Radar de habilidades', check: true },
                 { texto: 'Inserir dados manualmente', check: true },
-                { texto: 'Leitura via IA (OCR)', check: true },
+                { texto: 'Leituras de screenshot ilimitadas', check: true },
             ],
             botao: 'Assinar por R$10'
         },
@@ -79,7 +79,7 @@ export const Planos: React.FC = () => {
                 { texto: 'Histórico de partidas', check: true },
                 { texto: 'Radar de habilidades', check: true },
                 { texto: 'Inserir dados manualmente', check: true },
-                { texto: 'Leitura via IA (OCR)', check: true },
+                { texto: 'Leituras de screenshot ilimitadas', check: true },
             ],
             botao: 'Assinar por R$25'
         }
