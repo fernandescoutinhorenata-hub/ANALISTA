@@ -718,12 +718,7 @@ export const Dashboard: React.FC = () => {
                             >
                                 <Link size={18} />
                             </button>
-                            <button
-                                onClick={() => setIsImportModalOpen(true)}
-                                className="btn-ghost p-2.5"
-                            >
-                                <FileSpreadsheet size={18} />
-                            </button>
+
                             <div
                                 className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs bg-[var(--accent)] text-white"
                             >
