@@ -382,6 +382,13 @@ export const InputData: React.FC = () => {
                             <span className="text-xs font-semibold">Reiniciar Tabela</span>
                         </button>
 
+                        {!assinaturaAtiva && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-hover)] border border-[var(--border-subtle)] rounded-md">
+                                <span className="text-[10px] font-bold text-[var(--text-secondary)]">
+                                    {Math.max(0, 4 - ocrUses)} de 4 usos gratuitos restantes
+                                </span>
+                            </div>
+                        )}
 
                     </div>
                 </div>
