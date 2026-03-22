@@ -702,26 +702,6 @@ export const Dashboard: React.FC = () => {
                         <div className="flex items-center gap-4 pl-4 border-l border-[var(--border-subtle)]">
                             <div className="hidden sm:flex flex-col text-right items-end gap-1">
                                 <span className="text-label text-[10px] opacity-70 leading-none">{nomeUsuario || 'Analista'}</span>
-                                {assinaturaAtiva ? (
-                                    <div className="badge badge-green flex items-center gap-1.5 py-1 px-3">
-                                        <CheckCircle size={10} strokeWidth={3} />
-                                        <span className="font-bold tracking-tight">PRO</span>
-                                    </div>
-                                ) : (
-                                    <button 
-                                        onClick={() => navigate('/admin-celo/planos')}
-                                        className={`badge flex items-center gap-1.5 py-1 px-3 transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-                                            (creditos ?? 0) > 1 ? 'badge-purple' : 
-                                            (creditos ?? 0) === 1 ? 'badge-amber' : 'badge-red'
-                                        }`}
-                                    >
-                                        <Camera size={10} />
-                                        <span className="font-bold tracking-tight text-[10px]">
-                                            {(creditos ?? 0) > 1 ? `${creditos} CRÉDITOS` : 
-                                             (creditos ?? 0) === 1 ? '1 CRÉDITO RESTANTE' : 'SEM CRÉDITOS'}
-                                        </span>
-                                    </button>
-                                )}
                             </div>
                             <button
                                 onClick={handleShareDashboard}
