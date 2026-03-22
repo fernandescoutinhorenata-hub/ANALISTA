@@ -134,7 +134,8 @@ export const InputData: React.FC = () => {
                 .select('ocr_uses')
                 .eq('id', user.id)
                 .single();
-            if (profile) setOcrUses(profile.ocr_uses || 0);
+            if (profile) setOcrUses(profile.ocr_uses ?? 0);
+            console.log('[OCR DEBUG] ocr_uses carregado:', profile?.ocr_uses, '| assinatura:', !!subData);
         };
         checkSubAndUses();
     }, [user]);
@@ -154,6 +155,8 @@ export const InputData: React.FC = () => {
     const handleScreenshot = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        console.log('[OCR DEBUG] ocr_uses:', ocrUses, '| assinaturaAtiva:', assinaturaAtiva);
 
         // 1. Verificar Assinatura Ativa ou Usos Gratuitos (Paywall OCR)
         // Se NÃO for Pro e já usou 4 vezes, abre Upsell
@@ -455,7 +458,8 @@ export const InputData: React.FC = () => {
                     {/* Botão Ler Screenshot */}
                     <button
                         onClick={() => {
-                            if (assinaturaAtiva) {
+                            console.log('[OCR DEBUG] botão clicado | assinatura:', assinaturaAtiva, '| ocrUses:', ocrUses);
+                            if (assinaturaAtiva || ocrUses < 4) {
                                 screenshotInputRef.current?.click();
                             } else {
                                 setIsUpsellModalOpen(true);
