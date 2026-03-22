@@ -99,6 +99,7 @@ export const InputData: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [ocrLoading, setOcrLoading] = useState(false);
     const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
+    const [ocrUses, setOcrUses] = useState(0);
     const [isUpsellModalOpen, setIsUpsellModalOpen] = useState(false);
     const [toast, setToast] = useState<any>(null);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -118,17 +119,24 @@ export const InputData: React.FC = () => {
 
     useEffect(() => {
         if (!user) return;
-        const checkSub = async () => {
-            const { data } = await supabase
+        const checkSubAndUses = async () => {
+            const { data: subData } = await supabase
                 .from('subscriptions')
                 .select('*')
                 .eq('user_id', user.id)
                 .eq('status', 'ativo')
                 .gt('data_fim', new Date().toISOString())
                 .maybeSingle();
-            setAssinaturaAtiva(!!data);
+            setAssinaturaAtiva(!!subData);
+
+            const { data: profile } = await supabase
+                .from('perfis')
+                .select('ocr_uses')
+                .eq('id', user.id)
+                .single();
+            if (profile) setOcrUses(profile.ocr_uses || 0);
         };
-        checkSub();
+        checkSubAndUses();
     }, [user]);
 
     const showToast = (message: string, type: string) => {
@@ -147,9 +155,9 @@ export const InputData: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // 1. Verificar Assinatura Ativa (Paywall OCR)
-        // Se NÃO for Pro, abre Upsell
-        if (!assinaturaAtiva) {
+        // 1. Verificar Assinatura Ativa ou Usos Gratuitos (Paywall OCR)
+        // Se NÃO for Pro e já usou 4 vezes, abre Upsell
+        if (!assinaturaAtiva && ocrUses >= 4) {
             setIsUpsellModalOpen(true);
             if (screenshotInputRef.current) screenshotInputRef.current.value = '';
             return;
@@ -212,6 +220,13 @@ export const InputData: React.FC = () => {
             }));
 
 
+
+            // 2. Incrementar uso se não for PRO
+            if (!assinaturaAtiva && user) {
+                const nextUses = ocrUses + 1;
+                await supabase.from('perfis').update({ ocr_uses: nextUses }).eq('id', user.id);
+                setOcrUses(nextUses);
+            }
 
             showToast('Screenshot lida! Revise os dados antes de salvar.', 'success');
         } catch (err: any) {
@@ -506,10 +521,13 @@ export const InputData: React.FC = () => {
                             
                             <div>
                                 <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2 uppercase tracking-tight">
-                                    Recurso exclusivo do Plano Pro
+                                    {ocrUses >= 4 ? "Seus usos gratuitos acabaram" : "Recurso exclusivo do Plano Pro"}
                                 </h3>
                                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                                    Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos.
+                                    {ocrUses >= 4 
+                                        ? "Você usou todos os 4 usos gratuitos. Assine o Plano Pro para continuar usando sem limite."
+                                        : "Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos."
+                                    }
                                 </p>
                             </div>
 
