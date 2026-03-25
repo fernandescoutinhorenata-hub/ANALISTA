@@ -26,6 +26,8 @@ export const AdminPanel: React.FC = () => {
     const [userEncontrado, setUserEncontrado] = useState<any>(null);
     const [assinaturaAtual, setAssinaturaAtual] = useState<any>(null);
     const [assinantesAtivos, setAssinantesAtivos] = useState<any[]>([]);
+    const [todosUsuarios, setTodosUsuarios] = useState<any[]>([]);
+    const [viewMode, setViewMode] = useState<'ativos' | 'todos'>('ativos');
     const [loading, setLoading] = useState(false);
     const [btnLoading, setBtnLoading] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -35,23 +37,35 @@ export const AdminPanel: React.FC = () => {
         setTimeout(() => setToast(null), 4000);
     };
 
-    const fetchAssinantesAtivos = async () => {
-        const { data, error } = await supabase
-            .from('subscriptions')
-            .select(`
-                *,
-                perfis (email, nome)
-            `)
-            .eq('status', 'ativo')
-            .gt('data_fim', new Date().toISOString())
-            .order('data_fim', { ascending: false });
+    const fetchDados = async () => {
+        setLoading(true);
+        try {
+            // 1. Buscar Assinantes Ativos
+            const { data: ativos, error: eAtivos } = await supabase
+                .from('subscriptions')
+                .select('*, perfis(email, nome)')
+                .eq('status', 'ativo')
+                .gt('data_fim', new Date().toISOString())
+                .order('data_fim', { ascending: false });
 
-        if (error) { /* Erro silenciado */ }
-        else setAssinantesAtivos(data || []);
+            if (!eAtivos) setAssinantesAtivos(ativos || []);
+
+            // 2. Buscar Todos os Usuários
+            const { data: todos, error: eTodos } = await supabase
+                .from('perfis')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (!eTodos) setTodosUsuarios(todos || []);
+        } catch (err) {
+            console.error('Erro ao carregar dados adm:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        fetchAssinantesAtivos();
+        fetchDados();
     }, []);
 
     const buscarUsuario = async () => {
@@ -86,16 +100,15 @@ export const AdminPanel: React.FC = () => {
             if (sError) { /* Erro silenciado */ }
             setAssinaturaAtual(sub);
         } catch (error) {
-            // Erro na busca silenciado
             showToast('Erro ao realizar busca.', 'error');
         } finally {
             setLoading(false);
         }
     };
 
-    const ativarAssinatura = async (plano: 'semanal' | 'mensal') => {
-        if (!userEncontrado) return;
-        setBtnLoading(plano);
+    const ativarAssinatura = async (userId: string, plano: 'semanal' | 'mensal') => {
+        setBtnLoading(`${userId}-${plano}`);
+        console.log(`[ADM] Iniciando liberação manual: User ${userId} | Plano ${plano}`);
 
         const dias = plano === 'semanal' ? 7 : 30;
         const inicio = new Date();
@@ -103,26 +116,31 @@ export const AdminPanel: React.FC = () => {
         fim.setDate(inicio.getDate() + dias);
 
         try {
-            // Upsert na tabela de assinaturas
+            // 1. Deletar anteriores para evitar duplicidade
+            await supabase.from('subscriptions').delete().eq('user_id', userId);
+
+            // 2. Inserir nova assinatura
             const { error } = await supabase
                 .from('subscriptions')
-                .upsert({
-                    user_id: userEncontrado.id,
+                .insert({
+                    user_id: userId,
                     plano: plano,
                     status: 'ativo',
                     data_inicio: inicio.toISOString(),
                     data_fim: fim.toISOString(),
                     created_at: new Date().toISOString()
-                }, { onConflict: 'user_id' }); // Conflito no user_id ativa uma nova
+                });
 
             if (error) throw error;
 
-            showToast(`Assinatura ${plano.toUpperCase()} ativada!`, 'success');
-            buscarUsuario(); // Recalcula status na tela
-            fetchAssinantesAtivos(); // Atualiza lista global
+            showToast(`Acesso ${plano.toUpperCase()} liberado com sucesso!`, 'success');
+            
+            // Recarregar dados
+            fetchDados();
+            if (userEncontrado?.id === userId) buscarUsuario();
         } catch (error: any) {
-            // Erro ao ativar silenciado
-            showToast('Erro ao ativar assinatura.', 'error');
+            console.error('[ADM] Erro ao liberar:', error);
+            showToast('Erro ao liberar acesso.', 'error');
         } finally {
             setBtnLoading(null);
         }
@@ -215,18 +233,18 @@ export const AdminPanel: React.FC = () => {
                                 <div className="space-y-3">
                                     <span className="text-label uppercase tracking-widest block mb-2">Liberar Acesso</span>
                                     <button 
-                                        onClick={() => ativarAssinatura('semanal')}
+                                        onClick={() => ativarAssinatura(userEncontrado.id, 'semanal')}
                                         disabled={!!btnLoading}
                                         className="btn-primary w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] border-none"
                                     >
-                                        {btnLoading === 'semanal' ? 'Processando...' : 'Ativar Semanal (7 dias)'}
+                                        {btnLoading === `${userEncontrado.id}-semanal` ? 'Processando...' : 'Ativar Semanal (7 dias)'}
                                     </button>
                                     <button 
-                                        onClick={() => ativarAssinatura('mensal')}
+                                        onClick={() => ativarAssinatura(userEncontrado.id, 'mensal')}
                                         disabled={!!btnLoading}
                                         className="btn-primary w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] border-none"
                                     >
-                                        {btnLoading === 'mensal' ? 'Processando...' : 'Ativar Mensal (30 dias)'}
+                                        {btnLoading === `${userEncontrado.id}-mensal` ? 'Processando...' : 'Ativar Mensal (30 dias)'}
                                     </button>
                                 </div>
                             </div>
@@ -237,10 +255,25 @@ export const AdminPanel: React.FC = () => {
                 {/* Lado Direito: Listagem Geral */}
                 <div className="lg:col-span-2 space-y-8 animate-reveal" style={{ animationDelay: '0.2s' }}>
                     <div className="card overflow-hidden">
-                        <div className="p-8 border-b border-[var(--border-subtle)] flex items-center justify-between">
-                            <CardHeader title="Base de Assinantes" subtitle="Monitoramento vital de ativações" icon={TrendingUp} />
-                            <div className="p-2 px-4 rounded-lg bg-[var(--accent-green-muted)] text-[var(--accent-green)] font-bold text-xs uppercase">
-                                {assinantesAtivos.length} Ativos
+                         <div className="p-8 border-b border-[var(--border-subtle)] flex items-center justify-between">
+                            <div className="flex items-center gap-6">
+                                <CardHeader title="Base de Usuários" subtitle="Monitoramento vital de ativações" icon={TrendingUp} />
+                                
+                                {/* Toggle Abas */}
+                                <div className="flex bg-[var(--bg-main)] p-1 rounded-lg border border-[var(--border-subtle)]">
+                                    <button 
+                                        onClick={() => setViewMode('ativos')}
+                                        className={`px-4 py-1.5 rounded-md text-[10px] font-bold transition-all ${viewMode === 'ativos' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
+                                    >
+                                        ASSINANTES ({assinantesAtivos.length})
+                                    </button>
+                                    <button 
+                                        onClick={() => setViewMode('todos')}
+                                        className={`px-4 py-1.5 rounded-md text-[10px] font-bold transition-all ${viewMode === 'todos' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
+                                    >
+                                        TODOS ({todosUsuarios.length})
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         
@@ -249,43 +282,80 @@ export const AdminPanel: React.FC = () => {
                                 <thead className="bg-[var(--bg-surface)] text-label uppercase tracking-wider sticky top-0 z-10">
                                     <tr>
                                         <th className="px-8 py-4">Usuário</th>
-                                        <th className="px-8 py-4">Plano</th>
-                                        <th className="px-8 py-4">Início</th>
-                                        <th className="px-8 py-4">Expiração</th>
-                                        <th className="px-8 py-4 text-right">Status</th>
+                                        {viewMode === 'ativos' ? (
+                                            <>
+                                                <th className="px-8 py-4">Plano</th>
+                                                <th className="px-8 py-4">Início</th>
+                                                <th className="px-8 py-4">Expiração</th>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <th className="px-8 py-4">E-mail</th>
+                                                <th className="px-8 py-4">Criado em</th>
+                                                <th className="px-8 py-4">Usos OCR</th>
+                                            </>
+                                        )}
+                                        <th className="px-8 py-4 text-right">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[var(--border-subtle)]">
-                                    {assinantesAtivos.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="px-8 py-20 text-center opacity-30 text-label italic">
-                                                Nenhuma assinatura ativa encontrada no momento.
-                                            </td>
-                                        </tr>
+                                    {viewMode === 'ativos' ? (
+                                        assinantesAtivos.length === 0 ? (
+                                            <tr><td colSpan={5} className="px-8 py-20 text-center opacity-30 text-label italic">Nenhuma assinatura ativa encontrada.</td></tr>
+                                        ) : (
+                                            assinantesAtivos.map((sub) => (
+                                                <tr key={sub.id} className="table-row group">
+                                                    <td className="px-8 py-5">
+                                                        <p className="font-bold text-[var(--text-primary)] uppercase truncate w-48">{sub.perfis?.nome || 'Usuário'}</p>
+                                                        <p className="text-[10px] text-[var(--text-tertiary)]">{sub.perfis?.email}</p>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <span className={`badge ${sub.plano === 'mensal' ? 'badge-purple' : 'badge-ghost border border-[var(--border-subtle)]'}`}>
+                                                            {sub.plano.toUpperCase()}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-5 font-mono text-xs opacity-60">
+                                                        {new Date(sub.data_inicio).toLocaleDateString('pt-BR')}
+                                                    </td>
+                                                    <td className="px-8 py-5 font-mono text-xs font-bold text-[var(--accent)]">
+                                                        {new Date(sub.data_fim).toLocaleDateString('pt-BR')}
+                                                    </td>
+                                                    <td className="px-8 py-5 text-right">
+                                                        <div className="inline-flex items-center gap-2 text-[var(--accent-green)] font-bold text-[10px] uppercase">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-green)] animate-pulse" />
+                                                            Ativo
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )
                                     ) : (
-                                        assinantesAtivos.map((sub) => (
-                                            <tr key={sub.id} className="table-row group">
-                                                <td className="px-8 py-5">
-                                                    <p className="font-bold text-[var(--text-primary)] uppercase truncate w-48">
-                                                        {sub.perfis?.nome || 'Usuário'}
-                                                    </p>
-                                                    <p className="text-[10px] text-[var(--text-tertiary)]">{sub.perfis?.email}</p>
-                                                </td>
-                                                <td className="px-8 py-5">
-                                                    <span className={`badge ${sub.plano === 'mensal' ? 'badge-purple' : 'badge-ghost border border-[var(--border-subtle)]'}`}>
-                                                        {sub.plano.toUpperCase()}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-5 font-mono text-xs opacity-60">
-                                                    {new Date(sub.data_inicio).toLocaleDateString('pt-BR')}
-                                                </td>
-                                                <td className="px-8 py-5 font-mono text-xs font-bold text-[var(--accent)]">
-                                                    {new Date(sub.data_fim).toLocaleDateString('pt-BR')}
+                                        todosUsuarios.map((u) => (
+                                            <tr key={u.id} className="table-row group">
+                                                <td className="px-8 py-5 font-bold text-[var(--text-primary)] uppercase">{u.nome || 'Sem Nome'}</td>
+                                                <td className="px-8 py-5 text-xs text-[var(--text-secondary)]">{u.email}</td>
+                                                <td className="px-8 py-5 text-xs opacity-60">{new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
+                                                <td className="px-8 py-5 text-center">
+                                                    <span className="badge badge-ghost text-[10px]">{u.ocr_uses || 0}</span>
                                                 </td>
                                                 <td className="px-8 py-5 text-right">
-                                                    <div className="inline-flex items-center gap-2 text-[var(--accent-green)] font-bold text-[10px] uppercase">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-green)] animate-pulse" />
-                                                        Ativo
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button 
+                                                            onClick={() => ativarAssinatura(u.id, 'semanal')}
+                                                            disabled={!!btnLoading}
+                                                            title="Liberar 7 Dias"
+                                                            className="p-2 rounded-lg bg-[var(--bg-main)] hover:bg-[var(--accent-muted)] text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-all"
+                                                        >
+                                                            {btnLoading === `${u.id}-semanal` ? <Zap size={14} className="animate-spin" /> : <Zap size={14} />}
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => ativarAssinatura(u.id, 'mensal')}
+                                                            disabled={!!btnLoading}
+                                                            title="Liberar 30 Dias"
+                                                            className="p-2 rounded-lg bg-[var(--accent-muted)] hover:bg-[var(--accent)] text-[var(--accent)] hover:text-white transition-all shadow-lg"
+                                                        >
+                                                            {btnLoading === `${u.id}-mensal` ? <Zap size={14} className="animate-spin" /> : <Zap size={14} fill="currentColor" />}
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
