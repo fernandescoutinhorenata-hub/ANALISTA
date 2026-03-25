@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CadastroSquad, SquadPlayer } from '../components/CadastroSquad';
-import { sanitizarNome, matchNomeOficial } from '../utils/ocr-processing';
+import { CadastroSquad, type SquadPlayer } from '../components/CadastroSquad';
+import { matchNomeOficial } from '../utils/ocr-processing';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
@@ -353,28 +353,43 @@ export const InputData: React.FC = () => {
         setLoading(true);
         try {
             const { error } = await supabase.from('partidas_geral').update({
-                quebra_call: callDetail.quebraCall,
+                quebra_call: true,
                 resultado_call: callDetail.resultadoCall,
-                qual_call: callDetail.quebraCall ? callDetail.qualCall.toUpperCase() : null
+                qual_call: callDetail.qualCall ? callDetail.qualCall.toUpperCase() : null
             }).eq('id', currentMatchId);
 
             if (error) throw error;
-            showToast('Detalhes da call salvos!', 'success');
-            handleCloseDetailModal();
+            setIsMatchDetailModalOpen(false);
+            window.location.reload();
         } catch (err: any) {
             showToast(err.message || 'Erro ao salvar detalhes', 'error');
-        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleNoQuebraCall = async () => {
+        if (!currentMatchId) return;
+        setCallDetail(p => ({ ...p, quebraCall: false }));
+        setLoading(true);
+        try {
+            const { error } = await supabase.from('partidas_geral').update({
+                quebra_call: false,
+                resultado_call: null,
+                qual_call: null
+            }).eq('id', currentMatchId);
+
+            if (error) throw error;
+            setIsMatchDetailModalOpen(false);
+            window.location.reload();
+        } catch (err: any) {
+            showToast(err.message || 'Erro', 'error');
             setLoading(false);
         }
     };
 
     const handleCloseDetailModal = () => {
         setIsMatchDetailModalOpen(false);
-        setCallDetail({ quebraCall: null, resultadoCall: null, qualCall: '' });
-        setCurrentMatchId(null);
-        // Limpar formulário principal após fechar detalhes
-        setPlayers(players.map(p => ({ ...p, kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' })));
-        setMatchData(prev => ({ ...prev, rodada: String(parseInt(prev.rodada) + 1 || '') }));
+        window.location.reload();
     };
     const handleResetData = async () => {
         if (!user || resetLoading) return;
@@ -675,62 +690,67 @@ export const InputData: React.FC = () => {
                                             SIM
                                         </button>
                                         <button 
-                                            onClick={() => setCallDetail(p => ({ ...p, quebraCall: false }))}
+                                            onClick={handleNoQuebraCall}
                                             className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.quebraCall === false ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
                                         >
-                                            NÃO
+                                            {loading && callDetail.quebraCall === false ? 'Aguarde...' : 'NÃO'}
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Pergunta 2: Resultado */}
-                                <div className="space-y-3">
-                                    <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                                        Qual foi o resultado?
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button 
-                                            onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'win' }))}
-                                            className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'win' ? 'bg-[var(--accent-green)] border-[var(--accent-green)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
-                                        >
-                                            WIN
-                                        </button>
-                                        <button 
-                                            onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'loss' }))}
-                                            className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'loss' ? 'bg-[var(--accent-red)] border-[var(--accent-red)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
-                                        >
-                                            LOSS
-                                        </button>
-                                    </div>
-                                </div>
+                                {/* Condicional: Se Houve quebra de call */}
+                                {callDetail.quebraCall === true && (
+                                    <div className="space-y-6 animate-reveal">
+                                        {/* Pergunta 2: Resultado */}
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                                                Qual foi o resultado?
+                                            </label>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <button 
+                                                    onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'win' }))}
+                                                    className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'win' ? 'bg-[var(--accent-green)] border-[var(--accent-green)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                                >
+                                                    WIN
+                                                </button>
+                                                <button 
+                                                    onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'loss' }))}
+                                                    className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'loss' ? 'bg-[var(--accent-red)] border-[var(--accent-red)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                                >
+                                                    LOSS
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                {/* Pergunta 3: Qual Call (Condicional) */}
-                                {callDetail.quebraCall && (
-                                    <div className="space-y-3 animate-reveal">
-                                        <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                                            Em qual call quebramos?
-                                        </label>
-                                        <input 
-                                            type="text"
-                                            value={callDetail.qualCall}
-                                            onChange={(e) => setCallDetail(p => ({ ...p, qualCall: e.target.value }))}
-                                            placeholder="Ex: Call do final, call da zona..."
-                                            className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-all"
-                                        />
+                                        {/* Pergunta 3: Qual Call (Condicional) */}
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                                                Em qual call quebramos?
+                                            </label>
+                                            <input 
+                                                type="text"
+                                                value={callDetail.qualCall}
+                                                onChange={(e) => setCallDetail(p => ({ ...p, qualCall: e.target.value }))}
+                                                placeholder="Ex: Call do final, call da zona..."
+                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-all"
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </div>
 
                             <div className="flex flex-col gap-3 mt-4">
-                                <button
-                                    onClick={handleSaveCallDetails}
-                                    disabled={loading || callDetail.quebraCall === null || callDetail.resultadoCall === null}
-                                    className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-4 font-black uppercase tracking-widest text-xs rounded-xl shadow-xl shadow-[var(--accent-glow)] transition-all disabled:opacity-30"
-                                >
-                                    {loading ? 'SALVANDO...' : 'Salvar e Continuar'}
-                                </button>
+                                {callDetail.quebraCall === true && callDetail.resultadoCall !== null && (
+                                    <button
+                                        onClick={handleSaveCallDetails}
+                                        disabled={loading}
+                                        className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-4 font-black uppercase tracking-widest text-xs rounded-xl shadow-xl shadow-[var(--accent-glow)] transition-all disabled:opacity-30 animate-reveal"
+                                    >
+                                        {loading ? 'SALVANDO...' : 'Salvar e Continuar'}
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleCloseDetailModal}
                                     className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-[10px] font-bold uppercase transition-colors py-2 tracking-widest"
