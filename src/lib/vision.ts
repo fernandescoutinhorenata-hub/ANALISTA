@@ -5,6 +5,10 @@
 import { supabase } from './supabase'
 
 export async function readScreenshot(base64Image: string, mediaType: string): Promise<string> {
+    /**
+     * Instruções para padronização de nomes:
+     * Extrair APENAS o nome sem clã/guild, prefixos (GRT, RUSH, LOUD) ou símbolos (#, .).
+     */
     const { data, error } = await supabase.functions.invoke('ocr', {
         body: { base64Image, mediaType }
     })

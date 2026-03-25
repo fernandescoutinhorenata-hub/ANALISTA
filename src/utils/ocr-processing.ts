@@ -82,6 +82,14 @@ export function parseScreenshot(text: string): OCRResult {
     return { mapa, colocacao, jogadores };
 }
 
+const sanitizarNome = (nome: string): string => {
+    return nome
+        .replace(/#/g, '')           // remove #
+        .replace(/\./g, '')          // remove pontos
+        .trim()                      // remove espaços extras
+        .toUpperCase();               // padroniza maiúsculas
+};
+
 /**
  * Tenta extrair nomes de jogadores a partir das linhas antes de cada K/D/A.
  * Heurística: linha curta (3-16 chars) acima de um padrão X/X/X, sem dígitos dominantes.
@@ -93,7 +101,7 @@ function extrairNomes(lines: string[], count: number): string[] {
         // Linha seguinte tem padrão N/N/N?
         const proxima = lines[i + 1] ?? '';
         if (/\d+\/\d+\/\d+/.test(proxima) && linha.length >= 2 && linha.length <= 20 && !/^\d/.test(linha)) {
-            nomes.push(linha.substring(0, 20).toUpperCase());
+            nomes.push(sanitizarNome(linha.substring(0, 20)));
         }
     }
     return nomes;

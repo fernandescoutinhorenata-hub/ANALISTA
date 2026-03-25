@@ -51,6 +51,7 @@ serve(async (req) => {
   ]
 }
 KDA aparece como K/D/A abaixo do nome. Ex: 4/1/2 = kills:4, mortes:1, assists:2.
+Para o nome do jogador, extraia APENAS o nome sem clã/guild. Remova qualquer prefixo de clã (ex: GRT, RUSH, LOUD) e símbolos (#, ., espaços extras). Retorne apenas o nick limpo. Ex: 'GRT COACH7' → 'COACH7', 'GRT.HEROXIT7' → 'HEROXIT7'.
 IMPORTANTE: Retorne SOMENTE o JSON puro, sem nenhum texto antes ou depois.`
             }
           ]
