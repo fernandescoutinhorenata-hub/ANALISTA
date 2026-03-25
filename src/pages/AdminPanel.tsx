@@ -189,6 +189,29 @@ export const AdminPanel: React.FC = () => {
         }
     };
 
+    const desativarAssinatura = async (userId: string, email: string) => {
+        if (!window.confirm(`Desativar assinatura de [${email}]?`)) return;
+        
+        setBtnLoading(`desativar-${userId}`);
+        try {
+            const { error } = await supabase
+                .from('subscriptions')
+                .update({ status: 'expirado' })
+                .eq('user_id', userId)
+                .eq('status', 'ativo');
+
+            if (error) throw error;
+
+            showToast('Assinatura desativada.', 'success');
+            fetchDados();
+        } catch (error) {
+            console.error('[ADM] Erro ao desativar:', error);
+            showToast('Falha ao desativar assinatura.', 'error');
+        } finally {
+            setBtnLoading(null);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] p-8 font-['Inter',sans-serif]">
             {/* Header Administrativo */}
@@ -364,9 +387,18 @@ export const AdminPanel: React.FC = () => {
                                                         {new Date(sub.data_fim).toLocaleDateString('pt-BR')}
                                                     </td>
                                                     <td className="px-8 py-5 text-right">
-                                                        <div className="inline-flex items-center gap-2 text-[var(--accent-green)] font-bold text-[10px] uppercase">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-green)] animate-pulse" />
-                                                            Ativo
+                                                        <div className="flex items-center justify-end gap-3">
+                                                            <div className="inline-flex items-center gap-2 text-[var(--accent-green)] font-bold text-[10px] uppercase">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-green)] animate-pulse" />
+                                                                Ativo
+                                                            </div>
+                                                            <button 
+                                                                onClick={() => desativarAssinatura(sub.user_id, sub.perfis?.email || 'Usuário')}
+                                                                disabled={!!btnLoading}
+                                                                className="px-3 py-1 text-[10px] font-bold text-red-500 border border-red-500/30 rounded-md hover:bg-red-500/10 transition-all cursor-pointer"
+                                                            >
+                                                                {btnLoading === `desativar-${sub.user_id}` ? '...' : 'DESATIVAR'}
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
