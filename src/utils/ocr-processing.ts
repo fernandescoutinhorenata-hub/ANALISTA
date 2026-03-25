@@ -88,11 +88,16 @@ export function parseScreenshot(text: string): OCRResult {
 }
 
 export function sanitizarNome(nome: string): string {
-    return nome
+    let limpo = nome
         .replace(/#/g, '')           // remove #
         .replace(/\./g, '')          // remove pontos
         .trim()                      // remove espaços extras
-        .toUpperCase();               // padroniza maiúsculas
+        .toUpperCase();              // padroniza maiúsculas
+        
+    // Corrigir erros comuns de OCR da fonte do Free Fire
+    if (limpo === 'IAPA') limpo = 'JAPA';
+    
+    return limpo;
 }
 
 /**
