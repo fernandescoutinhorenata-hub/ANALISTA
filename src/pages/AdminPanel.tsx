@@ -377,6 +377,12 @@ export const AdminPanel: React.FC = () => {
                     <span className="text-heading font-bold">{toast.message}</span>
                 </div>
             )}
+
+            {/* Debug Footer */}
+            <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-[var(--border-subtle)] opacity-30 text-[10px] flex justify-between">
+                <span>Conectado em: {import.meta.env.VITE_SUPABASE_URL}</span>
+                <span>v1.0.2-admin-debug</span>
+            </footer>
         </div>
     );
 };
