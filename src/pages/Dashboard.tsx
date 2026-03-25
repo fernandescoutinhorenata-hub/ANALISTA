@@ -644,7 +644,7 @@ export const Dashboard: React.FC = () => {
                                 <select
                                     value={filters.date}
                                     onChange={e => setFilters(prev => ({ ...prev, date: e.target.value }))}
-                                    className="outline-none cursor-pointer bg-transparent"
+                                    className="outline-none cursor-pointer bg-[var(--bg-surface)] text-[var(--text-primary)]"
                                 >
                                     <option value="Todos">Todas as Datas</option>
                                     {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
@@ -655,7 +655,7 @@ export const Dashboard: React.FC = () => {
                                 <select
                                     value={filters.championship}
                                     onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}
-                                    className="outline-none cursor-pointer bg-transparent"
+                                    className="outline-none cursor-pointer bg-[var(--bg-surface)] text-[var(--text-primary)]"
                                 >
                                     <option value="Todos">Todos Campeonatos</option>
                                     {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
@@ -919,7 +919,7 @@ export const Dashboard: React.FC = () => {
                                             <select
                                                 value={selectedPlayer}
                                                 onChange={e => setSelectedPlayer(e.target.value)}
-                                                className="bg-transparent text-sm outline-none cursor-pointer text-[var(--text-primary)] min-w-[160px]"
+                                                className="bg-[var(--bg-surface)] text-sm outline-none cursor-pointer text-[var(--text-primary)] min-w-[160px]"
                                             >
                                                 <option value="Todos">Todos os Jogadores</option>
                                                 {playerList.map((p: any) => (
