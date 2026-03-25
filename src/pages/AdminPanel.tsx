@@ -8,11 +8,10 @@ import {
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
-// Client admin com service_role (ignora RLS) — usado somente neste painel
-const supabaseAdmin = createClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_SERVICE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+// Client admin com service_role (ignora RLS) — acesso restrito ao painel admin
+const ADMIN_URL = 'https://idegcrfymkgkjphluuda.supabase.co';
+const ADMIN_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkZWdjcmZ5bWtna2pwaGx1dWRhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTE4Nzc5OCwiZXhwIjoyMDg2NzYzNzk4fQ.ymS4J8PUuE7yDkJiCLNPxX0ycOlh5HfbU4LOsWxqHxQ';
+const supabaseAdmin = createClient(ADMIN_URL, ADMIN_KEY);
 
 // ─── Componentes de UI (Reusando estilo do Dashboard) ──────────────────────────────────────────
 const CardHeader: React.FC<{ title: string; subtitle?: string; icon: any }> = ({ title, subtitle, icon: Icon }) => (
@@ -83,11 +82,12 @@ export const AdminPanel: React.FC = () => {
                 setAssinantesAtivos([]);
             }
 
-            // 4. Buscar Todos os Usuários
+            // 4. Buscar Todos os Usuários (sem limit, sem filtro)
             const { data: todos, error: eTodos } = await supabaseAdmin
                 .from('perfis')
-                .select('*')
-                .order('created_at', { ascending: false });
+                .select('id, email, nome, ocr_uses, created_at')
+                .order('created_at', { ascending: false })
+                .limit(1000);
 
             if (eTodos) {
                 console.error('[ADM] Erro todos perfis:', eTodos);
