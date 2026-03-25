@@ -292,22 +292,25 @@ export const InputData: React.FC = () => {
             if (errorGeral) throw errorGeral;
 
             // 2. Inserir em performance_jogadores para cada player
-            const performanceRecords = players.map(p => ({
-                user_id: user.id,
-                data: matchData.data,
-                equipe: matchData.equipe,
-                modo: 'Campeonato',
-                mapa: matchData.mapa,
-                posicao: Math.max(1, parseInt(matchData.colocacao) || 1),
-                player: p.nome.trim() || 'JOGADOR DESCONHECIDO',
-                kill: Math.max(0, parseInt(p.kills) || 0),
-                morte: Math.max(0, parseInt(p.morte) || 0),
-                assistencia: Math.max(0, parseInt(p.assistencias) || 0),
-                queda: 0,
-                dano_causado: Math.max(0, parseInt(p.dano) || 0),
-                derrubados: Math.max(0, parseInt(p.derrubados) || 0),
-                ressurgimento: Math.max(0, parseInt(p.revividos) || 0)
-            }));
+            const performanceRecords = players.map(p => {
+                const nomeSeguro = matchNomeOficial(p.nome, squadJogadores.map(s => s.nome_oficial));
+                return {
+                    user_id: user.id,
+                    data: matchData.data,
+                    equipe: matchData.equipe,
+                    modo: 'Campeonato',
+                    mapa: matchData.mapa,
+                    posicao: Math.max(1, parseInt(matchData.colocacao) || 1),
+                    player: nomeSeguro || 'JOGADOR DESCONHECIDO',
+                    kill: Math.max(0, parseInt(p.kills) || 0),
+                    morte: Math.max(0, parseInt(p.morte) || 0),
+                    assistencia: Math.max(0, parseInt(p.assistencias) || 0),
+                    queda: 0,
+                    dano_causado: Math.max(0, parseInt(p.dano) || 0),
+                    derrubados: Math.max(0, parseInt(p.derrubados) || 0),
+                    ressurgimento: Math.max(0, parseInt(p.revividos) || 0)
+                };
+            });
 
             const { error: errorPerf } = await supabase.from('performance_jogadores').insert(performanceRecords);
             if (errorPerf) throw errorPerf;
@@ -337,9 +340,7 @@ export const InputData: React.FC = () => {
                 );
             }
 
-            // Limpar alguns campos mantendo o contexto da partida
-            setPlayers(players.map(p => ({ ...p, kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' })));
-            setMatchData(prev => ({ ...prev, rodada: String(parseInt(prev.rodada) + 1 || '') }));
+            // A abertura do modal já limpa os dados caso seja pulada/confirmada.
 
         } catch (err: any) {
             showToast(err.message || 'Erro ao salvar', 'error');
