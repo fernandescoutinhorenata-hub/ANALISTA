@@ -5,13 +5,10 @@ import {
     CheckCircle, XCircle, Zap, TrendingUp,
     ShieldAlert
 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
-// Client admin com service_role (ignora RLS) — acesso restrito ao painel admin
-const ADMIN_URL = 'https://idegcrfymkgkjphluuda.supabase.co';
-const ADMIN_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkZWdjcmZ5bWtna2pwaGx1dWRhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTE4Nzc5OCwiZXhwIjoyMDg2NzYzNzk4fQ.ymS4J8PUuE7yDkJiCLNPxX0ycOlh5HfbU4LOsWxqHxQ';
-const supabaseAdmin = createClient(ADMIN_URL, ADMIN_KEY);
+// No AdminPanel, usamos apenas o client público. Operações privilégidas são via Edge Functions.
+
 
 // ─── Componentes de UI (Reusando estilo do Dashboard) ──────────────────────────────────────────
 const CardHeader: React.FC<{ title: string; subtitle?: string; icon: any }> = ({ title, subtitle, icon: Icon }) => (
@@ -46,8 +43,8 @@ export const AdminPanel: React.FC = () => {
     const fetchDados = async () => {
         setLoading(true);
         try {
-            // 1. Buscar assinaturas ativas (sem JOIN)
-            const { data: subs, error: eSubs } = await supabaseAdmin
+            // 1. Buscar assinaturas ativas via Edge Function ou Query (se RLS permitir)
+            const { data: subs, error: eSubs } = await supabase
                 .from('subscriptions')
                 .select('*')
                 .eq('status', 'ativo')
@@ -60,7 +57,7 @@ export const AdminPanel: React.FC = () => {
             } else if (subs && subs.length > 0) {
                 // 2. Buscar perfis dos assinantes separadamente
                 const userIds = subs.map((s: any) => s.user_id);
-                const { data: perfisAtivos, error: ePerfisAtivos } = await supabaseAdmin
+                const { data: perfisAtivos, error: ePerfisAtivos } = await supabase
                     .from('perfis')
                     .select('id, email, nome')
                     .in('id', userIds);
@@ -69,7 +66,7 @@ export const AdminPanel: React.FC = () => {
                     console.error('[ADM] Erro perfis ativos:', ePerfisAtivos);
                 }
 
-                // 3. Combinar assinaturas com perfis no frontend
+                // 3. Combinar no frontend
                 const perfisMap: Record<string, any> = {};
                 (perfisAtivos || []).forEach((p: any) => { perfisMap[p.id] = p; });
 
@@ -82,34 +79,29 @@ export const AdminPanel: React.FC = () => {
                 setAssinantesAtivos([]);
             }
 
-            // 4. Buscar Todos os Usuários via Edge Function ou Query Direta
+            // 4. Buscar Todos os Usuários via Edge Function (Seguro)
             try {
-                const { data: funcData, error: funcError } = await supabaseAdmin.functions.invoke('get-all-users');
+                const { data: funcData, error: funcError } = await supabase.functions.invoke('get-all-users');
                 
                 if (!funcError && funcData?.users) {
                     setTodosUsuarios(funcData.users);
-                } else {
-                    const { data: todos, error: eTodos } = await supabaseAdmin
-                        .from('perfis')
-                        .select('id, email, nome, ocr_uses, created_at')
-                        .order('created_at', { ascending: false })
-                        .limit(1000);
-
-                    if (eTodos) throw eTodos;
-                    setTodosUsuarios(todos || []);
+                } else if (funcError) {
+                    throw funcError;
                 }
-            } catch (error) {
-                console.warn('[ADM] Erro Edge Function ou Query Direta:', error);
-                const { data: fallbackUsers } = await supabaseAdmin
+            } catch (error: any) {
+                console.warn('[ADM] Erro ao chamar Edge Function:', error);
+                
+                // Fallback para query direta (funciona se o RLS estiver desabilitado)
+                const { data: todos } = await supabase
                     .from('perfis')
                     .select('id, email, nome, ocr_uses, created_at')
                     .order('created_at', { ascending: false })
                     .limit(1000);
-                setTodosUsuarios(fallbackUsers || []);
+                setTodosUsuarios(todos || []);
             }
         } catch (err: any) {
             console.error('Erro ao carregar dados adm:', err);
-            showToast('Falha crítica ao carregar banco', 'error');
+            showToast('Falha técnica ao carregar banco', 'error');
         } finally {
             setLoading(false);
         }
