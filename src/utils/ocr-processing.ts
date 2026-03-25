@@ -62,15 +62,20 @@ export function parseScreenshot(text: string): OCRResult {
     // Heurística simples: 3º número após a linha K/D/A para cada jogador
     const nomes = extrairNomes(lines, kdaMatches.length);
 
-    const jogadores: OCRJogador[] = kdaMatches.slice(0, 4).map((kda, i) => ({
-        nome:         nomes[i] ?? `Jogador ${i + 1}`,
-        kills:        parseInt(kda[1]) || 0,
-        mortes:       parseInt(kda[2]) || 0,
-        assists:      parseInt(kda[3]) || 0,
-        dano:         dmgMatches[i] ? parseInt(dmgMatches[i][1]) : 0,
-        derrubados:   0,
-        ressurgimentos: 0,
-    }));
+    const jogadores: OCRJogador[] = kdaMatches.slice(0, 4).map((kda, i) => {
+        let nomeRaw = nomes[i] ?? `Jogador ${i + 1}`;
+        let nomeFinal = nomeRaw.startsWith('Jogador ') ? nomeRaw : sanitizarNome(nomeRaw);
+        
+        return {
+            nome:         nomeFinal,
+            kills:        parseInt(kda[1]) || 0,
+            mortes:       parseInt(kda[2]) || 0,
+            assists:      parseInt(kda[3]) || 0,
+            dano:         dmgMatches[i] ? parseInt(dmgMatches[i][1]) : 0,
+            derrubados:   0,
+            ressurgimentos: 0,
+        };
+    });
 
     // Se não encontrou nenhum jogador via K/D/A, retorna 4 jogadores vazios
     if (jogadores.length === 0) {
@@ -82,13 +87,13 @@ export function parseScreenshot(text: string): OCRResult {
     return { mapa, colocacao, jogadores };
 }
 
-const sanitizarNome = (nome: string): string => {
+function sanitizarNome(nome: string): string {
     return nome
         .replace(/#/g, '')           // remove #
         .replace(/\./g, '')          // remove pontos
         .trim()                      // remove espaços extras
         .toUpperCase();               // padroniza maiúsculas
-};
+}
 
 /**
  * Tenta extrair nomes de jogadores a partir das linhas antes de cada K/D/A.
