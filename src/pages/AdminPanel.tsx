@@ -48,7 +48,12 @@ export const AdminPanel: React.FC = () => {
                 .gt('data_fim', new Date().toISOString())
                 .order('data_fim', { ascending: false });
 
-            if (!eAtivos) setAssinantesAtivos(ativos || []);
+            if (eAtivos) {
+                console.error('[ADM] Erro assinantes:', eAtivos);
+                showToast(`Erro assinantes: ${eAtivos.message}`, 'error');
+            } else {
+                setAssinantesAtivos(ativos || []);
+            }
 
             // 2. Buscar Todos os Usuários
             const { data: todos, error: eTodos } = await supabase
@@ -56,9 +61,15 @@ export const AdminPanel: React.FC = () => {
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (!eTodos) setTodosUsuarios(todos || []);
-        } catch (err) {
+            if (eTodos) {
+                console.error('[ADM] Erro todos perfis:', eTodos);
+                showToast(`Erro perfis: ${eTodos.message}`, 'error');
+            } else {
+                setTodosUsuarios(todos || []);
+            }
+        } catch (err: any) {
             console.error('Erro ao carregar dados adm:', err);
+            showToast('Falha crítica ao carregar banco', 'error');
         } finally {
             setLoading(false);
         }
