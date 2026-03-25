@@ -33,7 +33,7 @@ const MAPAS_PT: Record<string, string> = {
     'BERMUDA':    'BERMUDA',
 };
 
-export function parseScreenshot(text: string): OCRResult {
+export function parseScreenshot(text: string, jogadoresCadastrados: string[] = []): OCRResult {
     const upper = text.toUpperCase();
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
@@ -60,11 +60,11 @@ export function parseScreenshot(text: string): OCRResult {
 
     // Derrubados — pode aparecer como "KNOCK" ou linha com "Derr" ou número isolado após D/K/A
     // Heurística simples: 3º número após a linha K/D/A para cada jogador
-    const nomes = extrairNomes(lines, kdaMatches.length);
+    const nomes = extrairNomes(lines, kdaMatches.length, jogadoresCadastrados);
 
     const jogadores: OCRJogador[] = kdaMatches.slice(0, 4).map((kda, i) => {
         let nomeRaw = nomes[i] ?? `Jogador ${i + 1}`;
-        let nomeFinal = nomeRaw.startsWith('Jogador ') ? nomeRaw : sanitizarNome(nomeRaw);
+        let nomeFinal = nomeRaw.startsWith('Jogador ') ? nomeRaw : matchNomeOficial(nomeRaw, jogadoresCadastrados);
         
         return {
             nome:         nomeFinal,
@@ -85,6 +85,45 @@ export function parseScreenshot(text: string): OCRResult {
     }
 
     return { mapa, colocacao, jogadores };
+}
+
+export function matchNomeOficial(nomeOCR: string, jogadoresCadastrados: string[]): string {
+    const normalizado = sanitizarNome(nomeOCR);
+    
+    if (!jogadoresCadastrados || jogadoresCadastrados.length === 0) return normalizado;
+    
+    // 1. Match exato
+    const exato = jogadoresCadastrados.find(j => j === normalizado);
+    if (exato) return exato;
+    
+    // 2. Match por similaridade (distância de Levenshtein <= 2)
+    const levenshtein = (a: string, b: string): number => {
+        const dp = Array.from({length: a.length + 1}, 
+            (_, i) => Array.from({length: b.length + 1}, 
+                (_, j) => i === 0 ? j : j === 0 ? i : 0));
+        for (let i = 1; i <= a.length; i++) {
+            for (let j = 1; j <= b.length; j++) {
+                dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] :
+                    1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+            }
+        }
+        return dp[a.length][b.length];
+    };
+    
+    let melhorMatch = '';
+    let menorDistancia = 999;
+    
+    jogadoresCadastrados.forEach(jogador => {
+        const dist = levenshtein(normalizado, jogador);
+        if (dist < menorDistancia) {
+            menorDistancia = dist;
+            melhorMatch = jogador;
+        }
+    });
+    
+    if (menorDistancia <= 2) return melhorMatch;
+    
+    return normalizado;
 }
 
 export function sanitizarNome(nome: string): string {
@@ -118,14 +157,14 @@ export function sanitizarNome(nome: string): string {
  * Tenta extrair nomes de jogadores a partir das linhas antes de cada K/D/A.
  * Heurística: linha curta (3-16 chars) acima de um padrão X/X/X, sem dígitos dominantes.
  */
-function extrairNomes(lines: string[], count: number): string[] {
+function extrairNomes(lines: string[], count: number, squad: string[] = []): string[] {
     const nomes: string[] = [];
     for (let i = 0; i < lines.length && nomes.length < count; i++) {
         const linha = lines[i].trim();
         // Linha seguinte tem padrão N/N/N?
         const proxima = lines[i + 1] ?? '';
         if (/\d+\/\d+\/\d+/.test(proxima) && linha.length >= 2 && linha.length <= 20 && !/^\d/.test(linha)) {
-            nomes.push(sanitizarNome(linha.substring(0, 20)));
+            nomes.push(matchNomeOficial(linha.substring(0, 20), squad));
         }
     }
     return nomes;

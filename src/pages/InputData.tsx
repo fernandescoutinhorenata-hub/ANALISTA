@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { sanitizarNome } from '../utils/ocr-processing';
+import { CadastroSquad, SquadPlayer } from '../components/CadastroSquad';
+import { sanitizarNome, matchNomeOficial } from '../utils/ocr-processing';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
@@ -97,6 +98,7 @@ export const InputData: React.FC = () => {
         { nome: '', kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' },
     ]);
 
+    const [squadJogadores, setSquadJogadores] = useState<SquadPlayer[]>([]);
     const [loading, setLoading] = useState(false);
     const [ocrLoading, setOcrLoading] = useState(false);
     const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
@@ -223,7 +225,7 @@ export const InputData: React.FC = () => {
                 if (!j) return p;
                 return {
                     ...p,
-                    nome:        j.nome !== `Jogador ${i + 1}` ? sanitizarNome(j.nome) : p.nome,
+                    nome:        j.nome !== `Jogador ${i + 1}` ? matchNomeOficial(j.nome, squadJogadores.map(s => s.nome_oficial)) : p.nome,
                     kills:       String(j.kills),
                     assistencias: String(j.assists),
                     derrubados:  String(j.derrubados),
@@ -442,6 +444,8 @@ export const InputData: React.FC = () => {
             </header>
 
             <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+                <CadastroSquad onSquadChange={setSquadJogadores} />
+
                 {/* 1. Dados da Partida */}
                 <section className="animate-reveal">
                     <div className="flex items-center gap-2 mb-4">
