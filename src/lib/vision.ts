@@ -11,7 +11,11 @@ export async function readScreenshot(base64Image: string, mediaType: string): Pr
      */
     const prompt = `Para o nome do jogador, extraia APENAS o nome sem clã/guild. 
 Remova qualquer prefixo de clã (ex: GRT, RUSH, LOUD) e símbolos (#, ., espaços extras).
-Retorne apenas o nick limpo. Ex: 'GRT COACH7' -> 'COACH7', 'GRT.HEROXIT7' -> 'HEROXIT7'`;
+Retorne apenas o nick limpo. Ex: 'GRT COACH7' -> 'COACH7', 'GRT.HEROXIT7' -> 'HEROXIT7'.
+Player name column may contain: clan tag + nickname + decorative symbols.
+Return ONLY the nickname (middle or last Latin word).
+Ignore any Japanese, Chinese, or special unicode characters.
+Return names in UPPERCASE Latin characters only.`;
 
     const { data, error } = await supabase.functions.invoke('ocr', {
         body: { base64Image, mediaType, prompt }

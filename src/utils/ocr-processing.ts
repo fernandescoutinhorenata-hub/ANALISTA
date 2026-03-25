@@ -88,11 +88,25 @@ export function parseScreenshot(text: string): OCRResult {
 }
 
 export function sanitizarNome(nome: string): string {
-    let limpo = nome
-        .replace(/#/g, '')           // remove #
-        .replace(/\./g, '')          // remove pontos
-        .trim()                      // remove espaços extras
-        .toUpperCase();              // padroniza maiúsculas
+    // 1. Remove # do início
+    let cleaned = nome.replace(/^#+/, '').trim();
+    
+    // 2. Remove caracteres não-ASCII do final (japonês, chinês, emojis, símbolos)
+    // Mantém apenas letras latinas, números e espaços
+    cleaned = cleaned.replace(/[^\x00-\x7F]+/g, '').trim();
+    
+    // 3. Remove espaços múltiplos
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+    
+    // 4. Se tem mais de uma palavra = tem tag de clã → pegar ÚLTIMA palavra
+    const parts = cleaned.split(' ').filter(p => p.length > 0);
+    
+    if (parts.length === 0) return '';
+    
+    // Última parte = nick real
+    let nick = parts[parts.length - 1];
+    
+    let limpo = nick.toUpperCase();
         
     // Corrigir erros comuns de OCR da fonte do Free Fire
     if (limpo === 'IAPA') limpo = 'JAPA';
