@@ -67,6 +67,21 @@ const neonTooltipStyle = {
     boxShadow: 'var(--shadow-elevated)',
 };
 
+const neonItemStyle = {
+    color: 'var(--text-primary)',
+    fontSize: '12px',
+    fontWeight: '600',
+    textTransform: 'uppercase' as const,
+};
+
+const neonLabelStyle = {
+    color: 'var(--text-secondary)',
+    fontSize: '10px',
+    fontWeight: '700',
+    textTransform: 'uppercase' as const,
+    marginBottom: '4px',
+};
+
 
 // ─── Toast Component ─────────────────────────────────────────────────────────
 const Toast: React.FC<{ message: string; type: 'success' | 'error' | 'warning' }> = ({ message, type }) => {
@@ -778,7 +793,11 @@ export const Dashboard: React.FC = () => {
                                                                 </defs>
                                                                 <XAxis dataKey="Data" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} dy={10} />
                                                                 <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
-                                                                <Tooltip contentStyle={neonTooltipStyle} />
+                                                                <Tooltip 
+    contentStyle={neonTooltipStyle} 
+    itemStyle={neonItemStyle}
+    labelStyle={neonLabelStyle} 
+/>
                                                                 <Area type="monotone" dataKey="Kill" stroke="var(--accent)" strokeWidth={2.5} fillOpacity={1} fill="url(#gradKills)" />
                                                             </AreaChart>
                                                         </ResponsiveContainer>
@@ -810,7 +829,11 @@ export const Dashboard: React.FC = () => {
                                                                         <Cell key={`cell-${index}`} fill={['#9333EA', '#10B981', '#EF4444', '#F59E0B', '#3B82F6'][index % 5]} />
                                                                     ))}
                                                                 </Pie>
-                                                                <Tooltip contentStyle={neonTooltipStyle} />
+                                                                <Tooltip 
+    contentStyle={neonTooltipStyle} 
+    itemStyle={neonItemStyle}
+    labelStyle={neonLabelStyle} 
+/>
                                                                 <Legend
                                                                     verticalAlign="bottom"
                                                                     height={40}
@@ -945,7 +968,12 @@ export const Dashboard: React.FC = () => {
                                                             <BarChart data={playerChartData} layout="vertical" margin={{ left: -20 }}>
                                                                 <XAxis type="number" hide />
                                                                 <YAxis type="category" dataKey="name" stroke="var(--text-tertiary)" tickLine={false} axisLine={false} fontSize={10} width={80} />
-                                                                <Tooltip contentStyle={neonTooltipStyle} cursor={false} />
+                                                                <Tooltip 
+    contentStyle={neonTooltipStyle} 
+    itemStyle={neonItemStyle}
+    labelStyle={neonLabelStyle}
+    cursor={false} 
+/>
                                                                 <Bar dataKey="avgKills" fill="var(--accent-red)" radius={[0, 4, 4, 0]} barSize={12} />
                                                             </BarChart>
                                                         </ResponsiveContainer>
@@ -962,7 +990,12 @@ export const Dashboard: React.FC = () => {
                                                             <BarChart data={playerChartData} layout="vertical" margin={{ left: -20 }}>
                                                                 <XAxis type="number" hide />
                                                                 <YAxis type="category" dataKey="name" stroke="var(--text-tertiary)" tickLine={false} axisLine={false} fontSize={10} width={80} />
-                                                                <Tooltip contentStyle={neonTooltipStyle} cursor={false} />
+                                                                <Tooltip 
+    contentStyle={neonTooltipStyle} 
+    itemStyle={neonItemStyle}
+    labelStyle={neonLabelStyle}
+    cursor={false} 
+/>
                                                                 <Bar dataKey="avgDamage" fill="var(--accent)" radius={[0, 4, 4, 0]} barSize={12} />
                                                             </BarChart>
                                                         </ResponsiveContainer>
@@ -979,7 +1012,12 @@ export const Dashboard: React.FC = () => {
                                                             <BarChart data={playerChartData} layout="vertical" margin={{ left: -20 }}>
                                                                 <XAxis type="number" hide />
                                                                 <YAxis type="category" dataKey="name" stroke="var(--text-tertiary)" tickLine={false} axisLine={false} fontSize={10} width={80} />
-                                                                <Tooltip contentStyle={neonTooltipStyle} cursor={false} />
+                                                                <Tooltip 
+    contentStyle={neonTooltipStyle} 
+    itemStyle={neonItemStyle}
+    labelStyle={neonLabelStyle}
+    cursor={false} 
+/>
                                                                 <Bar dataKey="avgAssists" fill="var(--accent-green)" radius={[0, 4, 4, 0]} barSize={12} />
                                                             </BarChart>
                                                         </ResponsiveContainer>
@@ -1015,14 +1053,10 @@ export const Dashboard: React.FC = () => {
                                                                     strokeWidth={1.5}
                                                                 />
                                                                 <Tooltip 
-                                                                    contentStyle={{
-                                                                        backgroundColor: 'var(--bg-card)',
-                                                                        border: '1px solid var(--border-default)',
-                                                                        borderRadius: '8px',
-                                                                        color: 'var(--text-primary)'
-                                                                    }}
-                                                                    itemStyle={{ color: 'var(--text-primary)' }}
-                                                                />
+    contentStyle={neonTooltipStyle}
+    itemStyle={neonItemStyle}
+    labelStyle={neonLabelStyle} 
+/>
                                                             </RadarChart>
                                                         </ResponsiveContainer>
                                                     </div>
