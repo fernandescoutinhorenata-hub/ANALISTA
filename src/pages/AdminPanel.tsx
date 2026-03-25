@@ -5,7 +5,14 @@ import {
     CheckCircle, XCircle, Zap, TrendingUp,
     ShieldAlert
 } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+
+// Client admin com service_role (ignora RLS) — usado somente neste painel
+const supabaseAdmin = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_SERVICE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 // ─── Componentes de UI (Reusando estilo do Dashboard) ──────────────────────────────────────────
 const CardHeader: React.FC<{ title: string; subtitle?: string; icon: any }> = ({ title, subtitle, icon: Icon }) => (
@@ -41,7 +48,7 @@ export const AdminPanel: React.FC = () => {
         setLoading(true);
         try {
             // 1. Buscar assinaturas ativas (sem JOIN)
-            const { data: subs, error: eSubs } = await supabase
+            const { data: subs, error: eSubs } = await supabaseAdmin
                 .from('subscriptions')
                 .select('*')
                 .eq('status', 'ativo')
@@ -54,7 +61,7 @@ export const AdminPanel: React.FC = () => {
             } else if (subs && subs.length > 0) {
                 // 2. Buscar perfis dos assinantes separadamente
                 const userIds = subs.map((s: any) => s.user_id);
-                const { data: perfisAtivos, error: ePerfisAtivos } = await supabase
+                const { data: perfisAtivos, error: ePerfisAtivos } = await supabaseAdmin
                     .from('perfis')
                     .select('id, email, nome')
                     .in('id', userIds);
@@ -77,7 +84,7 @@ export const AdminPanel: React.FC = () => {
             }
 
             // 4. Buscar Todos os Usuários
-            const { data: todos, error: eTodos } = await supabase
+            const { data: todos, error: eTodos } = await supabaseAdmin
                 .from('perfis')
                 .select('*')
                 .order('created_at', { ascending: false });
