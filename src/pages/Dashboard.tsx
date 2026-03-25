@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, BarChart, Bar,
-    AreaChart, Area, Legend, RadarChart, PolarGrid,
-    Radar, PolarAngleAxis, LineChart, Line, CartesianGrid
+    PieChart, Pie, Cell,
+    AreaChart, Area, Legend,
+    LineChart, Line, CartesianGrid
 } from 'recharts';
 import {
     Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
-    TrendingUp, LogOut, Users, Sword, ShieldAlert,
+    TrendingUp, LogOut, Users, Sword,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
     CheckCircle, XCircle, AlertCircle, Link, CreditCard
 } from 'lucide-react';
@@ -17,7 +17,6 @@ import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
 import { processData } from '../utils/data-processing';
 import { useAuth } from '../contexts/AuthContext';
-import { PainelDeConquistas } from '../components/PainelDeConquistas';
 import { OnboardingModal } from '../components/OnboardingModal';
 
 // ─── Componentes de UI (Design System) ──────────────────────────────────────────
@@ -355,41 +354,7 @@ export const Dashboard: React.FC = () => {
         return Array.from(new Set(filteredPlayerRows.map((p: any) => p.Player).filter(Boolean))).sort() as string[];
     }, [filteredPlayerRows]);
 
-    const playerChartData = useMemo(() => {
-        if (filteredPlayerRows.length === 0) return [];
-        interface PlayerAgg { name: string; kills: number; damage: number; assists: number; deaths: number; derrubados: number; ressurgimentos: number; games: number; }
-        const agg: Record<string, PlayerAgg> = {};
-        const rows = selectedPlayer === 'Todos'
-            ? filteredPlayerRows
-            : filteredPlayerRows.filter((p: any) => p.Player === selectedPlayer);
-        rows.forEach((p: any) => {
-            if (!p.Player) return;
-            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0, ressurgimentos: 0, games: 0 };
-            agg[p.Player].kills += Number(p.Kill) || 0;
-            agg[p.Player].damage += Number(p['Dano causado']) || 0;
-            agg[p.Player].assists += Number(p.Assistencia) || 0;
-            agg[p.Player].deaths += Number(p.Morte) || 0;
-            agg[p.Player].derrubados += Number(p['Derrubados']) || 0;
-            agg[p.Player].ressurgimentos += Number(p['Ressurgimento']) || 0;
-            agg[p.Player].games += 1;
-        });
-        return Object.values(agg)
-            .map((p: PlayerAgg) => ({
-                name: p.name,
-                avgKills: p.games > 0 ? parseFloat((p.kills / p.games).toFixed(1)) : 0,
-                avgDamage: p.games > 0 ? parseFloat((p.damage / p.games).toFixed(1)) : 0,
-                avgAssists: p.games > 0 ? parseFloat((p.assists / p.games).toFixed(1)) : 0,
-                avgDerrubados: p.games > 0 ? parseFloat((p.derrubados / p.games).toFixed(1)) : 0,
-                avgDeaths: p.games > 0 ? parseFloat((p.deaths / p.games).toFixed(1)) : 0,
-                avgRessurgimentos: p.games > 0 ? parseFloat((p.ressurgimentos / p.games).toFixed(1)) : 0,
-                totalKills: p.kills,
-                totalDamage: p.damage,
-                totalDerrubados: p.derrubados,
-                kd: parseFloat((p.kills / (p.deaths || 1)).toFixed(2)),
-            }))
-            .sort((a, b) => b.avgKills - a.avgKills)
-            .slice(0, 10);
-    }, [filteredPlayerRows, selectedPlayer]);
+
 
     // ─── Novos Dados da Aba Jogadores (Tabela, Funil, Donut, Linha) ───
     const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'abates', direction: 'desc' });
@@ -401,27 +366,24 @@ export const Dashboard: React.FC = () => {
         filteredPlayerRows.forEach((p: any) => {
             if (selectedPlayer !== 'Todos' && p.Player !== selectedPlayer) return;
             if (!p.Player) return;
-            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, quedas: 0, revividos: 0 };
+            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0 };
             
             agg[p.Player].kills += Number(p.Kill) || 0;
             agg[p.Player].damage += Number(p['Dano causado']) || 0;
             agg[p.Player].assists += Number(p.Assistencia) || 0;
             agg[p.Player].deaths += Number(p.Morte) || 0;
-            agg[p.Player].quedas += Number(p.Quedas || p.Queda || 1); 
-            agg[p.Player].revividos += Number(p.Revividos || p.Ressurgimento || 0);
+            agg[p.Player].derrubados += Number(p.Derrubados) || 0;
         });
         
         let arr = Object.values(agg).map((p: any) => {
-            const quedas = p.quedas || 1;
             return {
                 name: p.name,
-                quedas: p.quedas,
                 abates: p.kills,
-                kd: parseFloat((p.kills / (p.deaths || 1)).toFixed(2)),
+                mortes: p.deaths,
                 assistencias: p.assists,
                 dano: p.damage,
-                md: parseFloat((p.damage / quedas).toFixed(2)),
-                revividos: p.revividos,
+                kd: parseFloat((p.kills / (p.deaths || 1)).toFixed(2)),
+                derrubados: p.derrubados,
             }
         });
 
@@ -463,40 +425,12 @@ export const Dashboard: React.FC = () => {
         return Object.values(byMatch);
     }, [filteredPlayerRows, selectedPlayer]);
 
-    // Radar com 3 eixos semânticos: Agressividade, Sobrevivência, Suporte
-    const radarData = useMemo(() => {
-        if (!data || selectedPlayer === 'Todos' || playerChartData.length === 0) return [];
-        const p = playerChartData[0];
-        if (!p) return [];
-
-        return [
-            { subject: 'Abates', value: p.avgKills },
-            { subject: 'Dano', value: parseFloat((p.avgDamage / 1000).toFixed(1)) },
-            { subject: 'Assistências', value: p.avgAssists },
-            { subject: 'Sobrevivência', value: Math.max(0, parseFloat((10 - (p.avgDeaths || 0)).toFixed(1))) },
-            { subject: 'Suporte', value: p.avgRessurgimentos },
-            { subject: 'Derrubadas', value: p.avgDerrubados },
-        ];
-    }, [playerChartData, selectedPlayer, data]);
-
     // Total de Kills somado de todos os jogadores (performance_jogadores)
     const totalKillsFromPlayers = useMemo(() =>
         filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0),
         [filteredPlayerRows]);
 
-    // Métricas de Derrubados
-    const totalDerrubados = useMemo(() =>
-        filteredPlayerRows.reduce((sum, p) => sum + (Number(p['Derrubados']) || 0), 0),
-        [filteredPlayerRows]);
-
-    const mediaDerrubados = useMemo(() => {
-        const rows = selectedPlayer === 'Todos'
-            ? filteredPlayerRows
-            : filteredPlayerRows.filter((p: any) => p.Player === selectedPlayer);
-        const partidas = new Set(rows.map((p: any) => `${p.Data}-${p.Mapa}`)).size || 1;
-        const total = rows.reduce((sum, p) => sum + (Number(p['Derrubados']) || 0), 0);
-        return parseFloat((total / partidas).toFixed(2));
-    }, [filteredPlayerRows, selectedPlayer]);
+    // Métricas não utilizadas neste view, mas disponíveis nos cálculos: radarData, totalDerrubados, mediaDerrubados
 
     // Gráfico de Tendência: kills totais de todos os jogadores agrupadas por data
     const trendChartData = useMemo(() => {
@@ -1014,7 +948,7 @@ export const Dashboard: React.FC = () => {
                                             <table className="w-full text-left">
                                                 <thead className="border-b border-[#27272A] bg-[#18181B]">
                                                     <tr>
-                                                        {[{ l: 'Player', k: 'name' }, { l: 'Quedas', k: 'quedas' }, { l: 'Abates', k: 'abates' }, { l: 'KD', k: 'kd' }, { l: 'Assistências', k: 'assistencias' }, { l: 'Dano', k: 'dano' }, { l: 'MD', k: 'md' }, { l: 'Revividos', k: 'revividos' }].map(col => (
+                                                        {[{ l: 'Player', k: 'name' }, { l: 'Abates', k: 'abates' }, { l: 'Mortes', k: 'mortes' }, { l: 'Assists', k: 'assistencias' }, { l: 'Dano', k: 'dano' }, { l: 'KD', k: 'kd' }, { l: 'Derrubados', k: 'derrubados' }].map(col => (
                                                             <th key={col.k} 
                                                                 className="px-6 py-4 text-xs font-bold text-[#A1A1AA] uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                                                                 onClick={() => setSortConfig({ key: col.k, direction: sortConfig.key === col.k && sortConfig.direction === 'desc' ? 'asc' : 'desc' })}
@@ -1028,16 +962,15 @@ export const Dashboard: React.FC = () => {
                                                     {playerTableData.map((row: any, i: number) => (
                                                         <tr key={i} className="hover:bg-white/5 transition-colors text-sm text-[#FAFAFA] font-medium">
                                                             <td className="px-6 py-4">{row.name}</td>
-                                                            <td className="px-6 py-4">{row.quedas}</td>
                                                             <td className="px-6 py-4 flex items-center gap-3">
                                                                 <span className="w-6 text-right">{row.abates}</span>
                                                                 <div className="h-2.5 bg-[#EF4444] rounded-sm" style={{ width: `${Math.max(2, (row.abates / maxAbates) * 80)}px` }} />
                                                             </td>
-                                                            <td className="px-6 py-4 font-mono text-[#A1A1AA]">{String(row.kd).replace('.', ',')}</td>
+                                                            <td className="px-6 py-4">{row.mortes}</td>
                                                             <td className="px-6 py-4">{row.assistencias}</td>
                                                             <td className="px-6 py-4">{row.dano.toLocaleString('pt-BR')}</td>
-                                                            <td className="px-6 py-4 font-mono text-[#A1A1AA]">{String(row.md).replace('.', ',')}</td>
-                                                            <td className="px-6 py-4">{row.revividos}</td>
+                                                            <td className="px-6 py-4 font-mono text-[#A1A1AA]">{String(row.kd).replace('.', ',')}</td>
+                                                            <td className="px-6 py-4">{row.derrubados}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -1073,7 +1006,7 @@ export const Dashboard: React.FC = () => {
                                                         <Pie
                                                             data={donutData} cx="50%" cy="50%" innerRadius={45} outerRadius={75}
                                                             paddingAngle={2} dataKey="value" stroke="none" labelLine={false}
-                                                            label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                                                            label={({ percent }) => `${((percent || 0) * 100).toFixed(1)}%`}
                                                         >
                                                             {donutData.map((d: any, i: number) => <Cell key={`cell-${i}`} fill={d.fill} />)}
                                                         </Pie>
