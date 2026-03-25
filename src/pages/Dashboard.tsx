@@ -5,7 +5,7 @@ import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, BarChart, Bar,
     AreaChart, Area, Legend, RadarChart, PolarGrid,
-    Radar, PolarAngleAxis
+    Radar, PolarAngleAxis, LineChart, Line, CartesianGrid
 } from 'recharts';
 import {
     Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
@@ -255,7 +255,11 @@ export const Dashboard: React.FC = () => {
                     Queda: row.queda,
                     "Dano causado": row.dano_causado,
                     "Derrubados": row.derrubados,
-                    "Ressurgimento": row.ressurgimento
+                    "Ressurgimento": row.ressurgimento,
+                    Quedas: row.quedas,
+                    KD: row.kd,
+                    MD: row.md,
+                    Revividos: row.revividos
                 }));
                 setAllPlayerRows(mappedPlayers);
 
@@ -385,6 +389,78 @@ export const Dashboard: React.FC = () => {
             }))
             .sort((a, b) => b.avgKills - a.avgKills)
             .slice(0, 10);
+    }, [filteredPlayerRows, selectedPlayer]);
+
+    // ─── Novos Dados da Aba Jogadores (Tabela, Funil, Donut, Linha) ───
+    const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'abates', direction: 'desc' });
+
+    const playerTableData = useMemo(() => {
+        if (filteredPlayerRows.length === 0) return [];
+        const agg: Record<string, any> = {};
+        
+        filteredPlayerRows.forEach((p: any) => {
+            if (selectedPlayer !== 'Todos' && p.Player !== selectedPlayer) return;
+            if (!p.Player) return;
+            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, quedas: 0, revividos: 0 };
+            
+            agg[p.Player].kills += Number(p.Kill) || 0;
+            agg[p.Player].damage += Number(p['Dano causado']) || 0;
+            agg[p.Player].assists += Number(p.Assistencia) || 0;
+            agg[p.Player].deaths += Number(p.Morte) || 0;
+            agg[p.Player].quedas += Number(p.Quedas || p.Queda || 1); 
+            agg[p.Player].revividos += Number(p.Revividos || p.Ressurgimento || 0);
+        });
+        
+        let arr = Object.values(agg).map((p: any) => {
+            const quedas = p.quedas || 1;
+            return {
+                name: p.name,
+                quedas: p.quedas,
+                abates: p.kills,
+                kd: parseFloat((p.kills / (p.deaths || 1)).toFixed(2)),
+                assistencias: p.assists,
+                dano: p.damage,
+                md: parseFloat((p.damage / quedas).toFixed(2)),
+                revividos: p.revividos,
+            }
+        });
+
+        // Aplicar Ordenação
+        arr.sort((a: any, b: any) => {
+            let valA = a[sortConfig.key];
+            let valB = b[sortConfig.key];
+            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return arr;
+    }, [filteredPlayerRows, selectedPlayer, sortConfig]);
+
+    const maxAbates = useMemo(() => Math.max(...playerTableData.map((p: any) => p.abates), 1), [playerTableData]);
+
+    const donutData = useMemo(() => {
+        return playerTableData.map((p: any, i: number) => ({
+            name: p.name,
+            value: p.abates,
+            fill: ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#D946EF'][i % 7]
+        }));
+    }, [playerTableData]);
+
+    const pyramidData = useMemo(() => {
+        return [...playerTableData].sort((a: any, b: any) => b.dano - a.dano);
+    }, [playerTableData]);
+
+    const lineChartData = useMemo(() => {
+        const byMatch: Record<string, { name: string; abates: number; assistencias: number }> = {};
+        filteredPlayerRows.forEach((p: any) => {
+            if (selectedPlayer !== 'Todos' && p.Player !== selectedPlayer) return;
+            const matchKey = `${p.Data} - ${p.Mapa || ''}`; 
+            if (!byMatch[matchKey]) byMatch[matchKey] = { name: matchKey, abates: 0, assistencias: 0 };
+            byMatch[matchKey].abates += Number(p.Kill) || 0;
+            byMatch[matchKey].assistencias += Number(p.Assistencia) || 0;
+        });
+        return Object.values(byMatch);
     }, [filteredPlayerRows, selectedPlayer]);
 
     // Radar com 3 eixos semânticos: Agressividade, Sobrevivência, Suporte
@@ -914,179 +990,120 @@ export const Dashboard: React.FC = () => {
                             )}
 
                             {/* ══════════ PLAYERS TAB ══════════ */}
-                            {activeTab === 'players' && allPlayerRows.length > 0 && (
+                            {activeTab === 'players' && (
                                 <div className="space-y-6 animate-reveal">
                                     <div className="flex flex-wrap items-center gap-4">
-                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)]">
+                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
                                             <UserCircle2 size={16} className="text-[var(--accent)]" />
                                             <select
                                                 value={selectedPlayer}
                                                 onChange={e => setSelectedPlayer(e.target.value)}
-                                                className="bg-zinc-950 text-white border-none py-1.5 px-2 rounded-md outline-none cursor-pointer min-w-[160px]"
+                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
                                             >
-                                                <option value="Todos">Todos os Jogadores</option>
+                                                <option value="Todos" className="bg-[#141416]">Todos os Jogadores</option>
                                                 {playerList.map((p: any) => (
-                                                    <option key={p} value={p}>{p}</option>
+                                                    <option key={p} value={p} className="bg-[#141416]">{p}</option>
                                                 ))}
                                             </select>
                                         </div>
-                                        {selectedPlayer !== 'Todos' && (
-                                            <button
-                                                onClick={() => setSelectedPlayer('Todos')}
-                                                className="badge badge-purple cursor-pointer hover:bg-[var(--accent-hover)]/20 transition-colors"
-                                            >
-                                                Limpar filtro ✕
-                                            </button>
-                                        )}
-                                        <span className="text-label ml-auto">
-                                            {playerChartData.length} jogador(es) exibido(s)
-                                        </span>
                                     </div>
 
-                                    {filteredPlayerRows.length > 0 ? (
-                                        <div className="space-y-8">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                                <MetricCard
-                                                    title="Total de Derrubados"
-                                                    value={totalDerrubados}
-                                                    subValue={`${filteredPlayerRows.length} registros`}
-                                                    icon={Sword}
-                                                />
-                                                <MetricCard
-                                                    title="Média de Derrubados"
-                                                    value={mediaDerrubados.toFixed(2)}
-                                                    subValue={selectedPlayer !== 'Todos' ? selectedPlayer : 'Geral'}
-                                                    icon={Target}
-                                                />
-                                            </div>
-
-                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                                                <Card>
-                                                    <div className="flex items-center justify-between mb-8">
-                                                        <h4 className="text-heading text-sm font-bold uppercase">Média de Abates</h4>
-                                                        <Sword size={16} className="text-[var(--accent-red)]" />
-                                                    </div>
-                                                    <div className="h-56">
-                                                        <ResponsiveContainer width="100%" height="100%">
-                                                            <BarChart data={playerChartData} layout="vertical" margin={{ left: -20 }}>
-                                                                <XAxis type="number" hide />
-                                                                <YAxis type="category" dataKey="name" stroke="var(--text-tertiary)" tickLine={false} axisLine={false} fontSize={10} width={80} />
-                                                                <Tooltip 
-    contentStyle={neonTooltipStyle} 
-    itemStyle={neonItemStyle}
-    labelStyle={neonLabelStyle}
-    cursor={false} 
-/>
-                                                                <Bar dataKey="avgKills" fill="var(--accent-red)" radius={[0, 4, 4, 0]} barSize={12} />
-                                                            </BarChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                </Card>
-
-                                                <Card>
-                                                    <div className="flex items-center justify-between mb-8">
-                                                        <h4 className="text-heading text-sm font-bold uppercase">Média de Dano</h4>
-                                                        <ShieldAlert size={16} className="text-[var(--accent)]" />
-                                                    </div>
-                                                    <div className="h-56">
-                                                        <ResponsiveContainer width="100%" height="100%">
-                                                            <BarChart data={playerChartData} layout="vertical" margin={{ left: -20 }}>
-                                                                <XAxis type="number" hide />
-                                                                <YAxis type="category" dataKey="name" stroke="var(--text-tertiary)" tickLine={false} axisLine={false} fontSize={10} width={80} />
-                                                                <Tooltip 
-    contentStyle={neonTooltipStyle} 
-    itemStyle={neonItemStyle}
-    labelStyle={neonLabelStyle}
-    cursor={false} 
-/>
-                                                                <Bar dataKey="avgDamage" fill="var(--accent)" radius={[0, 4, 4, 0]} barSize={12} />
-                                                            </BarChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                </Card>
-
-                                                <Card>
-                                                    <div className="flex items-center justify-between mb-8">
-                                                        <h4 className="text-heading text-sm font-bold uppercase">Assistências</h4>
-                                                        <Target size={16} className="text-[var(--accent-green)]" />
-                                                    </div>
-                                                    <div className="h-56">
-                                                        <ResponsiveContainer width="100%" height="100%">
-                                                            <BarChart data={playerChartData} layout="vertical" margin={{ left: -20 }}>
-                                                                <XAxis type="number" hide />
-                                                                <YAxis type="category" dataKey="name" stroke="var(--text-tertiary)" tickLine={false} axisLine={false} fontSize={10} width={80} />
-                                                                <Tooltip 
-    contentStyle={neonTooltipStyle} 
-    itemStyle={neonItemStyle}
-    labelStyle={neonLabelStyle}
-    cursor={false} 
-/>
-                                                                <Bar dataKey="avgAssists" fill="var(--accent-green)" radius={[0, 4, 4, 0]} barSize={12} />
-                                                            </BarChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                </Card>
-                                            </div>
-
-                                            {selectedPlayer !== 'Todos' && radarData.length > 0 && (
-                                                <Card>
-                                                    <div className="flex items-center gap-3 mb-6">
-                                                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-base bg-gradient-to-br from-[var(--accent)] to-[var(--accent-green)] text-white">
-                                                            {selectedPlayer[0]}
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-heading text-lg">Radar de Habilidades</h4>
-                                                            <p className="text-label">Competências individuais: {selectedPlayer}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="h-80">
-                                                        <ResponsiveContainer width="100%" height="100%">
-                                                            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                                                                <PolarGrid stroke="#27272D" />
-                                                                <PolarAngleAxis 
-                                                                    dataKey="subject" 
-                                                                    tick={{ fill: '#A1A1AA', fontSize: 11 }} 
-                                                                />
-                                                                <Radar
-                                                                    name={selectedPlayer}
-                                                                    dataKey="value"
-                                                                    stroke="#9333EA"
-                                                                    fill="#9333EA"
-                                                                    fillOpacity={0.15}
-                                                                    strokeWidth={1.5}
-                                                                />
-                                                                <Tooltip 
-    contentStyle={neonTooltipStyle}
-    itemStyle={neonItemStyle}
-    labelStyle={neonLabelStyle} 
-/>
-                                                            </RadarChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                </Card>
-                                            )}
-
-                                            
+                                    {/* BLOCO 1: Tabela */}
+                                    <Card className="!bg-[#141416] border-none p-0 overflow-hidden">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left">
+                                                <thead className="border-b border-[#27272A] bg-[#18181B]">
+                                                    <tr>
+                                                        {[{ l: 'Player', k: 'name' }, { l: 'Quedas', k: 'quedas' }, { l: 'Abates', k: 'abates' }, { l: 'KD', k: 'kd' }, { l: 'Assistências', k: 'assistencias' }, { l: 'Dano', k: 'dano' }, { l: 'MD', k: 'md' }, { l: 'Revividos', k: 'revividos' }].map(col => (
+                                                            <th key={col.k} 
+                                                                className="px-6 py-4 text-xs font-bold text-[#A1A1AA] uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                                                                onClick={() => setSortConfig({ key: col.k, direction: sortConfig.key === col.k && sortConfig.direction === 'desc' ? 'asc' : 'desc' })}
+                                                            >
+                                                                {col.l} {sortConfig.key === col.k ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                                                            </th>
+                                                        ))}
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-[#27272A]">
+                                                    {playerTableData.map((row: any, i: number) => (
+                                                        <tr key={i} className="hover:bg-white/5 transition-colors text-sm text-[#FAFAFA] font-medium">
+                                                            <td className="px-6 py-4">{row.name}</td>
+                                                            <td className="px-6 py-4">{row.quedas}</td>
+                                                            <td className="px-6 py-4 flex items-center gap-3">
+                                                                <span className="w-6 text-right">{row.abates}</span>
+                                                                <div className="h-2.5 bg-[#EF4444] rounded-sm" style={{ width: `${Math.max(2, (row.abates / maxAbates) * 80)}px` }} />
+                                                            </td>
+                                                            <td className="px-6 py-4 font-mono text-[#A1A1AA]">{String(row.kd).replace('.', ',')}</td>
+                                                            <td className="px-6 py-4">{row.assistencias}</td>
+                                                            <td className="px-6 py-4">{row.dano.toLocaleString('pt-BR')}</td>
+                                                            <td className="px-6 py-4 font-mono text-[#A1A1AA]">{String(row.md).replace('.', ',')}</td>
+                                                            <td className="px-6 py-4">{row.revividos}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center justify-center py-20 text-center card border-dashed">
-                                            <div className="p-6 rounded-2xl mb-6 bg-[var(--accent-muted)]">
-                                                <Users size={40} className="text-[var(--accent)]" />
-                                            </div>
-                                            <h3 className="text-heading text-xl mb-2">Nenhum registro encontrado</h3>
-                                            <p className="max-w-xs text-label px-4">
-                                                Não há dados de performance para os parâmetros selecionados.
-                                            </p>
-                                        </div>
-                                    )}
+                                    </Card>
 
-                                    {/* Componente de Conquistas */}
-                                    {user && (
-                                        <PainelDeConquistas
-                                            jogadorId={user.id}
-                                            nomeJogador={nomeUsuario || user.email || ''}
-                                        />
-                                    )}
+                                    {/* BLOCO 2: Dano (Pyramid) & Kills (Donut) */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <Card className="!bg-[#141416] border-none flex flex-col items-center justify-center min-h-[300px]">
+                                            <h4 className="text-[#EAB308] text-sm font-bold uppercase mb-6 tracking-widest">DANO</h4>
+                                            <div className="w-full flex flex-col items-center gap-1">
+                                                {pyramidData.map((p: any, i: number) => {
+                                                    const maxD = pyramidData[0]?.dano || 1;
+                                                    const wP = Math.max(30, (p.dano / maxD) * 100);
+                                                    return (
+                                                        <div key={i} 
+                                                            className="h-8 flex items-center justify-center rounded uppercase text-[10px] font-black text-black/70 shadow-sm"
+                                                            style={{ width: `${wP}%`, backgroundColor: `hsl(142, 70%, ${Math.min(90, 45 + (i * 8))}%)` }}
+                                                        >
+                                                            {p.name}
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </Card>
+
+                                        <Card className="!bg-[#141416] border-none flex flex-col items-center justify-center min-h-[300px]">
+                                            <h4 className="text-[#EAB308] text-sm font-bold uppercase mb-2 tracking-widest">KILLS</h4>
+                                            <div className="w-full h-48 relative">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={donutData} cx="50%" cy="50%" innerRadius={45} outerRadius={75}
+                                                            paddingAngle={2} dataKey="value" stroke="none" labelLine={false}
+                                                            label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                                                        >
+                                                            {donutData.map((d: any, i: number) => <Cell key={`cell-${i}`} fill={d.fill} />)}
+                                                        </Pie>
+                                                        <Tooltip contentStyle={{ backgroundColor: '#18181B', border: 'none', borderRadius: '8px', color: '#FAFAFA' }} itemStyle={{ color: '#FAFAFA' }} />
+                                                        <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '10px', color: '#FAFAFA', fontWeight: 'bold' }} />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+                                    </div>
+
+                                    {/* BLOCO 3: Gráfico de Linha (Abates vs Assistências) */}
+                                    <div className="w-full h-64 mt-4">
+                                        <div className="flex flex-col items-center md:items-start mb-6 px-4">
+                                            <div className="flex gap-4 text-xs font-bold uppercase">
+                                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#EF4444]" /> Abates</span>
+                                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#22C55E]" /> Assistência</span>
+                                            </div>
+                                        </div>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={lineChartData} margin={{ left: -20, bottom: 5, right: 20 }}>
+                                                <CartesianGrid stroke="#27272A" vertical={false} strokeDasharray="3 3" />
+                                                <XAxis dataKey="name" hide />
+                                                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#A1A1AA' }} />
+                                                <Tooltip contentStyle={{ backgroundColor: '#18181B', border: 'none', borderRadius: '8px' }} />
+                                                <Line type="monotone" dataKey="abates" stroke="#EF4444" strokeWidth={2} dot={{ r: 3, fill: '#EF4444', strokeWidth: 0 }} />
+                                                <Line type="monotone" dataKey="assistencias" stroke="#22C55E" strokeWidth={2} dot={{ r: 3, fill: '#22C55E', strokeWidth: 0 }} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </div>
                             )}
 
