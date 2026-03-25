@@ -276,8 +276,11 @@ export const Dashboard: React.FC = () => {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'performance_jogadores', filter: `user_id=eq.${user.id}` }, () => fetchDashboardData())
             .subscribe();
 
+        window.addEventListener('focus', fetchDashboardData);
+
         return () => {
             supabase.removeChannel(channelData);
+            window.removeEventListener('focus', fetchDashboardData);
         };
     }, [user]);
 
