@@ -28,6 +28,19 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
         try {
             if (activeTab === 'register') {
                 if (!teamName.trim()) throw new Error("O nome do time é obrigatório.");
+                
+                // 1. Verificar Anti-Fraude (IP)
+                const { data: ipCheck, error: ipError } = await supabase.functions.invoke('check-ip', {
+                    body: { action: 'check' }
+                });
+
+                if (ipError) {
+                    console.warn('Erro ao verificar IP (Anti-Fraude):', ipError);
+                } else if (ipCheck?.bloqueado) {
+                    throw new Error("Já existe uma conta cadastrada neste dispositivo.");
+                }
+
+                // 2. Prosseguir com Cadastro
                 const { data, error: signUpError } = await supabase.auth.signUp({
                     email,
                     password,
@@ -36,11 +49,17 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                 if (signUpError) throw signUpError;
                 
                 if (data?.user) {
+                    // 3. Registrar Perfil
                     await supabase.from('perfis').insert([{
                         id: data.user.id,
                         email: email,
                         nome: teamName
                     }]);
+
+                    // 4. Registrar IP do Novo Usuário
+                    await supabase.functions.invoke('check-ip', {
+                        body: { action: 'register', user_id: data.user.id }
+                    });
                 }
                 navigate('/');
             } else {

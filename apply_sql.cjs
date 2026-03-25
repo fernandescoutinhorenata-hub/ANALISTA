@@ -3,7 +3,7 @@ const https = require('https');
 const TOKEN = 'sbp_1abf3efde6d064b3aee0756fad32a556b2fdc41c';
 const PROJECT_REF = 'idegcrfymkgkjphluuda';
 
-const sql = 'ALTER TABLE public.perfis DISABLE ROW LEVEL SECURITY; ALTER TABLE public.subscriptions DISABLE ROW LEVEL SECURITY; DROP POLICY IF EXISTS \"Service role can read all perfis\" ON public.perfis; CREATE POLICY \"Service role can read all perfis\" ON public.perfis FOR SELECT USING (true);';
+const sql = 'CREATE TABLE IF NOT EXISTS public.ip_registros (id UUID DEFAULT gen_random_uuid() PRIMARY KEY, ip TEXT NOT NULL UNIQUE, user_id UUID, created_at TIMESTAMPTZ DEFAULT NOW()); ALTER TABLE public.ip_registros ENABLE ROW LEVEL SECURITY; DROP POLICY IF EXISTS \"Service role can manage ip_registros\" ON public.ip_registros; CREATE POLICY \"Service role can manage ip_registros\" ON public.ip_registros FOR ALL USING (true);';
 
 const data = JSON.stringify({ name: 'fix_rls_final', query: sql });
 

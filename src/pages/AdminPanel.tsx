@@ -30,7 +30,8 @@ export const AdminPanel: React.FC = () => {
     const [assinaturaAtual, setAssinaturaAtual] = useState<any>(null);
     const [assinantesAtivos, setAssinantesAtivos] = useState<any[]>([]);
     const [todosUsuarios, setTodosUsuarios] = useState<any[]>([]);
-    const [viewMode, setViewMode] = useState<'ativos' | 'todos'>('ativos');
+    const [ipsRegistrados, setIpsRegistrados] = useState<any[]>([]);
+    const [viewMode, setViewMode] = useState<'ativos' | 'todos' | 'ips'>('ativos');
     const [loading, setLoading] = useState(false);
     const [btnLoading, setBtnLoading] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -99,6 +100,14 @@ export const AdminPanel: React.FC = () => {
                     .limit(1000);
                 setTodosUsuarios(todos || []);
             }
+
+            // 5. Buscar IPs Registrados (Anti-Fraude)
+            const { data: ips, error: eIps } = await supabase
+                .from('ip_registros')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (!eIps) setIpsRegistrados(ips || []);
         } catch (err: any) {
             console.error('Erro ao carregar dados adm:', err);
             showToast('Falha técnica ao carregar banco', 'error');
@@ -207,6 +216,26 @@ export const AdminPanel: React.FC = () => {
         } catch (error) {
             console.error('[ADM] Erro ao desativar:', error);
             showToast('Falha ao desativar assinatura.', 'error');
+        } finally {
+            setBtnLoading(null);
+        }
+    };
+
+    const liberarIP = async (ip: string) => {
+        if (!window.confirm(`Deseja liberar o IP ${ip}?`)) return;
+        setBtnLoading(`liberar-ip-${ip}`);
+        try {
+            const { error } = await supabase
+                .from('ip_registros')
+                .delete()
+                .eq('ip', ip);
+            
+            if (error) throw error;
+            showToast('IP liberado com sucesso!', 'success');
+            fetchDados();
+        } catch (error) {
+            console.error('[ADM] Erro ao liberar IP:', error);
+            showToast('Erro ao liberar IP.', 'error');
         } finally {
             setBtnLoading(null);
         }
@@ -326,7 +355,7 @@ export const AdminPanel: React.FC = () => {
                                 <CardHeader title="Base de Usuários" subtitle="Monitoramento vital de ativações" icon={TrendingUp} />
                                 
                                 {/* Toggle Abas */}
-                                <div className="flex bg-[var(--bg-main)] p-1 rounded-lg border border-[var(--border-subtle)]">
+                                 <div className="flex bg-[var(--bg-main)] p-1 rounded-lg border border-[var(--border-subtle)]">
                                     <button 
                                         onClick={() => setViewMode('ativos')}
                                         className={`px-4 py-1.5 rounded-md text-[10px] font-bold transition-all ${viewMode === 'ativos' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
@@ -339,6 +368,12 @@ export const AdminPanel: React.FC = () => {
                                     >
                                         TODOS ({todosUsuarios.length})
                                     </button>
+                                    <button 
+                                        onClick={() => setViewMode('ips')}
+                                        className={`px-4 py-1.5 rounded-md text-[10px] font-bold transition-all ${viewMode === 'ips' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
+                                    >
+                                        IPs ({ipsRegistrados.length})
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -347,18 +382,26 @@ export const AdminPanel: React.FC = () => {
                             <table className="w-full text-left">
                                 <thead className="bg-[var(--bg-surface)] text-label uppercase tracking-wider sticky top-0 z-10">
                                     <tr>
-                                        <th className="px-8 py-4">Usuário</th>
                                         {viewMode === 'ativos' ? (
                                             <>
+                                                <th className="px-8 py-4">Usuário</th>
                                                 <th className="px-8 py-4">Plano</th>
                                                 <th className="px-8 py-4">Início</th>
                                                 <th className="px-8 py-4">Expiração</th>
                                             </>
-                                        ) : (
+                                        ) : viewMode === 'todos' ? (
                                             <>
+                                                <th className="px-8 py-4">Usuário</th>
                                                 <th className="px-8 py-4">E-mail</th>
                                                 <th className="px-8 py-4">Criado em</th>
                                                 <th className="px-8 py-4">Usos OCR</th>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <th className="px-8 py-4">IP Address</th>
+                                                <th className="px-8 py-4">ID Usuário</th>
+                                                <th className="px-8 py-4">Data Registro</th>
+                                                <th className="px-8 py-4">Status</th>
                                             </>
                                         )}
                                         <th className="px-8 py-4 text-right">Ação</th>
@@ -404,7 +447,7 @@ export const AdminPanel: React.FC = () => {
                                                 </tr>
                                             ))
                                         )
-                                    ) : (
+                                    ) : viewMode === 'todos' ? (
                                         todosUsuarios.map((u) => (
                                             <tr key={u.id} className="table-row group">
                                                 <td className="px-8 py-5 font-bold text-[var(--text-primary)] uppercase">{u.nome || 'Sem Nome'}</td>
@@ -432,6 +475,26 @@ export const AdminPanel: React.FC = () => {
                                                             {btnLoading === `${u.id}-mensal` ? <Zap size={14} className="animate-spin" /> : <Zap size={14} fill="currentColor" />}
                                                         </button>
                                                     </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        ipsRegistrados.map((ip) => (
+                                            <tr key={ip.id} className="table-row group">
+                                                <td className="px-8 py-5 font-mono text-sm text-[var(--accent)] font-bold">{ip.ip}</td>
+                                                <td className="px-8 py-5 text-[10px] opacity-40 truncate max-w-[100px]">{ip.user_id || 'N/A'}</td>
+                                                <td className="px-8 py-5 text-xs opacity-60">{new Date(ip.created_at).toLocaleString('pt-BR')}</td>
+                                                <td className="px-8 py-5">
+                                                    <span className="badge badge-red text-[10px]">BLOQUEADO</span>
+                                                </td>
+                                                <td className="px-8 py-5 text-right">
+                                                    <button 
+                                                        onClick={() => liberarIP(ip.ip)}
+                                                        disabled={!!btnLoading}
+                                                        className="px-3 py-1 text-[10px] font-bold text-[var(--accent-green)] border border-[var(--accent-green)]/30 rounded-md hover:bg-[var(--accent-green)]/10 transition-all"
+                                                    >
+                                                        {btnLoading === `liberar-ip-${ip.ip}` ? '...' : 'LIBERAR IP'}
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))
