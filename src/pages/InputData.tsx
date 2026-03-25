@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
-    Camera, Loader2, Zap
+    Camera, Loader2, Zap, HelpCircle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -104,6 +104,16 @@ export const InputData: React.FC = () => {
     const [toast, setToast] = useState<any>(null);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
+
+    // Estados para o Modal de Detalhes da Partida
+    const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
+    const [currentMatchId, setCurrentMatchId] = useState<string | null>(null);
+    const [callDetail, setCallDetail] = useState({
+        quebraCall: null as boolean | null,
+        resultadoCall: null as 'win' | 'loss' | null,
+        qualCall: ''
+    });
+
     const screenshotInputRef = useRef<HTMLInputElement>(null);
 
     // Cálculo de Pontos em Tempo Real
@@ -261,8 +271,8 @@ export const InputData: React.FC = () => {
             const totalKills = totalKillsSquad;
             const pontosTotal = totalPontosPartida;
 
-            // 1. Inserir em partidas_geral
-            const { error: errorGeral } = await supabase.from('partidas_geral').insert({
+            // 1. Inserir em partidas_geral e pegar o ID
+            const { data: inserted, error: errorGeral } = await supabase.from('partidas_geral').insert({
                 user_id: user.id,
                 data: matchData.data,
                 campeonato: matchData.campeonato.toUpperCase(),
@@ -274,7 +284,7 @@ export const InputData: React.FC = () => {
                 pontos_posicao: Math.max(0, pontosPosicao),
                 pontos_total: Math.max(0, pontosTotal),
                 booyah: parseInt(matchData.colocacao) === 1
-            });
+            }).select('id').single();
 
             if (errorGeral) throw errorGeral;
 
@@ -298,6 +308,11 @@ export const InputData: React.FC = () => {
 
             const { error: errorPerf } = await supabase.from('performance_jogadores').insert(performanceRecords);
             if (errorPerf) throw errorPerf;
+
+            if (inserted?.id) {
+                setCurrentMatchId(inserted.id);
+                setIsMatchDetailModalOpen(true);
+            }
 
             showToast('Squad Salvo com Sucesso!', 'success');
 
@@ -330,6 +345,34 @@ export const InputData: React.FC = () => {
         }
     };
 
+    const handleSaveCallDetails = async () => {
+        if (!currentMatchId) return;
+        setLoading(true);
+        try {
+            const { error } = await supabase.from('partidas_geral').update({
+                quebra_call: callDetail.quebraCall,
+                resultado_call: callDetail.resultadoCall,
+                qual_call: callDetail.quebraCall ? callDetail.qualCall.toUpperCase() : null
+            }).eq('id', currentMatchId);
+
+            if (error) throw error;
+            showToast('Detalhes da call salvos!', 'success');
+            handleCloseDetailModal();
+        } catch (err: any) {
+            showToast(err.message || 'Erro ao salvar detalhes', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCloseDetailModal = () => {
+        setIsMatchDetailModalOpen(false);
+        setCallDetail({ quebraCall: null, resultadoCall: null, qualCall: '' });
+        setCurrentMatchId(null);
+        // Limpar formulário principal após fechar detalhes
+        setPlayers(players.map(p => ({ ...p, kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' })));
+        setMatchData(prev => ({ ...prev, rodada: String(parseInt(prev.rodada) + 1 || '') }));
+    };
     const handleResetData = async () => {
         if (!user || resetLoading) return;
         setResetLoading(true);
@@ -592,6 +635,109 @@ export const InputData: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            
+
+            {/* 📊 Modal de Detalhes da Partida (Pós-Salvamento) */}
+            {isMatchDetailModalOpen && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-reveal">
+                    <div className="w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                            <HelpCircle size={100} />
+                        </div>
+
+                        <div className="flex flex-col gap-6 relative z-10">
+                            <div className="flex flex-col items-center text-center gap-2">
+                                <div className="w-12 h-12 rounded-xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] mb-2">
+                                    <Zap size={24} fill="currentColor" />
+                                </div>
+                                <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight">Detalhes da Partida</h3>
+                                <p className="text-xs text-[var(--text-secondary)] font-medium">Preencha para análise completa do coach</p>
+                            </div>
+
+                            <div className="space-y-6 mt-4">
+                                {/* Pergunta 1: Quebra de Call */}
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                                        Houve quebra de call?
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button 
+                                            onClick={() => setCallDetail(p => ({ ...p, quebraCall: true }))}
+                                            className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.quebraCall === true ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                        >
+                                            SIM
+                                        </button>
+                                        <button 
+                                            onClick={() => setCallDetail(p => ({ ...p, quebraCall: false }))}
+                                            className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.quebraCall === false ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                        >
+                                            NÃO
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Pergunta 2: Resultado */}
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                                        Qual foi o resultado?
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button 
+                                            onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'win' }))}
+                                            className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'win' ? 'bg-[var(--accent-green)] border-[var(--accent-green)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                        >
+                                            WIN
+                                        </button>
+                                        <button 
+                                            onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'loss' }))}
+                                            className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'loss' ? 'bg-[var(--accent-red)] border-[var(--accent-red)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                        >
+                                            LOSS
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Pergunta 3: Qual Call (Condicional) */}
+                                {callDetail.quebraCall && (
+                                    <div className="space-y-3 animate-reveal">
+                                        <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                                            Em qual call quebramos?
+                                        </label>
+                                        <input 
+                                            type="text"
+                                            value={callDetail.qualCall}
+                                            onChange={(e) => setCallDetail(p => ({ ...p, qualCall: e.target.value }))}
+                                            placeholder="Ex: Call do final, call da zona..."
+                                            className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-all"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-3 mt-4">
+                                <button
+                                    onClick={handleSaveCallDetails}
+                                    disabled={loading || callDetail.quebraCall === null || callDetail.resultadoCall === null}
+                                    className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-4 font-black uppercase tracking-widest text-xs rounded-xl shadow-xl shadow-[var(--accent-glow)] transition-all disabled:opacity-30"
+                                >
+                                    {loading ? 'SALVANDO...' : 'Salvar e Continuar'}
+                                </button>
+                                <button
+                                    onClick={handleCloseDetailModal}
+                                    className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-[10px] font-bold uppercase transition-colors py-2 tracking-widest"
+                                >
+                                    Pular e fechar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
+
 
             <style>{`
                 @keyframes reveal {
