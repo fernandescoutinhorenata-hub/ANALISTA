@@ -87,7 +87,7 @@ export function parseScreenshot(text: string): OCRResult {
     return { mapa, colocacao, jogadores };
 }
 
-function sanitizarNome(nome: string): string {
+export function sanitizarNome(nome: string): string {
     return nome
         .replace(/#/g, '')           // remove #
         .replace(/\./g, '')          // remove pontos

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { sanitizarNome } from '../utils/ocr-processing';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
@@ -222,7 +223,7 @@ export const InputData: React.FC = () => {
                 if (!j) return p;
                 return {
                     ...p,
-                    nome:        j.nome !== `Jogador ${i + 1}` ? j.nome : p.nome,
+                    nome:        j.nome !== `Jogador ${i + 1}` ? sanitizarNome(j.nome) : p.nome,
                     kills:       String(j.kills),
                     assistencias: String(j.assists),
                     derrubados:  String(j.derrubados),
@@ -736,7 +737,7 @@ export const InputData: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            )
+            )}
 
 
             <style>{`
