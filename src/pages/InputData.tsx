@@ -262,8 +262,8 @@ export const InputData: React.FC = () => {
             return;
         }
 
-        if (players.some(p => !p.nome)) {
-            showToast('Todos os jogadores devem ter nome', 'error');
+        if (players.some(p => !p.nome || p.nome.trim() === '')) {
+            showToast('Preencha o nome de todos os jogadores', 'error');
             return;
         }
 
@@ -494,13 +494,24 @@ export const InputData: React.FC = () => {
                         {players.map((player, idx) => (
                             <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 hover:border-[var(--accent-glow)] transition-all">
                                 <div className="pb-4 mb-4 border-b border-[var(--border-subtle)]">
-                                    <InputField
-                                        label={`Jogador ${idx + 1}`}
-                                        placeholder="Nome do Player"
-                                        value={player.nome}
-                                        onChange={(v: string) => updatePlayer(idx, 'nome', v)}
-                                        className="rounded-md"
-                                    />
+                                    <div className="flex flex-col gap-1.5 animate-reveal w-full">
+                                        <label className="text-[11px] font-bold text-[#F97316] flex items-center gap-1.5 uppercase tracking-wide">
+                                            Jogador {idx + 1}
+                                        </label>
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="text"
+                                                placeholder="Nome do Player"
+                                                value={player.nome}
+                                                onChange={e => updatePlayer(idx, 'nome', e.target.value.toUpperCase())}
+                                                className="input-base px-4 pr-10 border-[#F97316] bg-[#1C1410] rounded-md w-full focus:ring-1 focus:ring-[#F97316] uppercase transition-all shadow-[0_0_15px_rgba(249,115,22,0.1)] font-bold text-[#F97316]"
+                                            />
+                                            <div className="absolute right-3 text-[#F97316] pointer-events-none">
+                                                <AlertTriangle size={16} />
+                                            </div>
+                                        </div>
+                                        <span className="text-[10px] text-[#F97316]/80 font-medium mt-0.5">Confirme o nome antes de salvar</span>
+                                    </div>
                                     <span className="text-[11px] text-[var(--text-tertiary)] font-medium mt-1 inline-block">Métricas de partida</span>
                                 </div>
 
@@ -558,10 +569,10 @@ export const InputData: React.FC = () => {
 
                     <button
                         onClick={handleSaveSquad}
-                        disabled={loading}
-                        className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10"
+                        disabled={loading || players.some(p => !p.nome || p.nome.trim() === '')}
+                        className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:bg-[#27272A] disabled:text-[#A1A1AA] disabled:shadow-none disabled:cursor-not-allowed text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10"
                     >
-                        {loading ? 'PROCESSANDO...' : 'SALVAR MÉTRICAS'}
+                        {loading ? 'PROCESSANDO...' : 'SALVAR PARTIDA'}
                     </button>
                 </div>
             </main>
