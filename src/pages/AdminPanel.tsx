@@ -82,18 +82,30 @@ export const AdminPanel: React.FC = () => {
                 setAssinantesAtivos([]);
             }
 
-            // 4. Buscar Todos os Usuários (sem limit, sem filtro)
-            const { data: todos, error: eTodos } = await supabaseAdmin
-                .from('perfis')
-                .select('id, email, nome, ocr_uses, created_at')
-                .order('created_at', { ascending: false })
-                .limit(1000);
+            // 4. Buscar Todos os Usuários via Edge Function ou Query Direta
+            try {
+                const { data: funcData, error: funcError } = await supabaseAdmin.functions.invoke('get-all-users');
+                
+                if (!funcError && funcData?.users) {
+                    setTodosUsuarios(funcData.users);
+                } else {
+                    const { data: todos, error: eTodos } = await supabaseAdmin
+                        .from('perfis')
+                        .select('id, email, nome, ocr_uses, created_at')
+                        .order('created_at', { ascending: false })
+                        .limit(1000);
 
-            if (eTodos) {
-                console.error('[ADM] Erro todos perfis:', eTodos);
-                showToast(`Erro perfis: ${eTodos.message}`, 'error');
-            } else {
-                setTodosUsuarios(todos || []);
+                    if (eTodos) throw eTodos;
+                    setTodosUsuarios(todos || []);
+                }
+            } catch (error) {
+                console.warn('[ADM] Erro Edge Function ou Query Direta:', error);
+                const { data: fallbackUsers } = await supabaseAdmin
+                    .from('perfis')
+                    .select('id, email, nome, ocr_uses, created_at')
+                    .order('created_at', { ascending: false })
+                    .limit(1000);
+                setTodosUsuarios(fallbackUsers || []);
             }
         } catch (err: any) {
             console.error('Erro ao carregar dados adm:', err);
