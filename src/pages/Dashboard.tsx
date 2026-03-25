@@ -1063,42 +1063,7 @@ export const Dashboard: React.FC = () => {
                                                 </Card>
                                             )}
 
-                                            <Card className="overflow-hidden p-0!">
-                                                <div className="flex items-center justify-between p-6">
-                                                    <h4 className="text-heading text-sm font-bold uppercase flex items-center gap-2">
-                                                        <Users size={16} className="text-[var(--accent)]" /> Classificação de Elite
-                                                    </h4>
-                                                </div>
-                                                <div className="overflow-x-auto">
-                                                    <table className="w-full text-xs text-left">
-                                                        <thead className="bg-[var(--bg-surface)] border-y border-[var(--border-subtle)]">
-                                                            <tr>
-                                                                <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Jogador</th>
-                                                                <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider text-right">Kills</th>
-                                                                <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider text-right">Dano</th>
-                                                                <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider text-right">Score</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y divide-[var(--border-subtle)]">
-                                                            {(selectedPlayer === 'Todos'
-                                                                ? filteredPlayerRows
-                                                                : filteredPlayerRows.filter((p: any) => p.Player === selectedPlayer))
-                                                                .sort((a: any, b: any) => b.Kill - a.Kill)
-                                                                .slice(0, 10)
-                                                                .map((p: any, idx: number) => (
-                                                                    <tr key={idx} className="hover:bg-[var(--bg-hover)] transition-colors">
-                                                                        <td className="px-6 py-4 font-bold text-[var(--text-primary)] uppercase">{p.Player}</td>
-                                                                        <td className="px-6 py-4 text-right font-mono text-[var(--accent-red)]">{p.Kill}</td>
-                                                                        <td className="px-6 py-4 text-right font-mono text-[var(--accent)]">{p.Dano?.toLocaleString()}</td>
-                                                                        <td className="px-6 py-4 text-right">
-                                                                            <span className="badge badge-purple">{(p.Kill * 10).toFixed(0)}</span>
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </Card>
+                                            
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center justify-center py-20 text-center card border-dashed">
