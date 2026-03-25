@@ -40,22 +40,43 @@ export const AdminPanel: React.FC = () => {
     const fetchDados = async () => {
         setLoading(true);
         try {
-            // 1. Buscar Assinantes Ativos
-            const { data: ativos, error: eAtivos } = await supabase
+            // 1. Buscar assinaturas ativas (sem JOIN)
+            const { data: subs, error: eSubs } = await supabase
                 .from('subscriptions')
-                .select('*, perfis(email, nome)')
+                .select('*')
                 .eq('status', 'ativo')
                 .gt('data_fim', new Date().toISOString())
                 .order('data_fim', { ascending: false });
 
-            if (eAtivos) {
-                console.error('[ADM] Erro assinantes:', eAtivos);
-                showToast(`Erro assinantes: ${eAtivos.message}`, 'error');
+            if (eSubs) {
+                console.error('[ADM] Erro assinaturas:', eSubs);
+                showToast(`Erro assinaturas: ${eSubs.message}`, 'error');
+            } else if (subs && subs.length > 0) {
+                // 2. Buscar perfis dos assinantes separadamente
+                const userIds = subs.map((s: any) => s.user_id);
+                const { data: perfisAtivos, error: ePerfisAtivos } = await supabase
+                    .from('perfis')
+                    .select('id, email, nome')
+                    .in('id', userIds);
+
+                if (ePerfisAtivos) {
+                    console.error('[ADM] Erro perfis ativos:', ePerfisAtivos);
+                }
+
+                // 3. Combinar assinaturas com perfis no frontend
+                const perfisMap: Record<string, any> = {};
+                (perfisAtivos || []).forEach((p: any) => { perfisMap[p.id] = p; });
+
+                const combined = subs.map((s: any) => ({
+                    ...s,
+                    perfis: perfisMap[s.user_id] || null,
+                }));
+                setAssinantesAtivos(combined);
             } else {
-                setAssinantesAtivos(ativos || []);
+                setAssinantesAtivos([]);
             }
 
-            // 2. Buscar Todos os Usuários
+            // 4. Buscar Todos os Usuários
             const { data: todos, error: eTodos } = await supabase
                 .from('perfis')
                 .select('*')
