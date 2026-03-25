@@ -42,7 +42,7 @@ export const CadastroSquad: React.FC<CadastroSquadProps> = ({ onSquadChange }) =
         }
     };
 
-    const handleAdd = async (e: React.preventDefault) => {
+    const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user || !inputValue.trim()) return;
         if (players.length >= 6) {
