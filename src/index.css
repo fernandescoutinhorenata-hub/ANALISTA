@@ -191,14 +191,14 @@ body {
 }
 
 /* ── Custom Select / Options Visibility Fix ── */
-select option {
-  background-color: var(--bg-surface) !important;
-  color: var(--text-primary) !important;
+select, option, datalist, input::-webkit-calendar-picker-indicator {
+  background-color: #09090B !important; /* bg-zinc-950 */
+  color: #FAFAFA !important;
 }
 
-select:focus option {
-  background-color: var(--bg-surface);
-  color: var(--text-primary);
+select option:checked {
+  background-color: var(--accent) !important;
+  color: #fff !important;
 }
 
 /* ── Badges ───────────────────────────────────── */
