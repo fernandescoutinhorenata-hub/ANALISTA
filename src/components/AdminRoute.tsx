@@ -3,22 +3,23 @@ import React, { useState } from 'react';
 export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const [senha, setSenha] = useState('');
   const [autenticado, setAutenticado] = useState(false);
-  const [erro, setErro] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   // Senha secreta lida das variáveis de ambiente
   const SENHA_SECRETA = import.meta.env.VITE_ADMIN_PASSWORD;
 
   const handleLogin = () => {
     if (!SENHA_SECRETA) {
-      console.error("VITE_ADMIN_PASSWORD não está configurado no .env");
-      setErro(true);
+      console.error("VITE_ADMIN_PASSWORD não está configurado no .env ou Vercel");
+      setErro("FALHA CRÍTICA: Variável de senha não detectada no Vercel.");
       return;
     }
-    if (senha === SENHA_SECRETA) {
+    
+    if (senha.trim() === SENHA_SECRETA.trim()) {
       setAutenticado(true);
-      setErro(false);
+      setErro(null);
     } else {
-      setErro(true);
+      setErro("ACESSO NEGADO: Senha Incorreta.");
     }
   };
 
@@ -52,8 +53,8 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
           style={{ marginBottom: 12, textAlign: 'center' }}
         />
         {erro && (
-          <p style={{ color: 'var(--accent-red)', fontSize: 12, marginBottom: 16, fontWeight: 600 }}>
-            ACESSO NEGADO: Senha Incorreta.
+          <p style={{ color: 'var(--accent-red)', fontSize: 13, marginBottom: 16, fontWeight: 700 }}>
+            {erro}
           </p>
         )}
         <button 
