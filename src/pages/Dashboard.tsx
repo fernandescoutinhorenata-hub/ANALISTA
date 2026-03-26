@@ -906,7 +906,7 @@ export const Dashboard: React.FC = () => {
                                                                     axisLine={false} 
                                                                     tickLine={false} 
                                                                     tick={{ fontSize: 12, fill: 'var(--text-secondary)', fontWeight: 500 }} 
-                                                                    width={90} 
+                                                                    width={100} 
                                                                 />
                                                                 <Tooltip 
                                                                     cursor={{ fill: 'rgba(124, 58, 237, 0.05)' }}
@@ -915,6 +915,7 @@ export const Dashboard: React.FC = () => {
                                                                     labelStyle={neonLabelStyle}
                                                                 />
                                                                 <Bar 
+                                                                    layout="vertical"
                                                                     dataKey="total" 
                                                                     name="Pontos Totais"
                                                                     fill="#7C3AED" 
