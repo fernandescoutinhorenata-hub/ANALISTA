@@ -12,7 +12,7 @@ import {
 import { supabase } from '../lib/supabase';
 
 // ─── Preços por plano (para calcular receita) ────────────────────────────────
-const PRECOS: Record<string, number> = { semanal: 19.9, mensal: 49.9 };
+const PRECOS: Record<string, number> = { semanal: 10.0, mensal: 25.0 };
 
 // ─── Estilos de gráfico ───────────────────────────────────────────────────────
 const chartTooltipStyle = {
@@ -154,9 +154,13 @@ export const AdminPanel: React.FC = () => {
 
     const receitaMes = useMemo(() => {
         return todasAssinaturas
-            .filter(s => s.data_inicio && new Date(s.data_inicio) >= new Date(startOfMonth))
-            .reduce((acc, s) => acc + (PRECOS[s.plano] || 0), 0);
-    }, [todasAssinaturas]);
+            .filter(s => 
+                s.data_inicio && 
+                new Date(s.data_inicio) >= new Date(startOfMonth) &&
+                (s.status === 'ativo' || s.status === 'expirado')
+            )
+            .reduce((acc, s) => acc + (Number(s.valor) || PRECOS[s.plano] || 0), 0);
+    }, [todasAssinaturas, startOfMonth]);
 
     // ── Gráfico: Assinaturas por Mês (últimos 6 meses) ──
     const subsChartData = useMemo(() => {
@@ -190,11 +194,11 @@ export const AdminPanel: React.FC = () => {
             byMonth[key] = { mes: d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }), receita: 0, qtd: 0 };
         }
         todasAssinaturas.forEach(s => {
-            if (!s.data_inicio) return;
+            if (!s.data_inicio || (s.status !== 'ativo' && s.status !== 'expirado')) return;
             const d = new Date(s.data_inicio);
             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             if (byMonth[key]) {
-                byMonth[key].receita += PRECOS[s.plano] || 0;
+                byMonth[key].receita += (Number(s.valor) || PRECOS[s.plano] || 0);
                 byMonth[key].qtd++;
             }
         });
@@ -203,15 +207,16 @@ export const AdminPanel: React.FC = () => {
 
     // ── Métricas de Vendas ──
     const vendasMetrics = useMemo(() => {
-        const total = todasAssinaturas.length;
-        const doMes = todasAssinaturas.filter(s => s.data_inicio && new Date(s.data_inicio) >= new Date(startOfMonth)).length;
-        const receitaTotal = todasAssinaturas.reduce((acc, s) => acc + (PRECOS[s.plano] || 0), 0);
+        const validas = todasAssinaturas.filter(s => s.status === 'ativo' || s.status === 'expirado');
+        const total = validas.length;
+        const doMes = validas.filter(s => s.data_inicio && new Date(s.data_inicio) >= new Date(startOfMonth)).length;
+        const receitaTotal = validas.reduce((acc, s) => acc + (Number(s.valor) || PRECOS[s.plano] || 0), 0);
         const ticket = total > 0 ? receitaTotal / total : 0;
-        const semanais = todasAssinaturas.filter(s => s.plano === 'semanal').length;
-        const mensais = todasAssinaturas.filter(s => s.plano === 'mensal').length;
+        const semanais = validas.filter(s => s.plano === 'semanal').length;
+        const mensais = validas.filter(s => s.plano === 'mensal').length;
         const maisVendido = semanais >= mensais ? `Semanal (${semanais})` : `Mensal (${mensais})`;
         return { total, doMes, receitaTotal, ticket, maisVendido };
-    }, [todasAssinaturas]);
+    }, [todasAssinaturas, startOfMonth]);
 
     // ── Métricas de Afiliados ──
     const afiliadosMetrics = useMemo(() => {
