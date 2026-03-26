@@ -898,16 +898,14 @@ export const Dashboard: React.FC = () => {
                                                     </div>
                                                     <div className="h-72">
                                                         <ResponsiveContainer width="100%" height="100%">
-                                                            <BarChart layout="vertical" data={pointsByMapData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                                                <XAxis type="number" hide />
-                                                                <YAxis 
-                                                                    type="category" 
+                                                            <BarChart layout="horizontal" data={pointsByMapData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                                                <XAxis 
                                                                     dataKey="mapa" 
                                                                     axisLine={false} 
                                                                     tickLine={false} 
-                                                                    tick={{ fontSize: 12, fill: 'var(--text-secondary)', fontWeight: 500 }} 
-                                                                    width={100} 
+                                                                    tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 600 }} 
                                                                 />
+                                                                <YAxis hide type="number" />
                                                                 <Tooltip 
                                                                     cursor={{ fill: 'rgba(124, 58, 237, 0.05)' }}
                                                                     contentStyle={neonTooltipStyle}
@@ -918,7 +916,7 @@ export const Dashboard: React.FC = () => {
                                                                     dataKey="total" 
                                                                     name="Pontos Totais"
                                                                     fill="#7C3AED" 
-                                                                    radius={[0, 4, 4, 0]} 
+                                                                    radius={[4, 4, 0, 0]} 
                                                                     barSize={24}
                                                                 />
                                                             </BarChart>
