@@ -431,82 +431,7 @@ export const Dashboard: React.FC = () => {
         filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0),
         [filteredPlayerRows]);
 
-    // ─── Métricas novas da aba overview ───────────────────────────────────────
-    const overviewExtras = useMemo(() => {
-        if (!data) return null;
-
-        // Filtra as linhas gerais com o mesmo filtro do overview
-        const now = new Date();
-        const timeLimit = timeFilter === '7d'
-            ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-            : timeFilter === '30d' ? new Date(now.getFullYear(), now.getMonth(), 1) : null;
-        const isInRange = (dateStr: string) => {
-            if (!timeLimit || !dateStr) return true;
-            const parts = dateStr.split('/');
-            const parsed = parts.length === 3
-                ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
-                : new Date(dateStr);
-            return !isNaN(parsed.getTime()) && parsed >= timeLimit;
-        };
-        const rows = allGeneralRows.filter(row => {
-            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
-            const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
-            return matchDate && matchChamp && isInRange(String(row.Data || ''));
-        });
-        const total = rows.length || 1;
-
-        // Taxas TOP
-        const top3 = rows.filter(r => Number(r.Colocacao) <= 3).length;
-        const top5 = rows.filter(r => Number(r.Colocacao) <= 5).length;
-        const top12 = rows.filter(r => Number(r.Colocacao) <= 12).length;
-        const booyahs = rows.filter(r => r.Booyah === 'SIM').length;
-
-        // Booyahs por mapa
-        const byMapAgg: Record<string, number> = {};
-        rows.forEach(r => {
-            if (r.Booyah === 'SIM' && r.Mapa) {
-                byMapAgg[String(r.Mapa)] = (byMapAgg[String(r.Mapa)] || 0) + 1;
-            }
-        });
-        const booyahsByMap = Object.entries(byMapAgg)
-            .sort(([,a],[,b]) => b - a)
-            .map(([mapa, qtd]) => ({ mapa, qtd }));
-
-        // Média de pontos por evento (campeonato)
-        const byChamp: Record<string, { sum: number; count: number }> = {};
-        rows.forEach(r => {
-            const c = String(r.Campeonato || 'Sem Evento');
-            if (!byChamp[c]) byChamp[c] = { sum: 0, count: 0 };
-            byChamp[c].sum += Number(r.Pontos_Total) || 0;
-            byChamp[c].count += 1;
-        });
-        const avgByChamp = Object.entries(byChamp)
-            .map(([evento, { sum, count }]) => ({ evento, media: parseFloat((sum / count).toFixed(2)) }))
-            .sort((a, b) => b.media - a.media);
-
-        // Histórico média pontos por queda (por rodada)
-        const byRound: Record<string, { sum: number; count: number }> = {};
-        rows.forEach(r => {
-            const round = String(r.Rodada || '');
-            if (!round) return;
-            if (!byRound[round]) byRound[round] = { sum: 0, count: 0 };
-            byRound[round].sum += Number(r.Pontos_Total) || 0;
-            byRound[round].count += 1;
-        });
-        const avgPontosByRound = Object.entries(byRound)
-            .sort(([a],[b]) => Number(a) - Number(b))
-            .map(([rodada, { sum, count }]) => ({ rodada: Number(rodada), media: parseFloat((sum / count).toFixed(2)) }));
-
-        return {
-            taxaBooyah: parseFloat(((booyahs / total) * 100).toFixed(2)),
-            taxaTop3: parseFloat(((top3 / total) * 100).toFixed(2)),
-            taxaTop5: parseFloat(((top5 / total) * 100).toFixed(2)),
-            taxaTop12: parseFloat(((top12 / total) * 100).toFixed(2)),
-            booyahsByMap,
-            avgByChamp,
-            avgPontosByRound,
-        };
-    }, [data, allGeneralRows, filters.date, filters.championship, timeFilter]);
+    // overviewExtras removido — cálculos agora são inline no JSX via IIFE
 
     // Gráfico de Tendência: kills totais de todos os jogadores agrupadas por data
     const trendChartData = useMemo(() => {
@@ -858,38 +783,53 @@ export const Dashboard: React.FC = () => {
                                                 />
                                             </div>
 
-                                            {/* ── NOVAS MÉTRICAS ── */}
-                                            {overviewExtras && (
-                                                <>
-                                                    {/* Linha 1: Taxa de Booyah + TOP 3 / TOP 5 / TOP 12 */}
+                                            {/* ── LINHA 2: Taxa Booyah % + TOP 3/5/12 ── */}
+                                            {(() => {
+                                                const t = allGeneralRows.length || 1;
+                                                const pct = (n: number) => parseFloat(((n / t) * 100).toFixed(2));
+                                                const cards = [
+                                                    { label: 'TAXA DE BOOYAH', value: `${data.general.percentBooyah}%`, color: 'var(--accent)' },
+                                                    { label: 'TAXA TOP 3',     value: `${pct(allGeneralRows.filter(r => Number(r.Colocacao) <= 3).length)}%`,  color: '#EAB308' },
+                                                    { label: 'TAXA TOP 5',     value: `${pct(allGeneralRows.filter(r => Number(r.Colocacao) <= 5).length)}%`,  color: '#EAB308' },
+                                                    { label: 'TAXA TOP 12',    value: `${pct(allGeneralRows.filter(r => Number(r.Colocacao) <= 12).length)}%`, color: '#EAB308' },
+                                                ];
+                                                return (
                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-                                                        {[
-                                                            { label: 'TAXA DE BOOYAH', value: `${overviewExtras.taxaBooyah}%`, color: 'var(--accent)' },
-                                                            { label: 'TAXA TOP 3', value: `${overviewExtras.taxaTop3}%`, color: '#EAB308' },
-                                                            { label: 'TAXA TOP 5', value: `${overviewExtras.taxaTop5}%`, color: '#EAB308' },
-                                                            { label: 'TAXA TOP 12', value: `${overviewExtras.taxaTop12}%`, color: '#EAB308' },
-                                                        ].map(item => (
-                                                            <div key={item.label} className="card p-5 flex flex-col gap-2">
-                                                                <p className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">{item.label}</p>
-                                                                <p className="text-3xl font-black" style={{ color: item.color }}>{item.value}</p>
+                                                        {cards.map(c => (
+                                                            <div key={c.label} className="card p-5 flex flex-col gap-2">
+                                                                <p className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">{c.label}</p>
+                                                                <p className="text-3xl font-black" style={{ color: c.color }}>{c.value}</p>
                                                                 <p className="text-[11px] text-[var(--text-tertiary)]">de todas as partidas</p>
                                                             </div>
                                                         ))}
                                                     </div>
+                                                );
+                                            })()}
 
-                                                    {/* Linha 2: Booyahs por Mapa + Média por Evento */}
+                                            {/* ── LINHA 3: Booyahs por Mapa + Média por Evento ── */}
+                                            {(() => {
+                                                const mapAgg: Record<string, number> = {};
+                                                allGeneralRows.forEach(r => { if (r.Booyah === 'SIM' && r.Mapa) mapAgg[String(r.Mapa)] = (mapAgg[String(r.Mapa)] || 0) + 1; });
+                                                const booyahsByMap = Object.entries(mapAgg).sort(([,a],[,b]) => b - a).map(([mapa, qtd]) => ({ mapa, qtd }));
+                                                const cAgg: Record<string, { sum: number; count: number }> = {};
+                                                allGeneralRows.forEach(r => {
+                                                    const c = String(r.Campeonato || 'Sem Evento');
+                                                    if (!cAgg[c]) cAgg[c] = { sum: 0, count: 0 };
+                                                    cAgg[c].sum += Number(r.Pontos_Total) || 0; cAgg[c].count += 1;
+                                                });
+                                                const avgByChamp = Object.entries(cAgg)
+                                                    .map(([evento, { sum, count }]) => ({ evento, media: parseFloat((sum / count).toFixed(2)) }))
+                                                    .sort((a, b) => b.media - a.media);
+                                                return (
                                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                                                         <Card>
                                                             <div className="flex items-center justify-between mb-6">
-                                                                <div>
-                                                                    <h4 className="text-heading text-sm font-bold">Booyahs por Mapa</h4>
-                                                                    <p className="text-label mt-1">Vitórias por terreno</p>
-                                                                </div>
+                                                                <div><h4 className="text-heading text-sm font-bold">Booyahs por Mapa</h4><p className="text-label mt-1">Vitórias por terreno</p></div>
                                                                 <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><Trophy size={16} /></div>
                                                             </div>
                                                             <div className="h-56">
                                                                 <ResponsiveContainer width="100%" height="100%">
-                                                                    <BarChart data={overviewExtras.booyahsByMap} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                                                                    <BarChart data={booyahsByMap} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                                                                         <XAxis dataKey="mapa" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
                                                                         <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} allowDecimals={false} />
                                                                         <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
@@ -898,33 +838,19 @@ export const Dashboard: React.FC = () => {
                                                                 </ResponsiveContainer>
                                                             </div>
                                                         </Card>
-
                                                         <Card>
                                                             <div className="flex items-center justify-between mb-6">
-                                                                <div>
-                                                                    <h4 className="text-heading text-sm font-bold">Média Pontos por Evento</h4>
-                                                                    <p className="text-label mt-1">Ranking de campeonatos</p>
-                                                                </div>
+                                                                <div><h4 className="text-heading text-sm font-bold">Média Pontos por Evento</h4><p className="text-label mt-1">Ranking de campeonatos</p></div>
                                                                 <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><Target size={16} /></div>
                                                             </div>
-                                                            <div className="overflow-auto max-h-56">
+                                                            <div className="overflow-auto" style={{ maxHeight: '224px' }}>
                                                                 <table className="w-full text-sm">
-                                                                    <thead>
-                                                                        <tr className="border-b border-[var(--border-subtle)]">
-                                                                            <th className="text-left py-2 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">#Evento</th>
-                                                                            <th className="text-right py-2 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Média</th>
-                                                                        </tr>
-                                                                    </thead>
+                                                                    <thead><tr className="border-b border-[var(--border-subtle)]"><th className="text-left py-2 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">#Evento</th><th className="text-right py-2 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Média</th></tr></thead>
                                                                     <tbody className="divide-y divide-[var(--border-subtle)]">
-                                                                        {overviewExtras.avgByChamp.map((row, i) => (
+                                                                        {avgByChamp.map((row, i) => (
                                                                             <tr key={row.evento} className="hover:bg-[var(--bg-hover)] transition-colors">
-                                                                                <td className="py-3 text-[var(--text-primary)] font-semibold">
-                                                                                    <span className="text-[var(--text-tertiary)] mr-2 font-mono text-xs">{i + 1}</span>
-                                                                                    {row.evento}
-                                                                                </td>
-                                                                                <td className="py-3 text-right font-bold" style={{ color: i === 0 ? '#EAB308' : 'var(--text-primary)' }}>
-                                                                                    {row.media.toLocaleString('pt-BR')}
-                                                                                </td>
+                                                                                <td className="py-3 text-[var(--text-primary)] font-semibold"><span className="text-[var(--text-tertiary)] mr-2 font-mono text-xs">{i + 1}</span>{row.evento}</td>
+                                                                                <td className="py-3 text-right font-bold" style={{ color: i === 0 ? '#EAB308' : 'var(--text-primary)' }}>{row.media.toLocaleString('pt-BR')}</td>
                                                                             </tr>
                                                                         ))}
                                                                     </tbody>
@@ -932,32 +858,35 @@ export const Dashboard: React.FC = () => {
                                                             </div>
                                                         </Card>
                                                     </div>
+                                                );
+                                            })()}
 
-                                                    {/* Linha 3: Histórico Média Pontos/Queda */}
-                                                    {overviewExtras.avgPontosByRound.length > 1 && (
-                                                        <Card>
-                                                            <div className="flex items-center justify-between mb-6">
-                                                                <div>
-                                                                    <h4 className="text-heading text-sm font-bold">Histórico — Média Pontos / Queda</h4>
-                                                                    <p className="text-label mt-1">Evolução de performance por rodada</p>
-                                                                </div>
-                                                                <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><TrendingUp size={16} /></div>
-                                                            </div>
-                                                            <div className="h-56">
-                                                                <ResponsiveContainer width="100%" height="100%">
-                                                                    <LineChart data={overviewExtras.avgPontosByRound} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
-                                                                        <CartesianGrid stroke="var(--border-subtle)" vertical={false} strokeDasharray="3 3" />
-                                                                        <XAxis dataKey="rodada" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
-                                                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
-                                                                        <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
-                                                                        <Line type="monotone" dataKey="media" name="Média Pts" stroke="#10B981" strokeWidth={2.5} dot={{ r: 3, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 5 }} />
-                                                                    </LineChart>
-                                                                </ResponsiveContainer>
-                                                            </div>
-                                                        </Card>
-                                                    )}
-                                                </>
-                                            )}
+                                            {/* ── LINHA 4: Histórico Média Pontos/Queda ── */}
+                                            {(() => {
+                                                const rAgg: Record<string, { sum: number; count: number }> = {};
+                                                allGeneralRows.forEach(r => { const rd = String(r.Rodada || ''); if (!rd) return; if (!rAgg[rd]) rAgg[rd] = { sum: 0, count: 0 }; rAgg[rd].sum += Number(r.Pontos_Total) || 0; rAgg[rd].count += 1; });
+                                                const avgByRound = Object.entries(rAgg).sort(([a],[b]) => Number(a) - Number(b)).map(([rodada,{sum,count}]) => ({ rodada: Number(rodada), media: parseFloat((sum/count).toFixed(2)) }));
+                                                if (avgByRound.length === 0) return null;
+                                                return (
+                                                    <Card>
+                                                        <div className="flex items-center justify-between mb-6">
+                                                            <div><h4 className="text-heading text-sm font-bold">Histórico — Média Pontos / Queda</h4><p className="text-label mt-1">Evolução de performance por rodada</p></div>
+                                                            <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><TrendingUp size={16} /></div>
+                                                        </div>
+                                                        <div className="h-56">
+                                                            <ResponsiveContainer width="100%" height="100%">
+                                                                <LineChart data={avgByRound} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                                                                    <CartesianGrid stroke="var(--border-subtle)" vertical={false} strokeDasharray="3 3" />
+                                                                    <XAxis dataKey="rodada" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
+                                                                    <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
+                                                                    <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
+                                                                    <Line type="monotone" dataKey="media" name="Média Pts" stroke="#10B981" strokeWidth={2.5} dot={{ r: 3, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                                                                </LineChart>
+                                                            </ResponsiveContainer>
+                                                        </div>
+                                                    </Card>
+                                                );
+                                            })()}
 
                                             {/* Charts Row */}
                                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
