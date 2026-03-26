@@ -422,6 +422,20 @@ export const Dashboard: React.FC = () => {
         filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0),
         [filteredPlayerRows]);
 
+    const globalSquadStats = useMemo(() => {
+        const quedas = allGeneralRows.length || 1;
+        const totalKills = filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0);
+        const totalMortes = filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Morte) || 0), 0);
+        const totalDerrubados = filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Derrubados) || 0), 0);
+        
+        return {
+            quedas: allGeneralRows.length,
+            kd: parseFloat((totalKills / (totalMortes || 1)).toFixed(2)),
+            medAbates: parseFloat((totalKills / quedas).toFixed(2)),
+            medDerrubados: parseFloat((totalDerrubados / quedas).toFixed(2))
+        };
+    }, [allGeneralRows, filteredPlayerRows]);
+
     // ─── Métricas novas da aba overview ───────────────────────────────────────
     const overviewExtras = useMemo(() => {
         if (!data) return null;
@@ -1030,31 +1044,25 @@ export const Dashboard: React.FC = () => {
                                                                 <p className="text-label mt-1">Análise consolidada por queda</p>
                                                             </div>
                                                             <div className="flex gap-2">
-                                                                <span className="badge badge-purple">Dano</span>
-                                                                <span className="badge badge-purple">Abates</span>
+                                                                <span className="badge badge-purple">GLOBAL</span>
                                                             </div>
                                                         </div>
-                                                        <div className="grid grid-cols-3 gap-6">
-                                                            <div className="space-y-2">
-                                                                <span className="text-label">Dano médio</span>
-                                                                <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.avgDamage}</div>
-                                                                <div className="w-full h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
-                                                                    <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.min(100, (data.squadMetrics.avgDamage / 2500) * 100)}%` }} />
-                                                                </div>
+                                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                                                            <div className="space-y-1">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Quedas</span>
+                                                                <div className="text-heading text-3xl font-black text-[var(--accent)]">{globalSquadStats.quedas}</div>
                                                             </div>
-                                                            <div className="space-y-2">
-                                                                <span className="text-label">Kills squad</span>
-                                                                <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.totalKills}</div>
-                                                                <div className="w-full h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
-                                                                    <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.min(100, (data.squadMetrics.totalKills / 40) * 100)}%` }} />
-                                                                </div>
+                                                            <div className="space-y-1">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">K/D</span>
+                                                                <div className="text-heading text-3xl font-black text-[var(--accent)]">{globalSquadStats.kd}</div>
                                                             </div>
-                                                            <div className="space-y-2">
-                                                                <span className="text-label">Sobrevivência</span>
-                                                                <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.survivalRate}<span className="text-xs text-[var(--text-tertiary)] ml-1">mortes/jogo</span></div>
-                                                                <div className="w-full h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
-                                                                    <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.max(10, 100 - (data.squadMetrics.survivalRate * 20))}%` }} />
-                                                                </div>
+                                                            <div className="space-y-1">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Méd. Abates</span>
+                                                                <div className="text-heading text-3xl font-black text-[var(--accent)]">{globalSquadStats.medAbates}</div>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Méd. Derrubados</span>
+                                                                <div className="text-heading text-3xl font-black text-[var(--accent)]">{globalSquadStats.medDerrubados}</div>
                                                             </div>
                                                         </div>
                                                     </Card>
