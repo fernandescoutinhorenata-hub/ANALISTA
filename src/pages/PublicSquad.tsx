@@ -55,7 +55,7 @@ export const PublicSquad: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'overview' | 'players'>('overview');
-    const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos' });
+    const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos', timeFilter: 'all' as '7d' | '30d' | 'all' });
 
     // ─── BUSCA DE DADOS ───────────────────────────────────────────────────
     useEffect(() => {
@@ -138,8 +138,33 @@ export const PublicSquad: React.FC = () => {
     // ─── PROCESSAMENTO ─────────────────────────────────────────────────────
     useEffect(() => {
         if (allGeneralRows.length > 0) {
-            const fGen = allGeneralRows.filter(r => (filters.date === 'Todos' || r.Data === filters.date) && (filters.championship === 'Todos' || r.Campeonato === filters.championship));
-            const fPlay = allPlayerRows.filter(r => filters.date === 'Todos' || r.Data === filters.date);
+            let fGen = [...allGeneralRows];
+            
+            // 1. Filtro de Campeonato
+            if (filters.championship !== 'Todos') {
+                fGen = fGen.filter(r => r.Campeonato === filters.championship);
+            }
+
+            // 2. Filtro de Data ou Período (Exclusivos)
+            if (filters.date !== 'Todos') {
+                fGen = fGen.filter(r => r.Data === filters.date);
+            } else if (filters.timeFilter !== 'all') {
+                const now = new Date();
+                const days = filters.timeFilter === '7d' ? 7 : 30;
+                const cutoff = new Date(now.setDate(now.getDate() - days));
+                
+                fGen = fGen.filter(r => {
+                    if (!r.Data) return false;
+                    const [d, m, y] = r.Data.split('/').map(Number);
+                    const matchDate = new Date(y, m - 1, d);
+                    return matchDate >= cutoff;
+                });
+            }
+
+            // 3. Filtrar Player Rows baseado nas datas resultantes do fGen
+            const validDates = new Set(fGen.map(r => r.Data));
+            const fPlay = allPlayerRows.filter(r => validDates.has(r.Data));
+
             setData(processData(fGen, fPlay));
         }
     }, [filters, allGeneralRows, allPlayerRows]);
@@ -152,8 +177,28 @@ export const PublicSquad: React.FC = () => {
 
     const playerTableData = useMemo(() => {
         if (!data || allPlayerRows.length === 0) return [];
+        // Agora usamos o data.playerRows processado pelo processData que já recebeu o fPlay filtrado correamente
         const agg: Record<string, any> = {};
-        allPlayerRows.filter(r => filters.date === 'Todos' || r.Data === filters.date).forEach(p => {
+        
+        // Buscamos as datas filtradas do fGen para garantir sincronia
+        let fGenFiltered = [...allGeneralRows];
+        if (filters.championship !== 'Todos') fGenFiltered = fGenFiltered.filter(r => r.Campeonato === filters.championship);
+        if (filters.date !== 'Todos') {
+            fGenFiltered = fGenFiltered.filter(r => r.Data === filters.date);
+        } else if (filters.timeFilter !== 'all') {
+            const now = new Date();
+            const days = filters.timeFilter === '7d' ? 7 : 30;
+            const cutoff = new Date(now.setDate(now.getDate() - days));
+            fGenFiltered = fGenFiltered.filter(r => {
+                if (!r.Data) return false;
+                const [d,m,y] = r.Data.split('/').map(Number);
+                const md = new Date(y, m-1, d);
+                return md >= cutoff;
+            });
+        }
+        const validDates = new Set(fGenFiltered.map(r => r.Data));
+
+        allPlayerRows.filter(r => validDates.has(r.Data)).forEach(p => {
             if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, deaths: 0, assists: 0, damage: 0, knocks: 0 };
             agg[p.Player].kills += p.Kill || 0;
             agg[p.Player].deaths += p.Morte || 0;
@@ -165,7 +210,7 @@ export const PublicSquad: React.FC = () => {
             ...a,
             kd: parseFloat((a.kills / (a.deaths || 1)).toFixed(2))
         })).sort((a,b) => b.kills - a.kills);
-    }, [data, allPlayerRows, filters.date]);
+    }, [data, allPlayerRows, allGeneralRows, filters]);
 
     if (isLoading) return (
         <div className="min-h-screen bg-[#0B0B0C] flex flex-col items-center justify-center text-white">
@@ -229,6 +274,55 @@ export const PublicSquad: React.FC = () => {
                             <tab.icon size={14} /> {tab.label}
                         </button>
                     ))}
+                </div>
+
+                {/* ─── NEW FILTERS ROW ─── */}
+                <div className="flex flex-wrap items-center gap-6 bg-[#161618] border border-[#2D2D30] p-6 rounded-2xl">
+                    {/* Período */}
+                    <div className="space-y-2">
+                        <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-widest">Período</span>
+                        <div className="flex bg-[#0B0B0C] p-1 rounded-xl border border-[#2D2D30]">
+                            {(['7d', '30d', 'all'] as const).map((t) => (
+                                <button
+                                    key={t}
+                                    onClick={() => setFilters(prev => ({ ...prev, timeFilter: t, date: 'Todos' }))}
+                                    className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${filters.timeFilter === t && filters.date === 'Todos' ? 'bg-[#7C3AED] text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                >
+                                    {t === '7d' ? '7 Dias' : t === '30d' ? '30 Dias' : 'Tudo'}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="h-10 w-px bg-[#2D2D30] hidden md:block" />
+
+                    {/* Data Dropdown */}
+                    <div className="space-y-2">
+                        <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-widest">Data Específica</span>
+                        <select 
+                            className="bg-[#0B0B0C] border border-[#2D2D30] text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-4 py-2.5 rounded-xl min-w-[180px]"
+                            value={filters.date} 
+                            onChange={e => setFilters(prev => ({ ...prev, date: e.target.value, timeFilter: 'all' }))}
+                        >
+                            <option value="Todos">Todas as Datas</option>
+                            {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="h-10 w-px bg-[#2D2D30] hidden md:block" />
+
+                    {/* Campeonato Dropdown */}
+                    <div className="space-y-2">
+                        <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-widest">Equipe / Campeonato</span>
+                        <select 
+                            className="bg-[#0B0B0C] border border-[#2D2D30] text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-4 py-2.5 rounded-xl min-w-[200px]"
+                            value={filters.championship} 
+                            onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}
+                        >
+                            <option value="Todos">Todos os Campeonatos</option>
+                            {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
                 </div>
 
                 {data && activeTab === 'overview' && (
