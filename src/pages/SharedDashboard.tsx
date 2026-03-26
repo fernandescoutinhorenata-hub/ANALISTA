@@ -176,8 +176,17 @@ export const SharedDashboard: React.FC = () => {
 
                 // Dados das Partidas
                 const [generalRes, playersRes] = await Promise.all([
-                    supabase.from('partidas_geral').select('*').eq('user_id', cleanId).order('rodada', { ascending: true }),
-                    supabase.from('performance_jogadores').select('*').eq('user_id', cleanId)
+                    supabase
+                        .from('partidas_geral')
+                        .select('*')
+                        .eq('user_id', cleanId)
+                        .eq('is_public', true)
+                        .order('rodada', { ascending: true }),
+                    supabase
+                        .from('performance_jogadores')
+                        .select('*')
+                        .eq('user_id', cleanId)
+                        .eq('is_public', true)
                 ]);
 
                 if (!isMounted) return;
