@@ -915,7 +915,6 @@ export const Dashboard: React.FC = () => {
                                                                     labelStyle={neonLabelStyle}
                                                                 />
                                                                 <Bar 
-                                                                    layout="vertical"
                                                                     dataKey="total" 
                                                                     name="Pontos Totais"
                                                                     fill="#7C3AED" 
