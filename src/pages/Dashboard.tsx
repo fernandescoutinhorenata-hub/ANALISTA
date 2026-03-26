@@ -1001,7 +1001,7 @@ export const Dashboard: React.FC = () => {
                                             {/* MVP & Squad Metrics */}
                                             {filteredPlayerRows.length > 0 && (
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                                    <Card className="p-6 md:col-span-1">
+                                                    <Card className="p-6 md:col-span-2">
                                                         <div className="flex items-center justify-between mb-6">
                                                             <div>
                                                                 <h4 className="text-heading text-sm font-bold">Evolução Diária</h4>
@@ -1037,7 +1037,7 @@ export const Dashboard: React.FC = () => {
                                                         </div>
                                                     </Card>
 
-                                                    <Card className="md:col-span-2">
+                                                    <Card className="md:col-span-1 p-6">
                                                         <div className="flex items-center justify-between mb-8">
                                                             <div>
                                                                 <h4 className="text-heading text-sm font-bold">Médias do squad</h4>
