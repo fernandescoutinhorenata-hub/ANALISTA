@@ -12,7 +12,7 @@ import {
     Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Link, CreditCard
+    CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
@@ -1037,7 +1037,7 @@ export const Dashboard: React.FC = () => {
                                                         </div>
                                                     </Card>
 
-                                                    <Card className="md:col-span-1 p-6">
+                                                    <Card className="md:col-span-1 p-6 flex flex-col justify-between">
                                                         <div className="flex items-center justify-between mb-8">
                                                             <div>
                                                                 <h4 className="text-heading text-sm font-bold">Médias do squad</h4>
@@ -1047,22 +1047,38 @@ export const Dashboard: React.FC = () => {
                                                                 <span className="badge badge-purple">GLOBAL</span>
                                                             </div>
                                                         </div>
-                                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                                                            <div className="space-y-1">
-                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Quedas</span>
-                                                                <div className="text-heading text-4xl font-black text-[var(--accent)]">{globalSquadStats.quedas}</div>
+                                                        
+                                                        <div className="grid grid-cols-2 gap-4 h-full">
+                                                            <div className="p-4 rounded-xl bg-[var(--bg-main)]/50 border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 transition-all flex flex-col justify-between">
+                                                                <div className="flex items-center justify-between text-[var(--accent)] mb-2">
+                                                                    <span className="text-label !mt-0">Quedas</span>
+                                                                    <Activity size={12} className="opacity-50" />
+                                                                </div>
+                                                                <div className="text-heading text-4xl font-black text-white">{globalSquadStats.quedas}</div>
                                                             </div>
-                                                            <div className="space-y-1">
-                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">K/D</span>
-                                                                <div className="text-heading text-4xl font-black text-[var(--accent)]">{globalSquadStats.kd}</div>
+
+                                                            <div className="p-4 rounded-xl bg-[var(--bg-main)]/50 border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 transition-all flex flex-col justify-between">
+                                                                <div className="flex items-center justify-between text-[var(--accent)] mb-2">
+                                                                    <span className="text-label !mt-0">K/D</span>
+                                                                    <TrendingUp size={12} className="opacity-50" />
+                                                                </div>
+                                                                <div className="text-heading text-4xl font-black text-white">{globalSquadStats.kd}</div>
                                                             </div>
-                                                            <div className="space-y-1">
-                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Méd. Abates</span>
-                                                                <div className="text-heading text-4xl font-black text-[var(--accent)]">{globalSquadStats.medAbates}</div>
+
+                                                            <div className="p-4 rounded-xl bg-[var(--bg-main)]/50 border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 transition-all flex flex-col justify-between">
+                                                                <div className="flex items-center justify-between text-[var(--accent)] mb-2">
+                                                                    <span className="text-label !mt-0">Abates</span>
+                                                                    <Sword size={12} className="opacity-50" />
+                                                                </div>
+                                                                <div className="text-heading text-4xl font-black text-white">{globalSquadStats.medAbates}</div>
                                                             </div>
-                                                            <div className="space-y-1">
-                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Méd. Derrubados</span>
-                                                                <div className="text-heading text-4xl font-black text-[var(--accent)]">{globalSquadStats.medDerrubados}</div>
+
+                                                            <div className="p-4 rounded-xl bg-[var(--bg-main)]/50 border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 transition-all flex flex-col justify-between">
+                                                                <div className="flex items-center justify-between text-[var(--accent)] mb-2">
+                                                                    <span className="text-label !mt-0">Derrub.</span>
+                                                                    <Target size={12} className="opacity-50" />
+                                                                </div>
+                                                                <div className="text-heading text-4xl font-black text-white">{globalSquadStats.medDerrubados}</div>
                                                             </div>
                                                         </div>
                                                     </Card>
