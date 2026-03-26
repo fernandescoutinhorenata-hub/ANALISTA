@@ -499,6 +499,37 @@ export const Dashboard: React.FC = () => {
         };
     }, [data, allGeneralRows, filters.date, filters.championship, timeFilter]);
 
+    // Cálculo da evolução diária (Média e Total por dia)
+    const dailyEvolData = useMemo(() => {
+        if (!allGeneralRows || allGeneralRows.length === 0) return [];
+        
+        const groups = allGeneralRows.reduce((acc: Record<string, { total: number; count: number }>, row) => {
+            const dateStr = String(row.Data || '');
+            if (!dateStr) return acc;
+            
+            if (!acc[dateStr]) acc[dateStr] = { total: 0, count: 0 };
+            acc[dateStr].total += Number(row.Pontos_Total) || 0;
+            acc[dateStr].count += 1;
+            return acc;
+        }, {});
+
+        return Object.entries(groups)
+            .map(([date, g]) => ({
+                date,
+                name: date.includes('-') 
+                    ? date.split('-').reverse().slice(0, 2).join('/') // YYYY-MM-DD -> DD/MM
+                    : date.split('/').slice(0, 2).join('/'),          // DD/MM/YYYY -> DD/MM
+                media: Math.round(g.total / (g.count || 1)),
+                total: g.total
+            }))
+            .sort((a, b) => {
+                // Tenta parsear datas em formatos diferentes para ordenação estável
+                const dateA = a.date.includes('/') ? new Date(a.date.split('/').reverse().join('-')) : new Date(a.date);
+                const dateB = b.date.includes('/') ? new Date(b.date.split('/').reverse().join('-')) : new Date(b.date);
+                return dateA.getTime() - dateB.getTime();
+            });
+    }, [allGeneralRows]);
+
     const pointsByMapData = useMemo(() => {
         if (!data?.byMap) return [];
         return data.byMap.map(m => ({
@@ -956,21 +987,41 @@ export const Dashboard: React.FC = () => {
                                             {/* MVP & Squad Metrics */}
                                             {filteredPlayerRows.length > 0 && (
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                                    <div className="card p-6 !bg-[var(--bg-card)]">
-                                                        <p className="badge badge-purple mb-4">Destaque da última partida</p>
-                                                        <h4 className="text-heading text-2xl uppercase">
-                                                            {data.playerMetrics.lastMatchMVP?.player || 'Aguardando...'}
-                                                        </h4>
-                                                        <div className="mt-6">
-                                                            <span className="text-label">Score de Combate</span>
-                                                            <div className="flex items-center gap-3 mt-1">
-                                                                <span className="text-heading text-4xl text-[var(--accent)]">
-                                                                    {data.playerMetrics.lastMatchMVP?.score || 0}
-                                                                </span>
-                                                                <span className="badge badge-purple">MVP</span>
+                                                    <Card className="p-6 md:col-span-1">
+                                                        <div className="flex items-center justify-between mb-6">
+                                                            <div>
+                                                                <h4 className="text-heading text-sm font-bold">Evolução Diária</h4>
+                                                                <p className="text-label mt-1">Média e total de pontos por dia</p>
+                                                            </div>
+                                                            <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
+                                                                <TrendingUp size={16} />
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                        <div className="h-56">
+                                                            <ResponsiveContainer width="100%" height="100%">
+                                                                <LineChart data={dailyEvolData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                                                                    <CartesianGrid stroke="var(--border-subtle)" vertical={false} strokeDasharray="3 3" />
+                                                                    <XAxis 
+                                                                        dataKey="name" 
+                                                                        tickLine={false} 
+                                                                        axisLine={false} 
+                                                                        tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} 
+                                                                    />
+                                                                    <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
+                                                                    <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
+                                                                    <Legend 
+                                                                        verticalAlign="top" 
+                                                                        align="right" 
+                                                                        iconType="circle" 
+                                                                        iconSize={8}
+                                                                        wrapperStyle={{ fontSize: '10px', marginTop: '-20px' }}
+                                                                    />
+                                                                    <Line type="monotone" dataKey="media" name="Média" stroke="#7C3AED" strokeWidth={2} dot={{ r: 4, fill: '#7C3AED', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                                                                    <Line type="monotone" dataKey="total" name="Total" stroke="#10B981" strokeWidth={2} dot={{ r: 4, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                                                                </LineChart>
+                                                            </ResponsiveContainer>
+                                                        </div>
+                                                    </Card>
 
                                                     <Card className="md:col-span-2">
                                                         <div className="flex items-center justify-between mb-8">
