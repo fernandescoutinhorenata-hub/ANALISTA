@@ -8,6 +8,7 @@ import { Planos } from './pages/Planos';
 import { AdminPanel } from './pages/AdminPanel';
 import { PublicSquad } from './pages/PublicSquad';
 import Quebras from './pages/Quebras';
+import Afiliado from './pages/Afiliado';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
@@ -40,6 +41,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Coletivo />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/afiliado" 
+            element={
+              <ProtectedRoute>
+                <Afiliado />
               </ProtectedRoute>
             } 
           />

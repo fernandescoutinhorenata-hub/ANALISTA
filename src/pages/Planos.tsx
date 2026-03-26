@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Lock, ChevronLeft, Loader2, Zap, Calendar, Clock, CreditCard, RefreshCw, AlertCircle } from 'lucide-react';
+import { Check, Lock, ChevronLeft, Loader2, Zap, Calendar, Clock, CreditCard, RefreshCw, AlertCircle, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +16,11 @@ export const Planos: React.FC = () => {
     const [loadingSubs, setLoadingSubs] = useState(true);
     const { user } = useAuth();
     const navigate = useNavigate();
+    
+    // Estados do Cupom
+    const [couponCode, setCouponCode] = useState('');
+    const [couponStatus, setCouponStatus] = useState<'none' | 'valid' | 'invalid' | 'loading'>('none');
+    const [affiliateId, setAffiliateId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchSubscription = async () => {
@@ -56,7 +61,8 @@ export const Planos: React.FC = () => {
                 body: { 
                     plano: planoId, 
                     user_id: user.id, 
-                    user_email: user.email 
+                    user_email: user.email,
+                    affiliate_id: affiliateId
                 }
             });
 
@@ -73,6 +79,37 @@ export const Planos: React.FC = () => {
             setLoadingPlano(null);
         }
     };
+
+    const validateCoupon = async () => {
+        if (!couponCode) {
+            setCouponStatus('none');
+            setAffiliateId(null);
+            return;
+        }
+
+        setCouponStatus('loading');
+        try {
+            const { data, error } = await supabase
+                .from('affiliates')
+                .select('id, coupon_code')
+                .eq('coupon_code', couponCode.toUpperCase().trim())
+                .maybeSingle();
+
+            if (error) throw error;
+
+            if (data) {
+                setCouponStatus('valid');
+                setAffiliateId(data.id);
+            } else {
+                setCouponStatus('invalid');
+                setAffiliateId(null);
+            }
+        } catch (err) {
+            console.error('Erro ao validar cupom:', err);
+            setCouponStatus('invalid');
+        }
+    };
+
 
     const getStatusConfig = () => {
         if (!subscription?.data_fim) return { color: 'var(--text-tertiary)', label: '-', bar: 'bg-zinc-800' };
@@ -266,6 +303,38 @@ export const Planos: React.FC = () => {
                     </button>
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Evolua seu Squad</h1>
                     <p className="text-[var(--text-secondary)] mt-2">Escolha o plano ideal para profissionalizar sua análise.</p>
+                </div>
+
+                {/* Seção de Cupom */}
+                <div className="flex flex-col md:flex-row items-center gap-4 bg-[var(--bg-card)] p-4 rounded-2xl border border-[var(--border-subtle)] w-full md:w-fit">
+                    <div className="flex items-center gap-3 px-3">
+                        <Activity size={18} className="text-[var(--accent)]" />
+                        <span className="text-sm font-bold uppercase tracking-tight">Tem um cupom?</span>
+                    </div>
+                    <div className="relative flex-1 md:w-64">
+                        <input 
+                            type="text" 
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value)}
+                            placeholder="CÓDIGO"
+                            className="w-full bg-[var(--bg-main)] border border-[var(--border-default)] rounded-xl px-4 py-3 text-xs font-black uppercase tracking-widest outline-none focus:border-[var(--accent)] transition-all"
+                        />
+                        {couponStatus === 'valid' && <Check size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500" />}
+                        {couponStatus === 'invalid' && <AlertCircle size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-500" />}
+                    </div>
+                    <button 
+                        onClick={validateCoupon}
+                        disabled={couponStatus === 'loading' || !couponCode}
+                        className="px-8 py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[10px] font-black uppercase rounded-xl transition-all disabled:opacity-50"
+                    >
+                        {couponStatus === 'loading' ? 'VALIDANDO...' : 'APLICAR'}
+                    </button>
+                    {couponStatus === 'valid' && (
+                        <p className="px-4 text-[10px] font-black text-green-500 uppercase animate-reveal">Cupom aplicado com sucesso! ✅</p>
+                    )}
+                    {couponStatus === 'invalid' && (
+                        <p className="px-4 text-[10px] font-black text-rose-500 uppercase animate-reveal">Código inválido ou expirado ❌</p>
+                    )}
                 </div>
             </header>
 

@@ -6,7 +6,7 @@ import {
     TrendingUp, LogOut, Users, Sword, Shield,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
     CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2,
-    Lock
+    Lock, DollarSign
 } from 'lucide-react';
 import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -835,6 +835,14 @@ export const Dashboard: React.FC = () => {
                             </button>
                         );
                     })}
+
+                    <button
+                        onClick={() => { navigate('/afiliado'); setIsSidebarOpen(false); }}
+                        className="nav-item w-full"
+                    >
+                        <DollarSign size={18} />
+                        Afiliados
+                    </button>
 
                     <button
                         onClick={() => { navigate('/admin-celo/planos'); setIsSidebarOpen(false); }}
