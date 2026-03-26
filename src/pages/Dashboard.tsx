@@ -4,8 +4,9 @@ import * as XLSX from 'xlsx';
 import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell,
-    AreaChart, Area, Legend,
-    LineChart, Line, CartesianGrid
+    Legend,
+    LineChart, Line, CartesianGrid,
+    BarChart, Bar
 } from 'recharts';
 import {
     Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
@@ -508,21 +509,16 @@ export const Dashboard: React.FC = () => {
     }, [data, allGeneralRows, filters.date, filters.championship, timeFilter]);
 
     // Gráfico de Tendência: kills totais de todos os jogadores agrupadas por data
-    const trendChartData = useMemo(() => {
-        if (filteredPlayerRows.length === 0) return [];
-        const byDate: Record<string, number> = {};
-        filteredPlayerRows.forEach(p => {
-            const d = String(p.Data || '');
-            if (d) byDate[d] = (byDate[d] || 0) + (Number(p.Kill) || 0);
-        });
-        return Object.entries(byDate)
-            .sort(([a], [b]) => {
-                const [dayA, monthA, yearA] = a.split('/').map(Number);
-                const [dayB, monthB, yearB] = b.split('/').map(Number);
-                return new Date(yearA, monthA - 1, dayA).getTime() - new Date(yearB, monthB - 1, dayB).getTime();
-            })
-            .map(([data, kills]) => ({ Data: data, Kill: kills }));
-    }, [filteredPlayerRows]);
+    
+    const pointsByMapData = useMemo(() => {
+        if (!data?.byMap) return [];
+        return data.byMap.map(m => ({
+            mapa: m.mapa,
+            total: (m.totalPontos || 0) + (m.totalKills || 0)
+        })).sort((a, b) => b.total - a.total);
+    }, [data?.byMap]);
+
+    
 
     const handleTemplateDownload = () => {
         const wb = XLSX.utils.book_new();
@@ -893,32 +889,39 @@ export const Dashboard: React.FC = () => {
                                                 <Card className="lg:col-span-2">
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div>
-                                                            <h4 className="text-heading text-sm font-bold">Fluxo de performance</h4>
-                                                            <p className="text-label mt-1">Consolidado de kills por partida</p>
+                                                            <h4 className="text-heading text-sm font-bold">Pontos por Mapa</h4>
+                                                            <p className="text-label mt-1">Somas de pontos + abates por terreno</p>
                                                         </div>
                                                         <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
-                                                            <TrendingUp size={16} />
+                                                            <Map size={16} />
                                                         </div>
                                                     </div>
                                                     <div className="h-72">
                                                         <ResponsiveContainer width="100%" height="100%">
-                                                            <AreaChart data={trendChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                                                                <defs>
-                                                                    <linearGradient id="gradKills" x1="0" y1="0" x2="0" y2="1">
-                                                                        <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.4} />
-                                                                        <stop offset="60%" stopColor="var(--accent)" stopOpacity={0.08} />
-                                                                        <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
-                                                                    </linearGradient>
-                                                                </defs>
-                                                                <XAxis dataKey="Data" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} dy={10} />
-                                                                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
+                                                            <BarChart layout="vertical" data={pointsByMapData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                                                <XAxis type="number" hide />
+                                                                <YAxis 
+                                                                    type="category" 
+                                                                    dataKey="mapa" 
+                                                                    axisLine={false} 
+                                                                    tickLine={false} 
+                                                                    tick={{ fontSize: 12, fill: 'var(--text-secondary)', fontWeight: 500 }} 
+                                                                    width={90} 
+                                                                />
                                                                 <Tooltip 
-    contentStyle={neonTooltipStyle} 
-    itemStyle={neonItemStyle}
-    labelStyle={neonLabelStyle} 
-/>
-                                                                <Area type="monotone" dataKey="Kill" stroke="var(--accent)" strokeWidth={2.5} fillOpacity={1} fill="url(#gradKills)" />
-                                                            </AreaChart>
+                                                                    cursor={{ fill: 'rgba(124, 58, 237, 0.05)' }}
+                                                                    contentStyle={neonTooltipStyle}
+                                                                    itemStyle={neonItemStyle}
+                                                                    labelStyle={neonLabelStyle}
+                                                                />
+                                                                <Bar 
+                                                                    dataKey="total" 
+                                                                    name="Pontos Totais"
+                                                                    fill="#7C3AED" 
+                                                                    radius={[0, 4, 4, 0]} 
+                                                                    barSize={24}
+                                                                />
+                                                            </BarChart>
                                                         </ResponsiveContainer>
                                                     </div>
                                                 </Card>
