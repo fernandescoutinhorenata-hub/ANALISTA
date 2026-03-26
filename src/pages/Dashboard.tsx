@@ -1050,19 +1050,19 @@ export const Dashboard: React.FC = () => {
                                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                                                             <div className="space-y-1">
                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Quedas</span>
-                                                                <div className="text-heading text-3xl font-black text-[var(--accent)]">{globalSquadStats.quedas}</div>
+                                                                <div className="text-heading text-4xl font-black text-[var(--accent)]">{globalSquadStats.quedas}</div>
                                                             </div>
                                                             <div className="space-y-1">
                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">K/D</span>
-                                                                <div className="text-heading text-3xl font-black text-[var(--accent)]">{globalSquadStats.kd}</div>
+                                                                <div className="text-heading text-4xl font-black text-[var(--accent)]">{globalSquadStats.kd}</div>
                                                             </div>
                                                             <div className="space-y-1">
                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Méd. Abates</span>
-                                                                <div className="text-heading text-3xl font-black text-[var(--accent)]">{globalSquadStats.medAbates}</div>
+                                                                <div className="text-heading text-4xl font-black text-[var(--accent)]">{globalSquadStats.medAbates}</div>
                                                             </div>
                                                             <div className="space-y-1">
                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Méd. Derrubados</span>
-                                                                <div className="text-heading text-3xl font-black text-[var(--accent)]">{globalSquadStats.medDerrubados}</div>
+                                                                <div className="text-heading text-4xl font-black text-[var(--accent)]">{globalSquadStats.medDerrubados}</div>
                                                             </div>
                                                         </div>
                                                     </Card>
