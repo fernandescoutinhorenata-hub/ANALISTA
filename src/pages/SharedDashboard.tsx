@@ -165,6 +165,12 @@ export const SharedDashboard: React.FC = () => {
             }, 6000);
 
             try {
+                // Reiniciar estados para evitar persistência de dados de outro link
+                setData(null);
+                setAllGeneralRows([]);
+                setAllPlayerRows([]);
+                setNomeCoach('');
+
                 // Perfil (Coach Name)
                 const { data: profile } = await supabase
                     .from('perfis')
@@ -375,7 +381,9 @@ export const SharedDashboard: React.FC = () => {
                                 <div className="h-8 w-[1px] bg-[#2D2D30]" />
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-bold text-[#A855F7] uppercase tracking-widest">Analytics Público</span>
-                                    <span className="text-xs font-black text-white uppercase tracking-tighter">Coach: {nomeCoach || 'Elite'}</span>
+                                    <span className="text-xs font-black text-white uppercase tracking-tighter">
+                                        Coach: {nomeCoach || (isDashboardLoading ? 'Buscando...' : 'Não Identificado')}
+                                    </span>
                                 </div>
                             </div>
                         </div>
