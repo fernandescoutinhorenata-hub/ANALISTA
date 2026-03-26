@@ -1333,6 +1333,24 @@ export const Dashboard: React.FC = () => {
                                             )}
                                         </div>
                                     </div>
+                                    
+                                    {selectedPlayer !== 'Todos' && (
+                                        <div className="flex items-center gap-2 mb-4 animate-fade-in group">
+                                            <div className="bg-[#EAB308]/10 border border-[#EAB308]/20 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg shadow-yellow-500/5 backdrop-blur-sm">
+                                                <UserCircle2 size={12} className="text-[#EAB308]" />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#EAB308]">
+                                                    Filtrando por: {selectedPlayer}
+                                                </span>
+                                                <button 
+                                                    onClick={() => setSelectedPlayer('Todos')}
+                                                    className="hover:bg-[#EAB308]/20 p-1 rounded-full transition-colors ml-1"
+                                                    title="Limpar filtro de jogador"
+                                                >
+                                                    <XCircle size={14} className="text-[#EAB308]" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* BLOCO 1: Tabela */}
                                     <Card className="!bg-[#141416] border-none p-0 overflow-hidden">
@@ -1399,8 +1417,22 @@ export const Dashboard: React.FC = () => {
                                                             data={donutData} cx="50%" cy="50%" innerRadius={45} outerRadius={75}
                                                             paddingAngle={2} dataKey="value" stroke="none" labelLine={false}
                                                             label={({ percent }) => `${((percent || 0) * 100).toFixed(1)}%`}
+                                                            style={{ cursor: 'pointer' }}
+                                                            onClick={(data: any) => {
+                                                                if (data && data.name) {
+                                                                    setSelectedPlayer(prev => prev === data.name ? 'Todos' : data.name);
+                                                                }
+                                                            }}
                                                         >
-                                                            {donutData.map((d: any, i: number) => <Cell key={`cell-${i}`} fill={d.fill} />)}
+                                                            {donutData.map((d: any, i: number) => (
+                                                                <Cell 
+                                                                    key={`cell-${i}`} 
+                                                                    fill={d.fill} 
+                                                                    opacity={selectedPlayer === 'Todos' || selectedPlayer === d.name ? 1 : 0.4}
+                                                                    stroke={selectedPlayer === d.name ? '#FFFFFF' : 'none'}
+                                                                    strokeWidth={selectedPlayer === d.name ? 3 : 0}
+                                                                />
+                                                            ))}
                                                         </Pie>
                                                         <Tooltip contentStyle={{ backgroundColor: '#18181B', border: 'none', borderRadius: '8px', color: '#FAFAFA' }} itemStyle={{ color: '#FAFAFA' }} />
                                                         <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '10px', color: '#FAFAFA', fontWeight: 'bold' }} />
