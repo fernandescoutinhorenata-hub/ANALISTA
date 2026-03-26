@@ -116,6 +116,7 @@ const DashboardStyles = () => (
     `}</style>
 );
 
+// ─── Shared Dashboard V1.1 ──────────────────────────────────────────
 export const SharedDashboard: React.FC = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
