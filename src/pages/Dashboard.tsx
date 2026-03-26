@@ -552,6 +552,34 @@ export const Dashboard: React.FC = () => {
         })).sort((a, b) => b.total - a.total);
     }, [data?.byMap]);
 
+    // Cálculo do Melhor e Pior Mapa
+    const mapComparisonData = useMemo(() => {
+        if (!allGeneralRows || allGeneralRows.length === 0) return null;
+        
+        const mapStats: Record<string, { total: number; count: number }> = {};
+        allGeneralRows.forEach(row => {
+            const m = String(row.Mapa || 'Desconhecido');
+            if (!mapStats[m]) mapStats[m] = { total: 0, count: 0 };
+            mapStats[m].total += Number(row.Pontos_Total) || 0;
+            mapStats[m].count += 1;
+        });
+
+        const sorted = Object.entries(mapStats)
+            .map(([mapa, { total, count }]) => ({
+                mapa,
+                total,
+                media: parseFloat((total / count).toFixed(2))
+            }))
+            .sort((a, b) => b.total - a.total);
+
+        if (sorted.length === 0) return null;
+        
+        return {
+            best: sorted[0],
+            worst: sorted[sorted.length - 1]
+        };
+    }, [allGeneralRows]);
+
     const handleTemplateDownload = () => {
         const wb = XLSX.utils.book_new();
         const wsGeneral = XLSX.utils.aoa_to_sheet([
@@ -953,48 +981,59 @@ export const Dashboard: React.FC = () => {
                                                     </div>
                                                 </Card>
 
-                                                <Card>
+                                                <Card className="flex flex-col h-full">
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div>
-                                                            <h4 className="text-heading text-sm font-bold">Domínio de terreno</h4>
-                                                            <p className="text-label mt-1">Distribuição de pontos</p>
+                                                            <h4 className="text-heading text-sm font-bold">Performance por Mapa</h4>
+                                                            <p className="text-label mt-1">Comparação de pontuação extrema</p>
                                                         </div>
                                                         <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
                                                             <Map size={16} />
                                                         </div>
                                                     </div>
-                                                    <div className="h-72">
-                                                        <ResponsiveContainer width="100%" height="100%">
-                                                            <PieChart>
-                                                                <Pie
-                                                                    data={data.byMap || []}
-                                                                    cx="50%" cy="45%"
-                                                                    innerRadius={60} outerRadius={85}
-                                                                    startAngle={90} endAngle={-270}
-                                                                    dataKey="totalPontos" nameKey="mapa" paddingAngle={4}
-                                                                    stroke="none"
-                                                                >
-                                                                    {(data.byMap || []).map((_: any, index: number) => (
-                                                                        <Cell key={`cell-${index}`} fill={['#9333EA', '#10B981', '#EF4444', '#F59E0B', '#3B82F6'][index % 5]} />
-                                                                    ))}
-                                                                </Pie>
-                                                                <Tooltip 
-    contentStyle={neonTooltipStyle} 
-    itemStyle={neonItemStyle}
-    labelStyle={neonLabelStyle} 
-/>
-                                                                <Legend
-                                                                    verticalAlign="bottom"
-                                                                    height={40}
-                                                                    iconType="circle"
-                                                                    iconSize={6}
-                                                                    formatter={(value) => (
-                                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">{value}</span>
-                                                                    )}
-                                                                />
-                                                            </PieChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
+
+                                                    {!mapComparisonData ? (
+                                                        <div className="flex flex-col items-center justify-center h-full py-10 opacity-30">
+                                                            <Map size={48} className="mb-4" />
+                                                            <p className="text-label">Sem dados para comparar</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="grid grid-cols-2 gap-0 h-full">
+                                                            {/* Melhor Mapa */}
+                                                            <div className="pr-6 flex flex-col justify-center">
+                                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#10B981] mb-2 block">Melhor Mapa</span>
+                                                                <h3 className="text-heading text-2xl font-black uppercase tracking-tight mb-6">{mapComparisonData.best.mapa}</h3>
+                                                                
+                                                                <div className="space-y-4">
+                                                                    <div>
+                                                                        <div className="text-heading text-xl font-bold text-white">{mapComparisonData.best.total}</div>
+                                                                        <span className="text-label !text-[#10B981]/80">Pontos no Melhor Mapa</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="text-heading text-xl font-semibold text-white/90">{mapComparisonData.best.media}</div>
+                                                                        <span className="text-label !text-[#10B981]/50">Média por queda</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Pior Mapa */}
+                                                            <div className="pl-6 border-l border-[var(--border-subtle)] flex flex-col justify-center">
+                                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#EF4444] mb-2 block">Pior Mapa</span>
+                                                                <h3 className="text-heading text-2xl font-black uppercase tracking-tight mb-6">{mapComparisonData.worst.mapa}</h3>
+                                                                
+                                                                <div className="space-y-4">
+                                                                    <div>
+                                                                        <div className="text-heading text-xl font-bold text-white">{mapComparisonData.worst.total}</div>
+                                                                        <span className="text-label !text-[#EF4444]/80">Pontos no Pior Mapa</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="text-heading text-xl font-semibold text-white/90">{mapComparisonData.worst.media}</div>
+                                                                        <span className="text-label !text-[#EF4444]/50">Média por queda</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </Card>
                                             </div>
 
