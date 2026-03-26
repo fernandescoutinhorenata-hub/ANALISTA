@@ -774,13 +774,21 @@ export const Dashboard: React.FC = () => {
                     {[
                         { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
                         { id: 'players', label: 'Jogadores', icon: Users },
+                        { id: 'coletivo', label: 'Coletivo', icon: Activity },
                         { id: 'history', label: 'Análise', icon: FileSpreadsheet },
                     ].map(item => {
                         const isActive = activeTab === item.id;
                         return (
                             <button
                                 key={item.id}
-                                onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
+                                onClick={() => { 
+                                    if (item.id === 'coletivo') {
+                                        navigate('/coletivo');
+                                    } else {
+                                        setActiveTab(item.id); 
+                                    }
+                                    setIsSidebarOpen(false); 
+                                }}
                                 className={`nav-item w-full ${isActive ? 'active' : ''}`}
                             >
                                 <item.icon size={18} />

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { Coletivo } from './pages/Coletivo';
 import { InputData } from './pages/InputData';
 import { SharedDashboard } from './pages/SharedDashboard';
 import { Planos } from './pages/Planos';
@@ -26,6 +27,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/coletivo" 
+            element={
+              <ProtectedRoute>
+                <Coletivo />
               </ProtectedRoute>
             } 
           />
