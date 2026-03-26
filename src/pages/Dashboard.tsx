@@ -173,6 +173,8 @@ export const Dashboard: React.FC = () => {
     const [selectedPlayer, setSelectedPlayer] = useState<string>('Todos');
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos' });
     const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
+    const [specificDate, setSpecificDate] = useState<string>(''); // Novo filtro de data Dashboard
+    const [playerSpecificDate, setPlayerSpecificDate] = useState<string>(''); // Novo filtro de data Jogadores
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [nomeUsuario, setNomeUsuario] = useState<string>('');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
@@ -311,18 +313,31 @@ export const Dashboard: React.FC = () => {
         };
 
         const filteredGeneral = allGeneralRows.filter(row => {
-            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
             const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
+            
+            if (specificDate) {
+                const rowDateStr = String(row.Data || '');
+                const formattedSpecific = specificDate.split('-').reverse().join('/');
+                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp;
+            }
+
+            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
             const matchTime = isInTimeRange(String(row.Data || ''));
             return matchDate && matchChamp && matchTime;
         });
         const filteredPlayers = allPlayerRows.filter(row => {
+            if (specificDate) {
+                const rowDateStr = String(row.Data || '');
+                const formattedSpecific = specificDate.split('-').reverse().join('/');
+                return rowDateStr === specificDate || rowDateStr === formattedSpecific;
+            }
+
             const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
             const matchTime = isInTimeRange(String(row.Data || ''));
             return matchDate && matchTime;
         });
         setData(processData(filteredGeneral, filteredPlayers));
-    }, [filters, timeFilter, allGeneralRows, allPlayerRows]);
+    }, [filters, timeFilter, specificDate, allGeneralRows, allPlayerRows]);
 
     // ─── Métricas derivadas de performance_jogadores ───────────────────────────
     const filteredPlayerRows = useMemo(() => {
@@ -334,6 +349,12 @@ export const Dashboard: React.FC = () => {
                 : null;
 
         return allPlayerRows.filter(row => {
+            if (playerSpecificDate) {
+                const rowDateStr = String(row.Data || '');
+                const formattedSpecific = playerSpecificDate.split('-').reverse().join('/');
+                return rowDateStr === playerSpecificDate || rowDateStr === formattedSpecific;
+            }
+
             const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
             if (!matchDate) return false;
             if (!timeLimit) return true;
@@ -344,7 +365,7 @@ export const Dashboard: React.FC = () => {
                 : new Date(dateStr);
             return !isNaN(parsed.getTime()) && parsed >= timeLimit;
         });
-    }, [allPlayerRows, filters.date, timeFilter]);
+    }, [allPlayerRows, filters.date, timeFilter, playerSpecificDate]);
 
     const playerList = useMemo(() => {
         return Array.from(new Set(filteredPlayerRows.map((p: any) => p.Player).filter(Boolean))).sort() as string[];
@@ -843,8 +864,8 @@ export const Dashboard: React.FC = () => {
                             {([{ id: '7d', label: '7 dias' }, { id: '30d', label: 'Este Mês' }, { id: 'all', label: 'Todos' }] as const).map(t => (
                                 <button
                                     key={t.id}
-                                    onClick={() => setTimeFilter(t.id)}
-                                    className={`px-3 py-1.5 rounded-md text-label transition-all ${timeFilter === t.id ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'}`}
+                                    onClick={() => { setTimeFilter(t.id); setSpecificDate(''); }}
+                                    className={`px-3 py-1.5 rounded-md text-label transition-all ${timeFilter === t.id && !specificDate ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'} ${specificDate ? 'opacity-50 grayscale' : ''}`}
                                 >
                                     {t.label}
                                 </button>
@@ -853,25 +874,30 @@ export const Dashboard: React.FC = () => {
 
                         {/* Filtros por Data / Campeonato */}
                         <div className="hidden lg:flex items-center gap-2">
-                            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)] text-label">
-                                <Calendar size={13} className="text-[var(--accent)]" />
-                                <select
-                                    value={filters.date}
-                                    onChange={e => setFilters(prev => ({ ...prev, date: e.target.value }))}
-                                    className="outline-none cursor-pointer bg-zinc-950 text-white border-none py-1.5 px-2 rounded-md"
-                                >
-                                    <option value="Todos">Todas as Datas</option>
-                                    {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
-                                </select>
+                            {/* Date Picker Dashboard */}
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#09090b] border border-[var(--border-default)] transition-all ${specificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
+                                <Calendar size={13} className={specificDate ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'} />
+                                <input 
+                                    type="date" 
+                                    value={specificDate}
+                                    onChange={(e) => setSpecificDate(e.target.value)}
+                                    className="bg-transparent text-white outline-none border-none text-xs [color-scheme:dark] cursor-pointer"
+                                />
+                                {specificDate && (
+                                    <button onClick={() => setSpecificDate('')} className="text-[var(--text-tertiary)] hover:text-white transition-colors">
+                                        <XCircle size={14} />
+                                    </button>
+                                )}
                             </div>
+
                             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)] text-label">
                                 <Trophy size={13} className="text-[var(--accent)]" />
                                 <select
                                     value={filters.championship}
                                     onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}
-                                    className="outline-none cursor-pointer bg-zinc-950 text-white border-none py-1.5 px-2 rounded-md"
+                                    className="outline-none cursor-pointer bg-zinc-950 text-white border-none py-1.5 px-2 rounded-md hover:bg-zinc-900 transition-colors"
                                 >
-                                    <option value="Todos">Todos Campeonatos</option>
+                                    <option value="Todos">Todos os Eventos</option>
                                     {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
@@ -1217,6 +1243,22 @@ export const Dashboard: React.FC = () => {
                                                     <option key={p} value={p} className="bg-[#141416]">{p}</option>
                                                 ))}
                                             </select>
+                                        </div>
+
+                                        {/* Date Picker na Aba Jogadores */}
+                                        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] transition-all ${playerSpecificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
+                                            <Calendar size={16} className={playerSpecificDate ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)]'} />
+                                            <input 
+                                                type="date" 
+                                                value={playerSpecificDate}
+                                                onChange={(e) => setPlayerSpecificDate(e.target.value)}
+                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer text-sm [color-scheme:dark] font-medium"
+                                            />
+                                            {playerSpecificDate && (
+                                                <button onClick={() => setPlayerSpecificDate('')} className="text-[var(--text-tertiary)] hover:text-white transition-colors">
+                                                    <XCircle size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
