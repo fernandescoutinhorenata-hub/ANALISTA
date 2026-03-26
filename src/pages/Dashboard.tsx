@@ -503,7 +503,7 @@ export const Dashboard: React.FC = () => {
         if (!data?.byMap) return [];
         return data.byMap.map(m => ({
             mapa: m.mapa,
-            total: (m.totalPontos || 0) + (m.totalKills || 0)
+            total: (m.totalPontos || 0)
         })).sort((a, b) => b.total - a.total);
     }, [data?.byMap]);
 
