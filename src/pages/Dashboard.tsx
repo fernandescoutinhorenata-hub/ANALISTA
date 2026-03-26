@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import {
     Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
-    TrendingUp, LogOut, Users, Sword,
+    TrendingUp, LogOut, Users, Sword, Shield,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
     CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2
 } from 'lucide-react';
@@ -787,6 +787,7 @@ export const Dashboard: React.FC = () => {
                         { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
                         { id: 'players', label: 'Jogadores', icon: Users },
                         { id: 'coletivo', label: 'Coletivo', icon: Activity },
+                        { id: 'quebras', label: 'Quebras', icon: Shield },
                         { id: 'history', label: 'Análise', icon: FileSpreadsheet },
                     ].map(item => {
                         const isActive = activeTab === item.id;
@@ -796,6 +797,8 @@ export const Dashboard: React.FC = () => {
                                 onClick={() => { 
                                     if (item.id === 'coletivo') {
                                         navigate('/coletivo');
+                                    } else if (item.id === 'quebras') {
+                                        navigate('/quebras');
                                     } else {
                                         setActiveTab(item.id); 
                                     }
