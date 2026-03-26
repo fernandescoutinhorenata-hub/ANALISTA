@@ -2,18 +2,18 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import {
+    Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
+    TrendingUp, LogOut, Users, Sword,
+    Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
+    CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2
+} from 'lucide-react';
+import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell,
     Legend,
     LineChart, Line, CartesianGrid,
     BarChart, Bar
 } from 'recharts';
-import {
-    Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
-    TrendingUp, LogOut, Users, Sword,
-    Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2
-} from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
 import { processData } from '../utils/data-processing';
@@ -162,6 +162,8 @@ const ImportModal: React.FC<{
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export const Dashboard: React.FC = () => {
+    const [nomeUsuario, setNomeUsuario] = useState<string>('');
+    const [shareToken, setShareToken] = useState<string | null>(null);
     const [allGeneralRows, setAllGeneralRows] = useState<any[]>([]);
     const [allPlayerRows, setAllPlayerRows] = useState<any[]>([]);
     const [data, setData] = useState<DashboardData | null>(null);
@@ -176,7 +178,6 @@ export const Dashboard: React.FC = () => {
     const [specificDate, setSpecificDate] = useState<string>(''); // Novo filtro de data Dashboard
     const [playerSpecificDate, setPlayerSpecificDate] = useState<string>(''); // Novo filtro de data Jogadores
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-    const [nomeUsuario, setNomeUsuario] = useState<string>('');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [matchToDelete, setMatchToDelete] = useState<any>(null);
@@ -206,11 +207,12 @@ export const Dashboard: React.FC = () => {
         const fetchPerfil = async () => {
             const { data } = await supabase
                 .from('perfis')
-                .select('nome, email')
+                .select('nome, email, share_token')
                 .eq('id', user.id)
                 .single();
             if (data) {
                 setNomeUsuario(data.nome || data.email || user.email || '');
+                setShareToken(data.share_token);
             }
         };
 
@@ -647,8 +649,11 @@ export const Dashboard: React.FC = () => {
     };
 
     const handleShareDashboard = () => {
-        if (!user) return;
-        const shareUrl = `${window.location.origin}/share/${user.id}`;
+        if (!shareToken) {
+            showToast('Erro ao gerar link de compartilhamento. Tente recarregar.', 'error');
+            return;
+        }
+        const shareUrl = `${window.location.origin}/squad/${shareToken}`;
         navigator.clipboard.writeText(shareUrl).then(() => {
             showToast('✅ Link copiado! Envie para o seu squad.', 'success');
         }).catch(() => {

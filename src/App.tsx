@@ -4,9 +4,9 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Coletivo } from './pages/Coletivo';
 import { InputData } from './pages/InputData';
-import { SharedDashboard } from './pages/SharedDashboard';
 import { Planos } from './pages/Planos';
 import { AdminPanel } from './pages/AdminPanel';
+import { PublicSquad } from './pages/PublicSquad';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
@@ -20,6 +20,9 @@ function App() {
           <Route path="/login" element={<Login mode="login" />} />
           <Route path="/register" element={<Login mode="register" />} />
           <Route path="/planos" element={<Planos />} />
+          
+          {/* Acesso Público via Share Token */}
+          <Route path="/squad/:token" element={<PublicSquad />} />
           
           {/* Dashboard e Input Principal */}
           <Route 
@@ -82,9 +85,6 @@ function App() {
               </AdminRoute>
             } 
           />
-
-          {/* Links de Compartilhamento */}
-          <Route path="/share/:userId" element={<SharedDashboard />} />
         </Routes>
       </Router>
     </AuthProvider>
