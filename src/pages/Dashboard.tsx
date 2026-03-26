@@ -49,7 +49,7 @@ const MetricCard: React.FC<{
             <h3 className="text-metric">
                 {value}
             </h3>
-            <p className="text-[var(--accent)] text-[10px] font-bold uppercase tracking-widest mt-2">
+            <p className="text-label mt-2">
                 {title}
             </p>
         </div>
