@@ -23,6 +23,8 @@ export const SubscriberRoute = ({ children }: { children: React.ReactNode }) => 
                     .eq('user_id', user.id)
                     .eq('status', 'ativo')
                     .gt('data_fim', new Date().toISOString())
+                    .order('created_at', { ascending: false })
+                    .limit(1)
                     .maybeSingle();
 
                 if (error) throw error;
