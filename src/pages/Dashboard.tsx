@@ -882,17 +882,25 @@ export const Dashboard: React.FC = () => {
 
                         {/* Filtros por Data / Campeonato */}
                         <div className="hidden lg:flex items-center gap-2">
-                            {/* Date Picker Dashboard */}
+                            {/* Dropdown de Datas Dashboard */}
                             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#09090b] border border-[var(--border-default)] transition-all ${specificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
                                 <Calendar size={13} className={specificDate ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'} />
-                                <input 
-                                    type="date" 
+                                <select 
                                     value={specificDate}
-                                    onChange={(e) => setSpecificDate(e.target.value)}
-                                    className="bg-transparent text-white outline-none border-none text-xs [color-scheme:dark] cursor-pointer"
-                                />
+                                    onChange={(e) => {
+                                        setSpecificDate(e.target.value);
+                                        if (e.target.value) setTimeFilter('all'); // Desativa período se selecionar data
+                                    }}
+                                    className="bg-transparent text-white outline-none border-none text-xs cursor-pointer appearance-none min-w-[100px]"
+                                >
+                                    <option value="" className="bg-[#09090b]">Filtrar por Data</option>
+                                    {filterOptions.dates.map(d => {
+                                        const displayDate = d.includes('-') ? d.split('-').reverse().join('/') : d;
+                                        return <option key={d} value={d} className="bg-[#09090b]">{displayDate}</option>;
+                                    })}
+                                </select>
                                 {specificDate && (
-                                    <button onClick={() => setSpecificDate('')} className="text-[var(--text-tertiary)] hover:text-white transition-colors">
+                                    <button onClick={() => setSpecificDate('')} className="ml-1 text-[var(--text-tertiary)] hover:text-white transition-colors">
                                         <XCircle size={14} />
                                     </button>
                                 )}
@@ -1253,17 +1261,25 @@ export const Dashboard: React.FC = () => {
                                             </select>
                                         </div>
 
-                                        {/* Date Picker na Aba Jogadores */}
+                                        {/* Dropdown de Datas na Aba Jogadores */}
                                         <div className={`flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] transition-all ${playerSpecificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
                                             <Calendar size={16} className={playerSpecificDate ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)]'} />
-                                            <input 
-                                                type="date" 
+                                            <select 
                                                 value={playerSpecificDate}
-                                                onChange={(e) => setPlayerSpecificDate(e.target.value)}
-                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer text-sm [color-scheme:dark] font-medium"
-                                            />
+                                                onChange={(e) => {
+                                                    setPlayerSpecificDate(e.target.value);
+                                                    if (e.target.value) setTimeFilter('all'); // Desativa período
+                                                }}
+                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer text-sm font-medium appearance-none min-w-[120px]"
+                                            >
+                                                <option value="" className="bg-[#141416]">Todas as Datas</option>
+                                                {filterOptions.dates.map(d => {
+                                                    const displayDate = d.includes('-') ? d.split('-').reverse().join('/') : d;
+                                                    return <option key={d} value={d} className="bg-[#141416]">{displayDate}</option>;
+                                                })}
+                                            </select>
                                             {playerSpecificDate && (
-                                                <button onClick={() => setPlayerSpecificDate('')} className="text-[var(--text-tertiary)] hover:text-white transition-colors">
+                                                <button onClick={() => setPlayerSpecificDate('')} className="ml-1 text-[var(--text-tertiary)] hover:text-white transition-colors">
                                                     <XCircle size={16} />
                                                 </button>
                                             )}
