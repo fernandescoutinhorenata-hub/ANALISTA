@@ -16,6 +16,7 @@ const RowSchema = z.object({
     Booyah: z.string().optional(),
     "Quebra de Call": z.string().optional(),
     "Resultado quebra": z.string().optional(),
+    id: z.string().or(z.number()).optional(),
 });
 
 const PlayerSchema = z.object({
@@ -131,6 +132,8 @@ export const processData = (rawData: unknown[], rawPlayerData?: unknown[]): Dash
             else if (nKey.includes('quebradecall')) newRow["Quebra de Call"] = row[key]?.toString().trim().toUpperCase() || 'NAO';
             else if (nKey.includes('resultadoquebra')) newRow["Resultado quebra"] = row[key]?.toString().trim() || '-';
         });
+
+        if (row.id) newRow.id = row.id;
 
         const result = RowSchema.safeParse(newRow);
         if (result.success) {

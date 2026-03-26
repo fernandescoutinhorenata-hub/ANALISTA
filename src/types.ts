@@ -1,4 +1,5 @@
 export interface ExcelRow {
+    id?: string | number;
     Data: string | number;
     Campeonato: string;
     Rodada: number;
