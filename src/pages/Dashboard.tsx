@@ -181,6 +181,7 @@ export const Dashboard: React.FC = () => {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [matchToDelete, setMatchToDelete] = useState<any>(null);
+    const [selectedMap, setSelectedMap] = useState<string | null>(null);
 
     const { signOut, user } = useAuth();
     const navigate = useNavigate();
@@ -317,30 +318,32 @@ export const Dashboard: React.FC = () => {
 
         const filteredGeneral = allGeneralRows.filter(row => {
             const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
+            const matchMap = !selectedMap || String(row.Mapa) === selectedMap;
             
             if (specificDate) {
                 const rowDateStr = String(row.Data || '');
                 const formattedSpecific = specificDate.split('-').reverse().join('/');
-                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp;
+                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp && matchMap;
             }
 
             const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
             const matchTime = isInTimeRange(String(row.Data || ''));
-            return matchDate && matchChamp && matchTime;
+            return matchDate && matchChamp && matchTime && matchMap;
         });
         const filteredPlayers = allPlayerRows.filter(row => {
+            const matchMap = !selectedMap || String(row.Mapa) === selectedMap;
             if (specificDate) {
                 const rowDateStr = String(row.Data || '');
                 const formattedSpecific = specificDate.split('-').reverse().join('/');
-                return rowDateStr === specificDate || rowDateStr === formattedSpecific;
+                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchMap;
             }
 
             const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
             const matchTime = isInTimeRange(String(row.Data || ''));
-            return matchDate && matchTime;
+            return matchDate && matchTime && matchMap;
         });
         setData(processData(filteredGeneral, filteredPlayers));
-    }, [filters, timeFilter, specificDate, allGeneralRows, allPlayerRows]);
+    }, [filters, timeFilter, specificDate, selectedMap, allGeneralRows, allPlayerRows]);
 
     // ─── Métricas derivadas de performance_jogadores ───────────────────────────
     const filteredPlayerRows = useMemo(() => {
@@ -352,14 +355,15 @@ export const Dashboard: React.FC = () => {
                 : null;
 
         return allPlayerRows.filter(row => {
+            const matchMap = !selectedMap || String(row.Mapa) === selectedMap;
             if (playerSpecificDate) {
                 const rowDateStr = String(row.Data || '');
                 const formattedSpecific = playerSpecificDate.split('-').reverse().join('/');
-                return rowDateStr === playerSpecificDate || rowDateStr === formattedSpecific;
+                return (rowDateStr === playerSpecificDate || rowDateStr === formattedSpecific) && matchMap;
             }
 
             const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
-            if (!matchDate) return false;
+            if (!matchDate || !matchMap) return false;
             if (!timeLimit) return true;
             const dateStr = String(row.Data || '');
             const parts = dateStr.split('/');
@@ -368,7 +372,7 @@ export const Dashboard: React.FC = () => {
                 : new Date(dateStr);
             return !isNaN(parsed.getTime()) && parsed >= timeLimit;
         });
-    }, [allPlayerRows, filters.date, timeFilter, playerSpecificDate]);
+    }, [allPlayerRows, filters.date, timeFilter, playerSpecificDate, selectedMap]);
 
     const playerList = useMemo(() => {
         return Array.from(new Set(filteredPlayerRows.map((p: any) => p.Player).filter(Boolean))).sort() as string[];
@@ -1005,6 +1009,23 @@ export const Dashboard: React.FC = () => {
                                         </div>
                                     ) : (
                                         <>
+                                            {selectedMap && (
+                                                <div className="flex items-center gap-2 mb-6 animate-fade-in group pointer-events-none">
+                                                    <div className="bg-[var(--accent)]/10 border border-[var(--accent)]/20 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg shadow-[var(--accent)]/5 backdrop-blur-sm pointer-events-auto">
+                                                        <Map size={12} className="text-[var(--accent)]" />
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">
+                                                            Filtrando por: {selectedMap}
+                                                        </span>
+                                                        <button 
+                                                            onClick={() => setSelectedMap(null)}
+                                                            className="hover:bg-[var(--accent)]/20 p-1 rounded-full transition-colors ml-1"
+                                                            title="Limpar filtro de mapa"
+                                                        >
+                                                            <XCircle size={14} className="text-[var(--accent)]" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
                                             {/* Principais Métricas */}
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                                                 <MetricCard
@@ -1078,7 +1099,17 @@ export const Dashboard: React.FC = () => {
                                                     </div>
                                                     <div className="h-72">
                                                         <ResponsiveContainer width="100%" height="100%">
-                                                            <BarChart layout="horizontal" data={pointsByMapData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                                            <BarChart 
+                                                                layout="horizontal" 
+                                                                data={pointsByMapData} 
+                                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                                                onClick={(e) => {
+                                                                    if (e && e.activeLabel) {
+                                                                        const mapClicked = String(e.activeLabel);
+                                                                        setSelectedMap(prev => prev === mapClicked ? null : mapClicked);
+                                                                    }
+                                                                }}
+                                                            >
                                                                 <XAxis 
                                                                     dataKey="mapa" 
                                                                     axisLine={false} 
@@ -1095,10 +1126,19 @@ export const Dashboard: React.FC = () => {
                                                                 <Bar 
                                                                     dataKey="total" 
                                                                     name="Pontos Totais"
-                                                                    fill="#7C3AED" 
                                                                     radius={[4, 4, 0, 0]} 
                                                                     barSize={24}
-                                                                />
+                                                                    style={{ cursor: 'pointer' }}
+                                                                >
+                                                                    {pointsByMapData.map((entry: any, index: number) => (
+                                                                        <Cell 
+                                                                            key={`cell-${index}`} 
+                                                                            fill={selectedMap === entry.mapa ? '#A855F7' : '#7C3AED'}
+                                                                            stroke={selectedMap === entry.mapa ? '#FFFFFF' : 'none'}
+                                                                            strokeWidth={selectedMap === entry.mapa ? 2 : 0}
+                                                                        />
+                                                                    ))}
+                                                                </Bar>
                                                             </BarChart>
                                                         </ResponsiveContainer>
                                                     </div>
