@@ -239,7 +239,8 @@ export const Dashboard: React.FC = () => {
                     Pontos_Total: row.pontos_total,
                     Booyah: row.booyah ? 'SIM' : 'NAO',
                     "Quebra de Call": row.quebra_de_call ? 'SIM' : 'NAO',
-                    "Resultado quebra": row.resultado_quebra
+                    "Resultado quebra": row.resultado_quebra,
+                    id: row.id // ESSENCIAL PARA DELETAR
                 }));
                 setAllGeneralRows(mappedGeneral);
 
@@ -666,9 +667,9 @@ export const Dashboard: React.FC = () => {
                 supabase.from('performance_jogadores')
                     .delete()
                     .eq('user_id', user.id)
-                    .eq('data', matchToDelete.Data)
-                    .eq('mapa', matchToDelete.Mapa)
-                    .eq('posicao', matchToDelete.Rodada)
+                    .eq('data', String(matchToDelete.Data))
+                    .eq('mapa', String(matchToDelete.Mapa))
+                    .eq('posicao', Number(matchToDelete.Rodada))
             ]);
 
             if (resGeneral.error) throw resGeneral.error;
@@ -677,7 +678,9 @@ export const Dashboard: React.FC = () => {
             // Atualização local do estado
             setAllGeneralRows(prev => prev.filter(r => r.id !== matchToDelete.id));
             setAllPlayerRows(prev => prev.filter(p => 
-                !(p.Data === matchToDelete.Data && p.Mapa === matchToDelete.Mapa && p.Posicao === matchToDelete.Rodada)
+                !(String(p.Data) === String(matchToDelete.Data) && 
+                  String(p.Mapa) === String(matchToDelete.Mapa) && 
+                  Number(p.Posicao) === Number(matchToDelete.Rodada))
             ));
 
             showToast('Queda removida com sucesso! 🗑️', 'success');
