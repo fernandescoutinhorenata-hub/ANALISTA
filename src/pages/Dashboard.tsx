@@ -249,16 +249,12 @@ export const Dashboard: React.FC = () => {
                     Posicao: row.posicao,
                     Player: row.player,
                     Kill: row.kill,
-                    Morte: row.morte,
-                    Assistencia: row.assistencia,
-                    Queda: row.queda,
-                    "Dano causado": row.dano_causado,
-                    "Derrubados": row.derrubados,
-                    "Ressurgimento": row.ressurgimento,
-                    Quedas: row.quedas,
-                    KD: row.kd,
-                    MD: row.md,
-                    Revividos: row.revividos
+                    Derrubados: row.derrubados,
+                    Mortes: row.mortes,
+                    Assistencias: row.assistencias,
+                    Dano: row.dano,
+                    Revividos: row.revividos,
+                    Ressurgimentos: row.ressurgimentos
                 }));
                 setAllPlayerRows(mappedPlayers);
 
@@ -357,7 +353,7 @@ export const Dashboard: React.FC = () => {
 
 
     // ─── Novos Dados da Aba Jogadores (Tabela, Funil, Donut, Linha) ───
-    const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'abates', direction: 'desc' });
+    const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'kills', direction: 'desc' });
 
     const playerTableData = useMemo(() => {
         if (filteredPlayerRows.length === 0) return [];
@@ -369,19 +365,19 @@ export const Dashboard: React.FC = () => {
             if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0 };
             
             agg[p.Player].kills += Number(p.Kill) || 0;
-            agg[p.Player].damage += Number(p['Dano causado']) || 0;
-            agg[p.Player].assists += Number(p.Assistencia) || 0;
-            agg[p.Player].deaths += Number(p.Morte) || 0;
+            agg[p.Player].damage += Number(p.Dano) || 0;
+            agg[p.Player].assists += Number(p.Assistencias) || 0;
+            agg[p.Player].deaths += Number(p.Mortes) || 0;
             agg[p.Player].derrubados += Number(p.Derrubados) || 0;
         });
         
         let arr = Object.values(agg).map((p: any) => {
             return {
                 name: p.name,
-                abates: p.kills,
-                mortes: p.deaths,
-                assistencias: p.assists,
-                dano: p.damage,
+                kills: p.kills,
+                deaths: p.deaths,
+                assists: p.assists,
+                damage: p.damage,
                 kd: parseFloat((p.kills / (p.deaths || 1)).toFixed(2)),
                 derrubados: p.derrubados,
             }
@@ -399,18 +395,18 @@ export const Dashboard: React.FC = () => {
         return arr;
     }, [filteredPlayerRows, selectedPlayer, sortConfig]);
 
-    const maxAbates = useMemo(() => Math.max(...playerTableData.map((p: any) => p.abates), 1), [playerTableData]);
+    const maxAbates = useMemo(() => Math.max(...playerTableData.map((p: any) => p.kills), 1), [playerTableData]);
 
     const donutData = useMemo(() => {
         return playerTableData.map((p: any, i: number) => ({
             name: p.name,
-            value: p.abates,
+            value: p.kills,
             fill: ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#D946EF'][i % 7]
         }));
     }, [playerTableData]);
 
     const pyramidData = useMemo(() => {
-        return [...playerTableData].sort((a: any, b: any) => b.dano - a.dano);
+        return [...playerTableData].sort((a: any, b: any) => b.damage - a.damage);
     }, [playerTableData]);
 
     const lineChartData = useMemo(() => {
@@ -420,7 +416,7 @@ export const Dashboard: React.FC = () => {
             const matchKey = `${p.Data} - ${p.Mapa || ''}`; 
             if (!byMatch[matchKey]) byMatch[matchKey] = { name: matchKey, abates: 0, assistencias: 0 };
             byMatch[matchKey].abates += Number(p.Kill) || 0;
-            byMatch[matchKey].assistencias += Number(p.Assistencia) || 0;
+            byMatch[matchKey].assistencias += Number(p.Assistencias) || 0;
         });
         return Object.values(byMatch);
     }, [filteredPlayerRows, selectedPlayer]);
@@ -565,7 +561,7 @@ export const Dashboard: React.FC = () => {
                     })}
 
                     <button
-                        onClick={() => { navigate('/admin-celo/planos'); setIsSidebarOpen(false); }}
+                        onClick={() => navigate('/admin-celo/planos')}
                         className="nav-item w-full"
                     >
                         <CreditCard size={18} />
@@ -754,6 +750,21 @@ export const Dashboard: React.FC = () => {
                                         </div>
                                     ) : (
                                         <>
+                                            {/* Linha de Taxas de Performance (Minimalista) */}
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                                                {[
+                                                    { l: 'Taxa Booyah', v: `${data.general.percentBooyah}%` },
+                                                    { l: 'Taxa TOP 3', v: `${((allGeneralRows.filter(r => r.Colocacao <= 3).length / (allGeneralRows.length || 1)) * 100).toFixed(1)}%` },
+                                                    { l: 'Taxa TOP 5', v: `${((allGeneralRows.filter(r => r.Colocacao <= 5).length / (allGeneralRows.length || 1)) * 100).toFixed(1)}%` },
+                                                    { l: 'Taxa TOP 12', v: `${((allGeneralRows.filter(r => r.Colocacao <= 12).length / (allGeneralRows.length || 1)) * 100).toFixed(1)}%` }
+                                                ].map((t, idx) => (
+                                                    <div key={idx} className="card p-3 flex flex-col items-center justify-center bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
+                                                        <span className="text-[9px] uppercase tracking-widest text-[var(--text-tertiary)] font-bold">{t.l}</span>
+                                                        <span className="text-lg font-black text-[var(--accent)]">{t.v}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+
                                             {/* Principais Métricas */}
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                                                 <MetricCard
@@ -948,7 +959,7 @@ export const Dashboard: React.FC = () => {
                                             <table className="w-full text-left">
                                                 <thead className="border-b border-[#27272A] bg-[#18181B]">
                                                     <tr>
-                                                        {[{ l: 'Player', k: 'name' }, { l: 'Abates', k: 'abates' }, { l: 'Mortes', k: 'mortes' }, { l: 'Assists', k: 'assistencias' }, { l: 'Dano', k: 'dano' }, { l: 'KD', k: 'kd' }, { l: 'Derrubados', k: 'derrubados' }].map(col => (
+                                                        {[{ l: 'Player', k: 'name' }, { l: 'Abates', k: 'kills' }, { l: 'Mortes', k: 'deaths' }, { l: 'Assists', k: 'assists' }, { l: 'Dano', k: 'damage' }, { l: 'KD', k: 'kd' }, { l: 'Derrubados', k: 'derrubados' }].map(col => (
                                                             <th key={col.k} 
                                                                 className="px-6 py-4 text-xs font-bold text-[#A1A1AA] uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                                                                 onClick={() => setSortConfig({ key: col.k, direction: sortConfig.key === col.k && sortConfig.direction === 'desc' ? 'asc' : 'desc' })}
@@ -959,18 +970,17 @@ export const Dashboard: React.FC = () => {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-[#27272A]">
-                                                    {playerTableData.map((row: any, i: number) => (
-                                                        <tr key={i} className="hover:bg-white/5 transition-colors text-sm text-[#FAFAFA] font-medium">
-                                                            <td className="px-6 py-4">{row.name}</td>
-                                                            <td className="px-6 py-4 flex items-center gap-3">
-                                                                <span className="w-6 text-right">{row.abates}</span>
-                                                                <div className="h-2.5 bg-[#EF4444] rounded-sm" style={{ width: `${Math.max(2, (row.abates / maxAbates) * 80)}px` }} />
+                                                    {playerTableData.map((p: any) => (
+                                                        <tr key={p.name} className="hover:bg-[#1E1E21] transition-colors">
+                                                            <td className="px-6 py-4 text-sm font-black text-white">{p.name}</td>
+                                                            <td className="px-6 py-4 text-center font-mono text-lg text-white">{p.kills}</td>
+                                                            <td className="px-6 py-4 text-center font-mono text-[#A1A1AA]">{p.deaths}</td>
+                                                            <td className="px-6 py-4 text-center font-mono text-[#A1A1AA]">{p.assists}</td>
+                                                            <td className="px-6 py-4 text-center font-mono text-[var(--accent)] font-bold">{p.damage}</td>
+                                                            <td className="px-6 py-4 text-center">
+                                                                <span className="badge badge-purple">{(p.kills / (p.deaths || 1)).toFixed(2)}</span>
                                                             </td>
-                                                            <td className="px-6 py-4">{row.mortes}</td>
-                                                            <td className="px-6 py-4">{row.assistencias}</td>
-                                                            <td className="px-6 py-4">{row.dano.toLocaleString('pt-BR')}</td>
-                                                            <td className="px-6 py-4 font-mono text-[#A1A1AA]">{String(row.kd).replace('.', ',')}</td>
-                                                            <td className="px-6 py-4">{row.derrubados}</td>
+                                                            <td className="px-6 py-4 text-center font-mono text-[#EAB308]">{p.derrubados}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -984,8 +994,8 @@ export const Dashboard: React.FC = () => {
                                             <h4 className="text-[#EAB308] text-sm font-bold uppercase mb-6 tracking-widest">DANO</h4>
                                             <div className="w-full flex flex-col items-center gap-1">
                                                 {pyramidData.map((p: any, i: number) => {
-                                                    const maxD = pyramidData[0]?.dano || 1;
-                                                    const wP = Math.max(30, (p.dano / maxD) * 100);
+                                                    const maxD = pyramidData[0]?.damage || 1;
+                                                    const wP = Math.max(30, (p.damage / maxD) * 100);
                                                     return (
                                                         <div key={i} 
                                                             className="h-8 flex items-center justify-center rounded uppercase text-[10px] font-black text-black/70 shadow-sm"
