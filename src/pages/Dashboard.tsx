@@ -682,6 +682,13 @@ export const Dashboard: React.FC = () => {
     const handleDeleteMatch = async () => {
         if (!user || !matchToDelete) return;
 
+        console.log('Deletando:', matchToDelete);
+
+        if (!matchToDelete.id) {
+            showToast('ID da partida não encontrado.', 'error');
+            return;
+        }
+
         setLoading(true);
         try {
             // Deleção em paralelo
@@ -692,7 +699,6 @@ export const Dashboard: React.FC = () => {
                     .eq('user_id', user.id)
                     .eq('data', String(matchToDelete.Data))
                     .eq('mapa', String(matchToDelete.Mapa))
-                    .eq('posicao', Number(matchToDelete.Rodada))
             ]);
 
             if (resGeneral.error) throw resGeneral.error;
