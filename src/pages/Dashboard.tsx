@@ -1389,6 +1389,8 @@ export const Dashboard: React.FC = () => {
                                                 <table className="w-full text-xs text-left">
                                                     <thead className="bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]">
                                                         <tr>
+                                                            <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Data</th>
+                                                            <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Torneio</th>
                                                             <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Rodada</th>
                                                             <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Mapa</th>
                                                             <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Rank</th>
@@ -1401,6 +1403,14 @@ export const Dashboard: React.FC = () => {
                                                     <tbody className="divide-y divide-[var(--border-subtle)]">
                                                         {data.rawData.map((row: any, index: number) => (
                                                             <tr key={index} className="hover:bg-[var(--bg-hover)] transition-colors group">
+                                                                <td className="px-6 py-4 font-mono text-[var(--text-secondary)]">
+                                                                    {String(row.Data).includes('-') 
+                                                                        ? String(row.Data).split('-').reverse().join('/') 
+                                                                        : row.Data}
+                                                                </td>
+                                                                <td className="px-6 py-4 font-bold text-[var(--accent)] text-[10px] uppercase truncate max-w-[120px]" title={row.Campeonato}>
+                                                                    {row.Campeonato}
+                                                                </td>
                                                                 <td className="px-6 py-4 font-bold text-[var(--text-tertiary)]">#{String(row.Rodada).padStart(2, '0')}</td>
                                                                 <td className="px-6 py-4 font-bold text-[var(--text-primary)] uppercase">{row.Mapa}</td>
                                                                 <td className="px-6 py-4">
