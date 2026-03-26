@@ -4,12 +4,12 @@ import * as XLSX from 'xlsx';
 import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell,
-    BarChart, Bar,
-    Legend,
-    LineChart, Line, CartesianGrid
+    AreaChart, Area, Legend,
+    LineChart, Line, CartesianGrid,
+    BarChart, Bar
 } from 'recharts';
 import {
-    Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
+    Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
     CheckCircle, XCircle, AlertCircle, Link, CreditCard
@@ -27,7 +27,34 @@ const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ chi
     </div>
 );
 
-
+const MetricCard: React.FC<{
+    title: string;
+    value: string | number;
+    subValue?: string;
+    icon: any;
+    accentColor?: string; // Mantido para compatibilidade, mas o estilo vem do CSS
+}> = ({ title, value, subValue, icon: Icon }) => (
+    <div className="card-metric flex flex-col gap-4">
+        <div className="flex justify-between items-start">
+            <div className="p-2.5 rounded-xl bg-[var(--accent-muted)] text-[var(--accent)]">
+                <Icon size={20} />
+            </div>
+            {subValue && (
+                <span className="badge badge-purple">
+                    {subValue}
+                </span>
+            )}
+        </div>
+        <div>
+            <h3 className="text-metric">
+                {value}
+            </h3>
+            <p className="text-label mt-2">
+                {title}
+            </p>
+        </div>
+    </div>
+);
 
 const neonTooltipStyle = {
     backgroundColor: 'var(--bg-card)',
@@ -223,12 +250,16 @@ export const Dashboard: React.FC = () => {
                     Posicao: row.posicao,
                     Player: row.player,
                     Kill: row.kill,
-                    Derrubados: row.derrubados,
-                    Mortes: row.mortes,
-                    Assistencias: row.assistencias,
-                    Dano: row.dano,
-                    Revividos: row.revividos,
-                    Ressurgimentos: row.ressurgimentos
+                    Morte: row.morte,
+                    Assistencia: row.assistencia,
+                    Queda: row.queda,
+                    "Dano causado": row.dano_causado,
+                    "Derrubados": row.derrubados,
+                    "Ressurgimento": row.ressurgimento,
+                    Quedas: row.quedas,
+                    KD: row.kd,
+                    MD: row.md,
+                    Revividos: row.revividos
                 }));
                 setAllPlayerRows(mappedPlayers);
 
@@ -327,7 +358,7 @@ export const Dashboard: React.FC = () => {
 
 
     // ─── Novos Dados da Aba Jogadores (Tabela, Funil, Donut, Linha) ───
-    const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'kills', direction: 'desc' });
+    const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'abates', direction: 'desc' });
 
     const playerTableData = useMemo(() => {
         if (filteredPlayerRows.length === 0) return [];
@@ -339,19 +370,19 @@ export const Dashboard: React.FC = () => {
             if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0 };
             
             agg[p.Player].kills += Number(p.Kill) || 0;
-            agg[p.Player].damage += Number(p.Dano) || 0;
-            agg[p.Player].assists += Number(p.Assistencias) || 0;
-            agg[p.Player].deaths += Number(p.Mortes) || 0;
-            agg[p.Player].derrubados += Number(p.Derrubados) || 0;
+            agg[p.Player].damage += Number(p['Dano causado']) || 0;
+            agg[p.Player].assists += Number(p.Assistencia) || 0;
+            agg[p.Player].deaths += Number(p.Morte) || 0;
+            agg[p.Player].derrubados += Number(p['Derrubados']) || 0;
         });
         
         let arr = Object.values(agg).map((p: any) => {
             return {
                 name: p.name,
-                kills: p.kills,
-                deaths: p.deaths,
-                assists: p.assists,
-                damage: p.damage,
+                abates: p.kills,
+                mortes: p.deaths,
+                assistencias: p.assists,
+                dano: p.damage,
                 kd: parseFloat((p.kills / (p.deaths || 1)).toFixed(2)),
                 derrubados: p.derrubados,
             }
@@ -369,16 +400,18 @@ export const Dashboard: React.FC = () => {
         return arr;
     }, [filteredPlayerRows, selectedPlayer, sortConfig]);
 
+    const maxAbates = useMemo(() => Math.max(...playerTableData.map((p: any) => p.abates), 1), [playerTableData]);
+
     const donutData = useMemo(() => {
         return playerTableData.map((p: any, i: number) => ({
             name: p.name,
-            value: p.kills,
+            value: p.abates,
             fill: ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#D946EF'][i % 7]
         }));
     }, [playerTableData]);
 
     const pyramidData = useMemo(() => {
-        return [...playerTableData].sort((a: any, b: any) => b.damage - a.damage);
+        return [...playerTableData].sort((a: any, b: any) => b.dano - a.dano);
     }, [playerTableData]);
 
     const lineChartData = useMemo(() => {
@@ -388,61 +421,109 @@ export const Dashboard: React.FC = () => {
             const matchKey = `${p.Data} - ${p.Mapa || ''}`; 
             if (!byMatch[matchKey]) byMatch[matchKey] = { name: matchKey, abates: 0, assistencias: 0 };
             byMatch[matchKey].abates += Number(p.Kill) || 0;
-            byMatch[matchKey].assistencias += Number(p.Assistencias) || 0;
+            byMatch[matchKey].assistencias += Number(p.Assistencia) || 0;
         });
         return Object.values(byMatch);
     }, [filteredPlayerRows, selectedPlayer]);
 
+    // Total de Kills somado de todos os jogadores (performance_jogadores)
+    const totalKillsFromPlayers = useMemo(() =>
+        filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0),
+        [filteredPlayerRows]);
 
+    // ─── Métricas novas da aba overview ───────────────────────────────────────
+    const overviewExtras = useMemo(() => {
+        if (!data) return null;
 
-
-    // ─── Métricas calculadas do Overview ────────────────────────────────────────
-    const overviewMetrics = useMemo(() => {
-        const rows = allGeneralRows;
+        // Filtra as linhas gerais com o mesmo filtro do overview
+        const now = new Date();
+        const timeLimit = timeFilter === '7d'
+            ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+            : timeFilter === '30d' ? new Date(now.getFullYear(), now.getMonth(), 1) : null;
+        const isInRange = (dateStr: string) => {
+            if (!timeLimit || !dateStr) return true;
+            const parts = dateStr.split('/');
+            const parsed = parts.length === 3
+                ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
+                : new Date(dateStr);
+            return !isNaN(parsed.getTime()) && parsed >= timeLimit;
+        };
+        const rows = allGeneralRows.filter(row => {
+            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
+            const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
+            return matchDate && matchChamp && isInRange(String(row.Data || ''));
+        });
         const total = rows.length || 1;
-        const placementPts = (c: number) =>
-            c === 1 ? 12 : c === 2 ? 9 : c === 3 ? 7 : c === 4 ? 5 : c === 5 ? 4
-            : c <= 10 ? 3 : c <= 15 ? 1 : 0;
 
-        const booyahs = rows.filter(r => Number(r.Colocacao) === 1).length;
-        const taxaBooyah = ((booyahs / total) * 100).toFixed(2);
-        const totalKills = rows.reduce((s, r) => s + (Number(r.Kill) || 0), 0);
-        const mediaKills = (totalKills / total).toFixed(2);
-        const totalPts = rows.reduce((s, r) =>
-            s + (Number(r.Kill) || 0) * 3 + placementPts(Number(r.Colocacao) || 99), 0);
-        const mediaPontos = Math.round(totalPts / total);
-        const top3 = ((rows.filter(r => Number(r.Colocacao) <= 3).length / total) * 100).toFixed(2);
-        const top5 = ((rows.filter(r => Number(r.Colocacao) <= 5).length / total) * 100).toFixed(2);
-        const top12 = ((rows.filter(r => Number(r.Colocacao) <= 12).length / total) * 100).toFixed(2);
+        // Taxas TOP
+        const top3 = rows.filter(r => Number(r.Colocacao) <= 3).length;
+        const top5 = rows.filter(r => Number(r.Colocacao) <= 5).length;
+        const top12 = rows.filter(r => Number(r.Colocacao) <= 12).length;
+        const booyahs = rows.filter(r => r.Booyah === 'SIM').length;
 
-        const booyahsByMap: Record<string, number> = {};
-        rows.filter(r => Number(r.Colocacao) === 1).forEach(r => {
-            const m = String(r.Mapa || 'Desconhecido');
-            booyahsByMap[m] = (booyahsByMap[m] || 0) + 1;
-        });
-        const barData = Object.entries(booyahsByMap)
-            .map(([mapa, qty]) => ({ mapa, booyahs: qty }))
-            .sort((a, b) => b.booyahs - a.booyahs);
-
-        const byEvent: Record<string, { total: number; count: number }> = {};
+        // Booyahs por mapa
+        const byMapAgg: Record<string, number> = {};
         rows.forEach(r => {
-            const ev = String(r.Campeonato || 'Geral');
-            const pts = (Number(r.Kill) || 0) * 3 + placementPts(Number(r.Colocacao) || 99);
-            if (!byEvent[ev]) byEvent[ev] = { total: 0, count: 0 };
-            byEvent[ev].total += pts;
-            byEvent[ev].count += 1;
+            if (r.Booyah === 'SIM' && r.Mapa) {
+                byMapAgg[String(r.Mapa)] = (byMapAgg[String(r.Mapa)] || 0) + 1;
+            }
         });
-        const tableData = Object.entries(byEvent)
-            .map(([evento, { total: t, count }]) => ({ evento, media: t / count }))
+        const booyahsByMap = Object.entries(byMapAgg)
+            .sort(([,a],[,b]) => b - a)
+            .map(([mapa, qtd]) => ({ mapa, qtd }));
+
+        // Média de pontos por evento (campeonato)
+        const byChamp: Record<string, { sum: number; count: number }> = {};
+        rows.forEach(r => {
+            const c = String(r.Campeonato || 'Sem Evento');
+            if (!byChamp[c]) byChamp[c] = { sum: 0, count: 0 };
+            byChamp[c].sum += Number(r.Pontos_Total) || 0;
+            byChamp[c].count += 1;
+        });
+        const avgByChamp = Object.entries(byChamp)
+            .map(([evento, { sum, count }]) => ({ evento, media: parseFloat((sum / count).toFixed(2)) }))
             .sort((a, b) => b.media - a.media);
 
-        const lineData = rows.map((r, i) => ({
-            partida: i + 1,
-            pontos: (Number(r.Kill) || 0) * 3 + placementPts(Number(r.Colocacao) || 99),
-        }));
+        // Histórico média pontos por queda (por rodada)
+        const byRound: Record<string, { sum: number; count: number }> = {};
+        rows.forEach(r => {
+            const round = String(r.Rodada || '');
+            if (!round) return;
+            if (!byRound[round]) byRound[round] = { sum: 0, count: 0 };
+            byRound[round].sum += Number(r.Pontos_Total) || 0;
+            byRound[round].count += 1;
+        });
+        const avgPontosByRound = Object.entries(byRound)
+            .sort(([a],[b]) => Number(a) - Number(b))
+            .map(([rodada, { sum, count }]) => ({ rodada: Number(rodada), media: parseFloat((sum / count).toFixed(2)) }));
 
-        return { booyahs, taxaBooyah, totalKills, mediaKills, totalPts, mediaPontos, top3, top5, top12, barData, tableData, lineData, rowCount: rows.length };
-    }, [allGeneralRows]);
+        return {
+            taxaBooyah: parseFloat(((booyahs / total) * 100).toFixed(2)),
+            taxaTop3: parseFloat(((top3 / total) * 100).toFixed(2)),
+            taxaTop5: parseFloat(((top5 / total) * 100).toFixed(2)),
+            taxaTop12: parseFloat(((top12 / total) * 100).toFixed(2)),
+            booyahsByMap,
+            avgByChamp,
+            avgPontosByRound,
+        };
+    }, [data, allGeneralRows, filters.date, filters.championship, timeFilter]);
+
+    // Gráfico de Tendência: kills totais de todos os jogadores agrupadas por data
+    const trendChartData = useMemo(() => {
+        if (filteredPlayerRows.length === 0) return [];
+        const byDate: Record<string, number> = {};
+        filteredPlayerRows.forEach(p => {
+            const d = String(p.Data || '');
+            if (d) byDate[d] = (byDate[d] || 0) + (Number(p.Kill) || 0);
+        });
+        return Object.entries(byDate)
+            .sort(([a], [b]) => {
+                const [dayA, monthA, yearA] = a.split('/').map(Number);
+                const [dayB, monthB, yearB] = b.split('/').map(Number);
+                return new Date(yearA, monthA - 1, dayA).getTime() - new Date(yearB, monthB - 1, dayB).getTime();
+            })
+            .map(([data, kills]) => ({ Data: data, Kill: kills }));
+    }, [filteredPlayerRows]);
 
     const handleTemplateDownload = () => {
         const wb = XLSX.utils.book_new();
@@ -560,7 +641,7 @@ export const Dashboard: React.FC = () => {
                     })}
 
                     <button
-                        onClick={() => navigate('/admin-celo/planos')}
+                        onClick={() => { navigate('/admin-celo/planos'); setIsSidebarOpen(false); }}
                         className="nav-item w-full"
                     >
                         <CreditCard size={18} />
@@ -749,144 +830,270 @@ export const Dashboard: React.FC = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            {/* ─── BLOCO 1: 4 MetricCards ─── */}
-                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-                                                <div className="card-metric flex flex-col gap-4">
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="p-2.5 rounded-xl bg-[var(--accent-muted)] text-[var(--accent)]"><Trophy size={20} /></div>
-                                                        <span className="badge badge-purple">{overviewMetrics.booyahs} vitórias</span>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-metric text-[var(--accent)]">{overviewMetrics.taxaBooyah}%</h3>
-                                                        <p className="text-label mt-2">Taxa de Booyah</p>
-                                                    </div>
-                                                </div>
-                                                <div className="card-metric flex flex-col gap-4">
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="p-2.5 rounded-xl bg-[var(--accent-muted)] text-[var(--accent)]"><Sword size={20} /></div>
-                                                        <span className="badge badge-purple">{overviewMetrics.totalKills} total</span>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-metric">{overviewMetrics.mediaKills}</h3>
-                                                        <p className="text-label mt-2">Média de Kills</p>
-                                                    </div>
-                                                </div>
-                                                <div className="card-metric flex flex-col gap-4">
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="p-2.5 rounded-xl bg-[#22C55E]/10 text-[#22C55E]"><Target size={20} /></div>
-                                                        <span className="badge" style={{ background: '#22C55E22', color: '#22C55E', border: '1px solid #22C55E44' }}>{overviewMetrics.totalPts} pts</span>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-metric text-[#22C55E]">{overviewMetrics.mediaPontos}</h3>
-                                                        <p className="text-label mt-2">Média de Pontos</p>
-                                                    </div>
-                                                </div>
-                                                <div className="card-metric flex flex-col gap-4">
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="p-2.5 rounded-xl bg-[var(--accent-muted)] text-[var(--accent)]"><Calendar size={20} /></div>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-metric">{overviewMetrics.rowCount}</h3>
-                                                        <p className="text-label mt-2">Partidas Jogadas</p>
-                                                    </div>
-                                                </div>
+                                            {/* Principais Métricas */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                                                <MetricCard
+                                                    title="Total de Kills"
+                                                    value={totalKillsFromPlayers}
+                                                    subValue={filteredPlayerRows.length > 0 ? `${filteredPlayerRows.length} registros` : `${data.general.mediaKills}/queda`}
+                                                    icon={Sword}
+                                                />
+                                                <MetricCard
+                                                    title="Pontuação Total"
+                                                    value={data.general.totalPontos}
+                                                    subValue={`Média: ${data.general.mediaPontos}`}
+                                                    icon={Target}
+                                                />
+                                                <MetricCard
+                                                    title="Booyahs"
+                                                    value={data.general.totalBooyahs}
+                                                    subValue={`${data.general.percentBooyah}% Win Rate`}
+                                                    icon={Trophy}
+                                                />
+                                                <MetricCard
+                                                    title="Sucesso em Call"
+                                                    value={`${data.general.percentSucessoCall}%`}
+                                                    subValue={`${data.general.callsGanhas}W / ${data.general.callsPerdidas}L`}
+                                                    icon={Zap}
+                                                />
                                             </div>
 
-                                            {/* ─── BLOCO 2: 3 Cards de Taxa ─── */}
-                                            <div className="grid grid-cols-3 gap-5">
-                                                {[
-                                                    { label: 'TAXA TOP 3', value: overviewMetrics.top3 },
-                                                    { label: 'TAXA TOP 5', value: overviewMetrics.top5 },
-                                                    { label: 'TAXA TOP 12', value: overviewMetrics.top12 },
-                                                ].map((t, i) => (
-                                                    <div key={i} className="card p-5 flex flex-col items-center justify-center gap-2 bg-[var(--bg-card)] border border-[var(--border-subtle)]">
-                                                        <span className="text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] font-bold">{t.label}</span>
-                                                        <span className="text-3xl font-black text-[var(--accent)]">{t.value}%</span>
-                                                        <span className="text-[10px] text-[var(--text-tertiary)]">de todas as partidas</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-
-                                            {/* ─── BLOCO 3: BarChart + Tabela ─── */}
-                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                                                <Card>
-                                                    <div className="flex items-center justify-between mb-6">
-                                                        <div>
-                                                            <h4 className="text-heading text-sm font-bold uppercase tracking-wider">Booyahs por Mapa</h4>
-                                                            <p className="text-label mt-1">Vitórias agrupadas por arena</p>
-                                                        </div>
-                                                        <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><Map size={16} /></div>
-                                                    </div>
-                                                    {overviewMetrics.barData.length === 0 ? (
-                                                        <div className="h-56 flex items-center justify-center text-label">Sem booyahs registrados ainda</div>
-                                                    ) : (
-                                                        <div className="h-56">
-                                                            <ResponsiveContainer width="100%" height="100%">
-                                                                <BarChart data={overviewMetrics.barData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                                                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
-                                                                    <XAxis dataKey="mapa" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
-                                                                    <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} allowDecimals={false} />
-                                                                    <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
-                                                                    <Bar dataKey="booyahs" name="Booyahs" fill="#9333EA" radius={[4, 4, 0, 0]} />
-                                                                </BarChart>
-                                                            </ResponsiveContainer>
-                                                        </div>
-                                                    )}
-                                                </Card>
-
-                                                <Card>
-                                                    <div className="flex items-center justify-between mb-6">
-                                                        <div>
-                                                            <h4 className="text-heading text-sm font-bold uppercase tracking-wider">Média Pontos por Evento</h4>
-                                                            <p className="text-label mt-1">Ranking por campeonato</p>
-                                                        </div>
-                                                        <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><Trophy size={16} /></div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="grid grid-cols-12 text-[10px] uppercase tracking-widest text-[var(--text-tertiary)] font-bold pb-2 border-b border-[var(--border-subtle)] mb-1">
-                                                            <span className="col-span-1">#</span>
-                                                            <span className="col-span-9">Evento</span>
-                                                            <span className="col-span-2 text-right">Média</span>
-                                                        </div>
-                                                        {overviewMetrics.tableData.length === 0 ? (
-                                                            <p className="text-label text-center py-8">Sem dados por evento</p>
-                                                        ) : overviewMetrics.tableData.map((row, i) => (
-                                                            <div key={i} className="grid grid-cols-12 py-2.5 hover:bg-[var(--bg-hover)] rounded-lg px-1 transition-colors items-center">
-                                                                <span className="col-span-1 text-[var(--accent)] font-black text-sm">{i + 1}</span>
-                                                                <span className="col-span-9 text-sm text-[var(--text-primary)] font-medium truncate">{row.evento}</span>
-                                                                <span className="col-span-2 text-right text-sm font-black text-[var(--text-primary)]">{row.media.toFixed(2)}</span>
+                                            {/* ── NOVAS MÉTRICAS ── */}
+                                            {overviewExtras && (
+                                                <>
+                                                    {/* Linha 1: Taxa de Booyah + TOP 3 / TOP 5 / TOP 12 */}
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                                                        {[
+                                                            { label: 'TAXA DE BOOYAH', value: `${overviewExtras.taxaBooyah}%`, color: 'var(--accent)' },
+                                                            { label: 'TAXA TOP 3', value: `${overviewExtras.taxaTop3}%`, color: '#EAB308' },
+                                                            { label: 'TAXA TOP 5', value: `${overviewExtras.taxaTop5}%`, color: '#EAB308' },
+                                                            { label: 'TAXA TOP 12', value: `${overviewExtras.taxaTop12}%`, color: '#EAB308' },
+                                                        ].map(item => (
+                                                            <div key={item.label} className="card p-5 flex flex-col gap-2">
+                                                                <p className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">{item.label}</p>
+                                                                <p className="text-3xl font-black" style={{ color: item.color }}>{item.value}</p>
+                                                                <p className="text-[11px] text-[var(--text-tertiary)]">de todas as partidas</p>
                                                             </div>
                                                         ))}
                                                     </div>
+
+                                                    {/* Linha 2: Booyahs por Mapa + Média por Evento */}
+                                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                                                        <Card>
+                                                            <div className="flex items-center justify-between mb-6">
+                                                                <div>
+                                                                    <h4 className="text-heading text-sm font-bold">Booyahs por Mapa</h4>
+                                                                    <p className="text-label mt-1">Vitórias por terreno</p>
+                                                                </div>
+                                                                <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><Trophy size={16} /></div>
+                                                            </div>
+                                                            <div className="h-56">
+                                                                <ResponsiveContainer width="100%" height="100%">
+                                                                    <BarChart data={overviewExtras.booyahsByMap} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                                                                        <XAxis dataKey="mapa" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
+                                                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} allowDecimals={false} />
+                                                                        <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
+                                                                        <Bar dataKey="qtd" name="Booyahs" fill="#EAB308" radius={[4, 4, 0, 0]} />
+                                                                    </BarChart>
+                                                                </ResponsiveContainer>
+                                                            </div>
+                                                        </Card>
+
+                                                        <Card>
+                                                            <div className="flex items-center justify-between mb-6">
+                                                                <div>
+                                                                    <h4 className="text-heading text-sm font-bold">Média Pontos por Evento</h4>
+                                                                    <p className="text-label mt-1">Ranking de campeonatos</p>
+                                                                </div>
+                                                                <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><Target size={16} /></div>
+                                                            </div>
+                                                            <div className="overflow-auto max-h-56">
+                                                                <table className="w-full text-sm">
+                                                                    <thead>
+                                                                        <tr className="border-b border-[var(--border-subtle)]">
+                                                                            <th className="text-left py-2 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">#Evento</th>
+                                                                            <th className="text-right py-2 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Média</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody className="divide-y divide-[var(--border-subtle)]">
+                                                                        {overviewExtras.avgByChamp.map((row, i) => (
+                                                                            <tr key={row.evento} className="hover:bg-[var(--bg-hover)] transition-colors">
+                                                                                <td className="py-3 text-[var(--text-primary)] font-semibold">
+                                                                                    <span className="text-[var(--text-tertiary)] mr-2 font-mono text-xs">{i + 1}</span>
+                                                                                    {row.evento}
+                                                                                </td>
+                                                                                <td className="py-3 text-right font-bold" style={{ color: i === 0 ? '#EAB308' : 'var(--text-primary)' }}>
+                                                                                    {row.media.toLocaleString('pt-BR')}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </Card>
+                                                    </div>
+
+                                                    {/* Linha 3: Histórico Média Pontos/Queda */}
+                                                    {overviewExtras.avgPontosByRound.length > 1 && (
+                                                        <Card>
+                                                            <div className="flex items-center justify-between mb-6">
+                                                                <div>
+                                                                    <h4 className="text-heading text-sm font-bold">Histórico — Média Pontos / Queda</h4>
+                                                                    <p className="text-label mt-1">Evolução de performance por rodada</p>
+                                                                </div>
+                                                                <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><TrendingUp size={16} /></div>
+                                                            </div>
+                                                            <div className="h-56">
+                                                                <ResponsiveContainer width="100%" height="100%">
+                                                                    <LineChart data={overviewExtras.avgPontosByRound} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                                                                        <CartesianGrid stroke="var(--border-subtle)" vertical={false} strokeDasharray="3 3" />
+                                                                        <XAxis dataKey="rodada" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
+                                                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
+                                                                        <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
+                                                                        <Line type="monotone" dataKey="media" name="Média Pts" stroke="#10B981" strokeWidth={2.5} dot={{ r: 3, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                                                                    </LineChart>
+                                                                </ResponsiveContainer>
+                                                            </div>
+                                                        </Card>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {/* Charts Row */}
+                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                                                <Card className="lg:col-span-2">
+                                                    <div className="flex items-center justify-between mb-8">
+                                                        <div>
+                                                            <h4 className="text-heading text-sm font-bold">Fluxo de performance</h4>
+                                                            <p className="text-label mt-1">Consolidado de kills por partida</p>
+                                                        </div>
+                                                        <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
+                                                            <TrendingUp size={16} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="h-72">
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <AreaChart data={trendChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                                                                <defs>
+                                                                    <linearGradient id="gradKills" x1="0" y1="0" x2="0" y2="1">
+                                                                        <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.4} />
+                                                                        <stop offset="60%" stopColor="var(--accent)" stopOpacity={0.08} />
+                                                                        <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+                                                                    </linearGradient>
+                                                                </defs>
+                                                                <XAxis dataKey="Data" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} dy={10} />
+                                                                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
+                                                                <Tooltip 
+    contentStyle={neonTooltipStyle} 
+    itemStyle={neonItemStyle}
+    labelStyle={neonLabelStyle} 
+/>
+                                                                <Area type="monotone" dataKey="Kill" stroke="var(--accent)" strokeWidth={2.5} fillOpacity={1} fill="url(#gradKills)" />
+                                                            </AreaChart>
+                                                        </ResponsiveContainer>
+                                                    </div>
+                                                </Card>
+
+                                                <Card>
+                                                    <div className="flex items-center justify-between mb-8">
+                                                        <div>
+                                                            <h4 className="text-heading text-sm font-bold">Domínio de terreno</h4>
+                                                            <p className="text-label mt-1">Distribuição de pontos</p>
+                                                        </div>
+                                                        <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
+                                                            <Map size={16} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="h-72">
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <PieChart>
+                                                                <Pie
+                                                                    data={data.byMap || []}
+                                                                    cx="50%" cy="45%"
+                                                                    innerRadius={60} outerRadius={85}
+                                                                    startAngle={90} endAngle={-270}
+                                                                    dataKey="totalPontos" nameKey="mapa" paddingAngle={4}
+                                                                    stroke="none"
+                                                                >
+                                                                    {(data.byMap || []).map((_: any, index: number) => (
+                                                                        <Cell key={`cell-${index}`} fill={['#9333EA', '#10B981', '#EF4444', '#F59E0B', '#3B82F6'][index % 5]} />
+                                                                    ))}
+                                                                </Pie>
+                                                                <Tooltip 
+    contentStyle={neonTooltipStyle} 
+    itemStyle={neonItemStyle}
+    labelStyle={neonLabelStyle} 
+/>
+                                                                <Legend
+                                                                    verticalAlign="bottom"
+                                                                    height={40}
+                                                                    iconType="circle"
+                                                                    iconSize={6}
+                                                                    formatter={(value) => (
+                                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">{value}</span>
+                                                                    )}
+                                                                />
+                                                            </PieChart>
+                                                        </ResponsiveContainer>
+                                                    </div>
                                                 </Card>
                                             </div>
 
-                                            {/* ─── BLOCO 4: LineChart Histórico ─── */}
-                                            {overviewMetrics.lineData.length > 0 && (
-                                                <Card>
-                                                    <div className="flex items-center justify-between mb-6">
-                                                        <div>
-                                                            <h4 className="text-heading text-sm font-bold uppercase tracking-wider">Histórico — Média Pontos / Queda</h4>
-                                                            <p className="text-label mt-1">Evolução de pontuação por partida</p>
+                                            {/* MVP & Squad Metrics */}
+                                            {filteredPlayerRows.length > 0 && (
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                                    <div className="card p-6 !bg-[var(--bg-card)]">
+                                                        <p className="badge badge-purple mb-4">Destaque da última partida</p>
+                                                        <h4 className="text-heading text-2xl uppercase">
+                                                            {data.playerMetrics.lastMatchMVP?.player || 'Aguardando...'}
+                                                        </h4>
+                                                        <div className="mt-6">
+                                                            <span className="text-label">Score de Combate</span>
+                                                            <div className="flex items-center gap-3 mt-1">
+                                                                <span className="text-heading text-4xl text-[var(--accent)]">
+                                                                    {data.playerMetrics.lastMatchMVP?.score || 0}
+                                                                </span>
+                                                                <span className="badge badge-purple">MVP</span>
+                                                            </div>
                                                         </div>
-                                                        <div className="p-2.5 rounded-lg bg-[#22C55E]/10 text-[#22C55E]"><TrendingUp size={16} /></div>
                                                     </div>
-                                                    <ResponsiveContainer width="100%" height={280}>
-                                                        <LineChart data={overviewMetrics.lineData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                                                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
-                                                            <XAxis dataKey="partida" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
-                                                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
-                                                            <Tooltip
-                                                                contentStyle={neonTooltipStyle}
-                                                                itemStyle={{ ...neonItemStyle, color: '#22C55E' }}
-                                                                labelStyle={neonLabelStyle}
-                                                                formatter={(v: any) => [v, 'Pontos']}
-                                                                labelFormatter={(l) => `Partida ${l}`}
-                                                            />
-                                                            <Line type="monotone" dataKey="pontos" stroke="#22C55E" strokeWidth={2.5} dot={{ r: 4, fill: '#22C55E', stroke: '#22C55E', strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                                                        </LineChart>
-                                                    </ResponsiveContainer>
-                                                </Card>
+
+                                                    <Card className="md:col-span-2">
+                                                        <div className="flex items-center justify-between mb-8">
+                                                            <div>
+                                                                <h4 className="text-heading text-sm font-bold">Médias do squad</h4>
+                                                                <p className="text-label mt-1">Análise consolidada por queda</p>
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                <span className="badge badge-purple">Dano</span>
+                                                                <span className="badge badge-purple">Abates</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-3 gap-6">
+                                                            <div className="space-y-2">
+                                                                <span className="text-label">Dano médio</span>
+                                                                <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.avgDamage}</div>
+                                                                <div className="w-full h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
+                                                                    <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.min(100, (data.squadMetrics.avgDamage / 2500) * 100)}%` }} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <span className="text-label">Kills squad</span>
+                                                                <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.totalKills}</div>
+                                                                <div className="w-full h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
+                                                                    <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.min(100, (data.squadMetrics.totalKills / 40) * 100)}%` }} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <span className="text-label">Sobrevivência</span>
+                                                                <div className="text-heading text-2xl text-[var(--accent)]">{data.squadMetrics.survivalRate}<span className="text-xs text-[var(--text-tertiary)] ml-1">mortes/jogo</span></div>
+                                                                <div className="w-full h-1 bg-[var(--border-subtle)] rounded-full overflow-hidden">
+                                                                    <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.max(10, 100 - (data.squadMetrics.survivalRate * 20))}%` }} />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </Card>
+                                                </div>
                                             )}
                                         </>
                                     )}
@@ -918,7 +1125,7 @@ export const Dashboard: React.FC = () => {
                                             <table className="w-full text-left">
                                                 <thead className="border-b border-[#27272A] bg-[#18181B]">
                                                     <tr>
-                                                        {[{ l: 'Player', k: 'name' }, { l: 'Abates', k: 'kills' }, { l: 'Mortes', k: 'deaths' }, { l: 'Assists', k: 'assists' }, { l: 'Dano', k: 'damage' }, { l: 'KD', k: 'kd' }, { l: 'Derrubados', k: 'derrubados' }].map(col => (
+                                                        {[{ l: 'Player', k: 'name' }, { l: 'Abates', k: 'abates' }, { l: 'Mortes', k: 'mortes' }, { l: 'Assists', k: 'assistencias' }, { l: 'Dano', k: 'dano' }, { l: 'KD', k: 'kd' }, { l: 'Derrubados', k: 'derrubados' }].map(col => (
                                                             <th key={col.k} 
                                                                 className="px-6 py-4 text-xs font-bold text-[#A1A1AA] uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                                                                 onClick={() => setSortConfig({ key: col.k, direction: sortConfig.key === col.k && sortConfig.direction === 'desc' ? 'asc' : 'desc' })}
@@ -929,17 +1136,18 @@ export const Dashboard: React.FC = () => {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-[#27272A]">
-                                                    {playerTableData.map((p: any) => (
-                                                        <tr key={p.name} className="hover:bg-[#1E1E21] transition-colors">
-                                                            <td className="px-6 py-4 text-sm font-black text-white">{p.name}</td>
-                                                            <td className="px-6 py-4 text-center font-mono text-lg text-white">{p.kills}</td>
-                                                            <td className="px-6 py-4 text-center font-mono text-[#A1A1AA]">{p.deaths}</td>
-                                                            <td className="px-6 py-4 text-center font-mono text-[#A1A1AA]">{p.assists}</td>
-                                                            <td className="px-6 py-4 text-center font-mono text-[var(--accent)] font-bold">{p.damage}</td>
-                                                            <td className="px-6 py-4 text-center">
-                                                                <span className="badge badge-purple">{(p.kills / (p.deaths || 1)).toFixed(2)}</span>
+                                                    {playerTableData.map((row: any, i: number) => (
+                                                        <tr key={i} className="hover:bg-white/5 transition-colors text-sm text-[#FAFAFA] font-medium">
+                                                            <td className="px-6 py-4">{row.name}</td>
+                                                            <td className="px-6 py-4 flex items-center gap-3">
+                                                                <span className="w-6 text-right">{row.abates}</span>
+                                                                <div className="h-2.5 bg-[#EF4444] rounded-sm" style={{ width: `${Math.max(2, (row.abates / maxAbates) * 80)}px` }} />
                                                             </td>
-                                                            <td className="px-6 py-4 text-center font-mono text-[#EAB308]">{p.derrubados}</td>
+                                                            <td className="px-6 py-4">{row.mortes}</td>
+                                                            <td className="px-6 py-4">{row.assistencias}</td>
+                                                            <td className="px-6 py-4">{row.dano.toLocaleString('pt-BR')}</td>
+                                                            <td className="px-6 py-4 font-mono text-[#A1A1AA]">{String(row.kd).replace('.', ',')}</td>
+                                                            <td className="px-6 py-4">{row.derrubados}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -953,8 +1161,8 @@ export const Dashboard: React.FC = () => {
                                             <h4 className="text-[#EAB308] text-sm font-bold uppercase mb-6 tracking-widest">DANO</h4>
                                             <div className="w-full flex flex-col items-center gap-1">
                                                 {pyramidData.map((p: any, i: number) => {
-                                                    const maxD = pyramidData[0]?.damage || 1;
-                                                    const wP = Math.max(30, (p.damage / maxD) * 100);
+                                                    const maxD = pyramidData[0]?.dano || 1;
+                                                    const wP = Math.max(30, (p.dano / maxD) * 100);
                                                     return (
                                                         <div key={i} 
                                                             className="h-8 flex items-center justify-center rounded uppercase text-[10px] font-black text-black/70 shadow-sm"
