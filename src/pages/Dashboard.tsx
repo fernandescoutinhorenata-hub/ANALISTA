@@ -5,7 +5,8 @@ import {
     Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword, Shield,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2
+    CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2,
+    Lock
 } from 'lucide-react';
 import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -182,6 +183,7 @@ export const Dashboard: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [matchToDelete, setMatchToDelete] = useState<any>(null);
     const [selectedMap, setSelectedMap] = useState<string | null>(null);
+    const [isSubscriber, setIsSubscriber] = useState(false);
 
     const { signOut, user } = useAuth();
     const navigate = useNavigate();
@@ -278,8 +280,20 @@ export const Dashboard: React.FC = () => {
             }
         };
 
+        const checkSubscription = async () => {
+            const { data } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('status', 'ativo')
+                .gt('data_fim', new Date().toISOString())
+                .maybeSingle();
+            setIsSubscriber(!!data);
+        };
+
         fetchPerfil();
         fetchDashboardData();
+        checkSubscription();
 
         const channelData = supabase.channel('dashboard-data-changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'partidas_geral', filter: `user_id=eq.${user.id}` }, () => fetchDashboardData())
@@ -784,17 +798,24 @@ export const Dashboard: React.FC = () => {
                 {/* Nav */}
                 <nav className="flex-1 px-4 space-y-2">
                     {[
-                        { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
-                        { id: 'players', label: 'Jogadores', icon: Users },
-                        { id: 'coletivo', label: 'Coletivo', icon: Activity },
-                        { id: 'quebras', label: 'Quebras', icon: Shield },
-                        { id: 'history', label: 'Análise', icon: FileSpreadsheet },
+                        { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, premium: false },
+                        { id: 'players', label: 'Jogadores', icon: Users, premium: false },
+                        { id: 'coletivo', label: 'Coletivo', icon: Activity, premium: false },
+                        { id: 'quebras', label: 'Quebras', icon: Shield, premium: true },
+                        { id: 'history', label: 'Análise', icon: FileSpreadsheet, premium: true },
                     ].map(item => {
                         const isActive = activeTab === item.id;
+                        const isLocked = item.premium && !isSubscriber;
+                        
                         return (
                             <button
                                 key={item.id}
                                 onClick={() => { 
+                                    if (isLocked) {
+                                        navigate('/planos', { state: { message: "Esta funcionalidade é exclusiva para assinantes. Assine um plano para ter acesso completo." } });
+                                        return;
+                                    }
+
                                     if (item.id === 'coletivo') {
                                         navigate('/coletivo');
                                     } else if (item.id === 'quebras') {
@@ -804,10 +825,13 @@ export const Dashboard: React.FC = () => {
                                     }
                                     setIsSidebarOpen(false); 
                                 }}
-                                className={`nav-item w-full ${isActive ? 'active' : ''}`}
+                                className={`nav-item w-full flex items-center justify-between ${isActive ? 'active' : ''} ${isLocked ? 'opacity-80' : ''}`}
                             >
-                                <item.icon size={18} />
-                                {item.label}
+                                <div className="flex items-center gap-3">
+                                    <item.icon size={18} />
+                                    {item.label}
+                                </div>
+                                {isLocked && <Lock size={12} className="text-[var(--text-tertiary)]" />}
                             </button>
                         );
                     })}

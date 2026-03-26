@@ -11,6 +11,7 @@ import Quebras from './pages/Quebras';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
+import { SubscriberRoute } from './components/SubscriberRoute';
 
 function App() {
   return (
@@ -46,7 +47,19 @@ function App() {
             path="/quebras" 
             element={
               <ProtectedRoute>
-                <Quebras />
+                <SubscriberRoute>
+                  <Quebras />
+                </SubscriberRoute>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/analise" 
+            element={
+              <ProtectedRoute>
+                <SubscriberRoute>
+                  <Dashboard />
+                </SubscriberRoute>
               </ProtectedRoute>
             } 
           />
