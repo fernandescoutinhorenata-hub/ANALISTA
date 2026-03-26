@@ -136,34 +136,33 @@ export const PublicSquad: React.FC = () => {
     }, [token]);
 
     // ─── PROCESSAMENTO ─────────────────────────────────────────────────────
+    const fGenFilteredMain = useMemo(() => {
+        let fGen = [...allGeneralRows];
+        if (filters.championship !== 'Todos') fGen = fGen.filter(r => r.Campeonato === filters.championship);
+        if (filters.date !== 'Todos') {
+            fGen = fGen.filter(r => r.Data === filters.date);
+        } else if (filters.timeFilter !== 'all') {
+            const now = new Date();
+            const days = filters.timeFilter === '7d' ? 7 : 30;
+            const cutoff = new Date(now.setDate(now.getDate() - days));
+            fGen = fGen.filter(r => {
+                if (!r.Data) return false;
+                const [d, m, y] = r.Data.split('/').map(Number);
+                const matchDate = new Date(y, m - 1, d);
+                const isAfter = matchDate >= cutoff;
+                return isAfter;
+            });
+        }
+        return fGen;
+    }, [filters, allGeneralRows]);
+
     useEffect(() => {
         if (allGeneralRows.length > 0) {
-            let fGen = [...allGeneralRows];
-            
-            // 1. Filtro de Campeonato
-            if (filters.championship !== 'Todos') {
-                fGen = fGen.filter(r => r.Campeonato === filters.championship);
-            }
+            const fGen = fGenFilteredMain;
 
-            // 2. Filtro de Data ou Período (Exclusivos)
-            if (filters.date !== 'Todos') {
-                fGen = fGen.filter(r => r.Data === filters.date);
-            } else if (filters.timeFilter !== 'all') {
-                const now = new Date();
-                const days = filters.timeFilter === '7d' ? 7 : 30;
-                const cutoff = new Date(now.setDate(now.getDate() - days));
-                
-                fGen = fGen.filter(r => {
-                    if (!r.Data) return false;
-                    const [d, m, y] = r.Data.split('/').map(Number);
-                    const matchDate = new Date(y, m - 1, d);
-                    return matchDate >= cutoff;
-                });
-            }
-
-            // 3. Filtrar Player Rows baseado nas datas resultantes do fGen
-            const validDates = new Set(fGen.map(r => r.Data));
-            const fPlay = allPlayerRows.filter(r => validDates.has(r.Data));
+            // 3. Filtrar Player Rows baseado nas partidas resultantes do fGen para precisão total (Data, Mapa, Rodada)
+            const activeMatchKeys = new Set(fGen.map(r => `${r.Data}|${r.Mapa}|${r.Rodada}|${r.Campeonato}`));
+            const fPlay = allPlayerRows.filter(r => activeMatchKeys.has(`${r.Data}|${r.Mapa}|${r.Queda}|${r.Equipe}`));
 
             setData(processData(fGen, fPlay));
         }
@@ -180,7 +179,7 @@ export const PublicSquad: React.FC = () => {
         // Agora usamos o data.playerRows processado pelo processData que já recebeu o fPlay filtrado correamente
         const agg: Record<string, any> = {};
         
-        // Buscamos as datas filtradas do fGen para garantir sincronia
+        // Buscamos as chaves da partidas filtradas do fGen para garantir sincronia cirúrgica
         let fGenFiltered = [...allGeneralRows];
         if (filters.championship !== 'Todos') fGenFiltered = fGenFiltered.filter(r => r.Campeonato === filters.championship);
         if (filters.date !== 'Todos') {
@@ -196,9 +195,9 @@ export const PublicSquad: React.FC = () => {
                 return md >= cutoff;
             });
         }
-        const validDates = new Set(fGenFiltered.map(r => r.Data));
+        const matchKeys = new Set(fGenFiltered.map(r => `${r.Data}|${r.Mapa}|${r.Rodada}|${r.Campeonato}`));
 
-        allPlayerRows.filter(r => validDates.has(r.Data)).forEach(p => {
+        allPlayerRows.filter(r => matchKeys.has(`${r.Data}|${r.Mapa}|${r.Queda}|${r.Equipe}`)).forEach(p => {
             if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, deaths: 0, assists: 0, damage: 0, knocks: 0 };
             agg[p.Player].kills += p.Kill || 0;
             agg[p.Player].deaths += p.Morte || 0;
@@ -340,7 +339,7 @@ export const PublicSquad: React.FC = () => {
                             <Card className="lg:col-span-2 min-h-[400px]">
                                 <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-10">Evolução Diária (Kills)</h4>
                                 <ResponsiveContainer width="100%" height={300}>
-                                    <AreaChart data={allGeneralRows.map(r => ({ data: r.Data, kill: r.Kill })).reverse()}>
+                                    <AreaChart data={[...fGenFilteredMain].reverse().map(r => ({ data: r.Data, kill: r.Kill }))}>
                                         <defs>
                                             <linearGradient id="gradPublic" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="0%" stopColor="#A855F7" stopOpacity={0.3} />
