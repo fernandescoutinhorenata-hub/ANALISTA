@@ -12,7 +12,7 @@ import {
     Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity
+    CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
@@ -176,6 +176,8 @@ export const Dashboard: React.FC = () => {
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [nomeUsuario, setNomeUsuario] = useState<string>('');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [matchToDelete, setMatchToDelete] = useState<any>(null);
 
     const { signOut, user } = useAuth();
     const navigate = useNavigate();
@@ -632,6 +634,42 @@ export const Dashboard: React.FC = () => {
         });
     };
 
+    const handleDeleteMatch = async () => {
+        if (!user || !matchToDelete) return;
+
+        setLoading(true);
+        try {
+            // Deleção em paralelo
+            const [resGeneral, resPerformance] = await Promise.all([
+                supabase.from('partidas_geral').delete().eq('id', matchToDelete.id),
+                supabase.from('performance_jogadores')
+                    .delete()
+                    .eq('user_id', user.id)
+                    .eq('data', matchToDelete.Data)
+                    .eq('mapa', matchToDelete.Mapa)
+                    .eq('posicao', matchToDelete.Rodada)
+            ]);
+
+            if (resGeneral.error) throw resGeneral.error;
+            if (resPerformance.error) throw resPerformance.error;
+
+            // Atualização local do estado
+            setAllGeneralRows(prev => prev.filter(r => r.id !== matchToDelete.id));
+            setAllPlayerRows(prev => prev.filter(p => 
+                !(p.Data === matchToDelete.Data && p.Mapa === matchToDelete.Mapa && p.Posicao === matchToDelete.Rodada)
+            ));
+
+            showToast('Queda removida com sucesso! 🗑️', 'success');
+            setIsDeleteModalOpen(false);
+            setMatchToDelete(null);
+        } catch (err: any) {
+            console.error('Erro ao deletar:', err);
+            showToast('Erro ao remover queda.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen flex bg-[var(--bg-main)]">
 
@@ -640,6 +678,41 @@ export const Dashboard: React.FC = () => {
 
             {/* Toast Feedback */}
             {toast && <Toast message={toast.message} type={toast.type} />}
+
+            {/* Modal de Confirmação de Deleção */}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="card w-full max-w-sm p-8 animate-reveal border-[var(--accent-red)]/30">
+                        <div className="flex flex-col items-center text-center">
+                            <div className="p-4 rounded-full bg-red-500/10 text-red-500 mb-6">
+                                <AlertCircle size={32} />
+                            </div>
+                            <h3 className="text-heading text-lg">Remover Queda?</h3>
+                            <p className="text-label mt-2 px-4">
+                                Tem certeza que deseja apagar esta queda? <br/>
+                                <span className="text-white">Mapa: {matchToDelete?.Mapa} | Rodada: #{matchToDelete?.Rodada}</span>
+                            </p>
+                            <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-4">Esta ação não pode ser desfeita.</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mt-8">
+                            <button
+                                onClick={() => setIsDeleteModalOpen(false)}
+                                className="btn-ghost"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleDeleteMatch}
+                                className="btn-primary !bg-red-600 hover:!bg-red-700 shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
+                                disabled={loading}
+                            >
+                                {loading ? <RefreshCcw size={14} className="animate-spin" /> : <Trash2 size={14} />} Apagar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal de Importação */}
             <ImportModal
@@ -1272,11 +1345,12 @@ export const Dashboard: React.FC = () => {
                                                             <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider text-right">Abates</th>
                                                             <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider text-right">Total</th>
                                                             <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider text-right">Booyah</th>
+                                                            <th className="px-6 py-4 font-bold text-[var(--text-tertiary)] uppercase tracking-wider text-right">Ação</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-[var(--border-subtle)]">
                                                         {data.rawData.map((row: any, index: number) => (
-                                                            <tr key={index} className="hover:bg-[var(--bg-hover)] transition-colors">
+                                                            <tr key={index} className="hover:bg-[var(--bg-hover)] transition-colors group">
                                                                 <td className="px-6 py-4 font-bold text-[var(--text-tertiary)]">#{String(row.Rodada).padStart(2, '0')}</td>
                                                                 <td className="px-6 py-4 font-bold text-[var(--text-primary)] uppercase">{row.Mapa}</td>
                                                                 <td className="px-6 py-4">
@@ -1296,6 +1370,15 @@ export const Dashboard: React.FC = () => {
                                                                     ) : (
                                                                         <span className="text-[var(--text-tertiary)]">--</span>
                                                                     )}
+                                                                </td>
+                                                                <td className="px-6 py-4 text-right">
+                                                                    <button 
+                                                                        onClick={() => { setMatchToDelete(row); setIsDeleteModalOpen(true); }}
+                                                                        className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                                                                        title="Remover Partida"
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         ))}
