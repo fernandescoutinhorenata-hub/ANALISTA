@@ -19,10 +19,29 @@ serve(async (req) => {
   const body = await req.json()
   const { user_id, action } = body
 
-  // Pegar IP real do request
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() 
-    || req.headers.get('cf-connecting-ip') 
-    || 'unknown'
+  // Pegar IP real do request (Deno Deploy x-forwarded-for é seguro contra spoofing do client)
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown'
+
+  // Rate Limiting: Máximo 20 tentativas por IP por hora
+  const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+  const { count, error: rlError } = await supabase
+    .from('api_rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('action_type', 'check_ip')
+    .eq('identifier', ip)
+    .gt('created_at', umaHoraAtras)
+
+  if (rlError) {
+    console.error('[CheckIP] RL Error', rlError)
+  } else if (count !== null && count >= 20) {
+    return new Response(JSON.stringify({ error: 'Muitas requisições. Tente novamente em 1 hora.' }), {
+      status: 429,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+  }
+
+  // Registra a tentativa
+  await supabase.from('api_rate_limits').insert({ action_type: 'check_ip', identifier: ip })
 
   if (action === 'check') {
     // Verificar se IP já tem registro

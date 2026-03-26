@@ -5,10 +5,15 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const [autenticado, setAutenticado] = useState(false);
   const [erro, setErro] = useState(false);
 
-  // Senha secreta para acesso ao Painel Admin
-  const SENHA_SECRETA = 'celomaster2025';
+  // Senha secreta lida das variáveis de ambiente
+  const SENHA_SECRETA = import.meta.env.VITE_ADMIN_PASSWORD;
 
   const handleLogin = () => {
+    if (!SENHA_SECRETA) {
+      console.error("VITE_ADMIN_PASSWORD não está configurado no .env");
+      setErro(true);
+      return;
+    }
     if (senha === SENHA_SECRETA) {
       setAutenticado(true);
       setErro(false);

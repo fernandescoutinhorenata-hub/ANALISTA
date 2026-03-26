@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +14,33 @@ serve(async (req) => {
   try {
     const { plano, user_id, user_email } = await req.json()
     const accessToken = Deno.env.get('MP_ACCESS_TOKEN')
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown'
+
+    // Rate Limiting: Máx 5 tentativas por IP por hora
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { count, error: rlError } = await supabase
+      .from('api_rate_limits')
+      .select('*', { count: 'exact', head: true })
+      .eq('action_type', 'create-payment')
+      .eq('identifier', ip)
+      .gt('created_at', umaHoraAtras)
+
+    if (rlError) {
+      console.error('[CreatePayment] RL Error', rlError)
+    } else if (count !== null && count >= 5) {
+      return new Response(JSON.stringify({ error: 'Muitas tentativas de pagamento. Tente novamente em 1 hora.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Registrar tentativa
+    await supabase.from('api_rate_limits').insert({ action_type: 'create-payment', identifier: ip })
+
 
     console.log(`[CreatePayment] Iniciando para usuario ${user_id} (${user_email}), plano: ${plano}`);
 

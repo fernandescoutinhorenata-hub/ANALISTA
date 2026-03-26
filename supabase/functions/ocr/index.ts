@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,47 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get('Authorization')!
+    
+    // Config Supabase to verify user
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')! // Or SERVICE_ROLE for query
+    
+    // Service role pra burlar RLS e ler a tabela limits
+    const sRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabaseAdmin = createClient(supabaseUrl, sRoleKey)
+    
+    // Obter usuário do JWT
+    const supabaseClient = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: authHeader } }
+    })
+    
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    
+    if (authError || !user) {
+      return new Response('Unauthorized', { status: 401, headers: corsHeaders })
+    }
+
+    // Rate Limiting: Máx 10 tentativas por usuário por hora
+    const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { count, error: rlError } = await supabaseAdmin
+      .from('api_rate_limits')
+      .select('*', { count: 'exact', head: true })
+      .eq('action_type', 'ocr_invoke')
+      .eq('identifier', user.id)
+      .gt('created_at', umaHoraAtras)
+
+    if (rlError) {
+      console.error('[OCR] RL Error', rlError)
+    } else if (count !== null && count >= 10) {
+      return new Response(JSON.stringify({ error: 'Limite OCR atingido. Tente novamente em 1 hora.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    await supabaseAdmin.from('api_rate_limits').insert({ action_type: 'ocr_invoke', identifier: user.id })
+
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY') ?? ''
     if (!apiKey) {
       console.error('[OCR] ANTHROPIC_API_KEY não encontrada no ambiente')
@@ -21,7 +63,7 @@ serve(async (req) => {
     }
 
     const { base64Image, mediaType } = await req.json()
-    console.log(`[OCR] Iniciando análise — mediaType: ${mediaType}, tamanho base64: ${base64Image?.length ?? 0}`)
+    console.log(`[OCR] Iniciando análise — user: ${user.id}, mediaType: ${mediaType}, tamanho base64: ${base64Image?.length ?? 0}`)
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -42,12 +84,33 @@ serve(async (req) => {
             },
             {
               type: 'text',
-              text: `Analise esta imagem de resultado de partida do Free Fire e retorne APENAS um JSON válido, sem markdown, sem blocos de código, sem texto adicional:
+              text: `Analise esta imagem de resultado de partida do Free Fire e retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem blocos de código.
+
+ATENÇÃO — MAPEAMENTO EXATO DAS COLUNAS NA TELA:
+A tela de resultado do Free Fire tem estas colunas nesta ordem:
+K/D/A | DMG | DANO REAL | DERRUBADOS | CURA | LEVANTADOS | RESSURGIMENTO
+
+REGRAS CRÍTICAS:
+1. DERRUBADOS: É a 4ª coluna. Números PEQUENOS entre 0 e 15. NUNCA use o valor da coluna CURA (5ª coluna) aqui.
+2. CURA: Tem valores ALTOS (500, 1000, 3000+). IGNORE essa coluna.
+3. DANO: Use a coluna DMG (2ª coluna), números grandes como 1500-5000.
+4. kills/mortes/assists: Vêm do K/D/A (1ª coluna), formato X/Y/Z.
+5. ressurgimentos: Vem da coluna RESSURGIMENTO (7ª coluna).
+
+Formato de retorno:
 {
-  "mapa": "BERMUDA",
-  "colocacao": 10,
+  "mapa": "NOME_DO_MAPA",
+  "colocacao": 1,
   "jogadores": [
-    { "nome": "COACH7", "kills": 4, "mortes": 1, "assists": 2, "dano": 818, "derrubados": 4, "ressurgimentos": 1 }
+    { 
+      "nome": "NOME_SEM_CLA", 
+      "kills": 9, 
+      "mortes": 0, 
+      "assists": 3, 
+      "dano": 3901, 
+      "derrubados": 10, 
+      "ressurgimentos": 4 
+    }
   ]
 }
 KDA aparece como K/D/A abaixo do nome. Ex: 4/1/2 = kills:4, mortes:1, assists:2.
