@@ -5,8 +5,7 @@ import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell,
     AreaChart, Area, Legend,
-    LineChart, Line, CartesianGrid,
-    BarChart, Bar
+    LineChart, Line, CartesianGrid
 } from 'recharts';
 import {
     Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
@@ -861,77 +860,7 @@ export const Dashboard: React.FC = () => {
                                             {/* ── NOVAS MÉTRICAS ── */}
                                             {overviewExtras && (
                                                 <>
-                                                    {/* Linha 1: Taxa de Booyah + TOP 3 / TOP 5 / TOP 12 */}
-                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-                                                        {[
-                                                            { label: 'TAXA DE BOOYAH', value: `${overviewExtras.taxaBooyah}%`, color: 'var(--accent)' },
-                                                            { label: 'TAXA TOP 3', value: `${overviewExtras.taxaTop3}%`, color: '#EAB308' },
-                                                            { label: 'TAXA TOP 5', value: `${overviewExtras.taxaTop5}%`, color: '#EAB308' },
-                                                            { label: 'TAXA TOP 12', value: `${overviewExtras.taxaTop12}%`, color: '#EAB308' },
-                                                        ].map(item => (
-                                                            <div key={item.label} className="card p-5 flex flex-col gap-2">
-                                                                <p className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">{item.label}</p>
-                                                                <p className="text-3xl font-black" style={{ color: item.color }}>{item.value}</p>
-                                                                <p className="text-[11px] text-[var(--text-tertiary)]">de todas as partidas</p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
 
-                                                    {/* Linha 2: Booyahs por Mapa + Média por Evento */}
-                                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                                                        <Card>
-                                                            <div className="flex items-center justify-between mb-6">
-                                                                <div>
-                                                                    <h4 className="text-heading text-sm font-bold">Booyahs por Mapa</h4>
-                                                                    <p className="text-label mt-1">Vitórias por terreno</p>
-                                                                </div>
-                                                                <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><Trophy size={16} /></div>
-                                                            </div>
-                                                            <div className="h-56">
-                                                                <ResponsiveContainer width="100%" height="100%">
-                                                                    <BarChart data={overviewExtras.booyahsByMap} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                                                                        <XAxis dataKey="mapa" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
-                                                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} allowDecimals={false} />
-                                                                        <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
-                                                                        <Bar dataKey="qtd" name="Booyahs" fill="#EAB308" radius={[4, 4, 0, 0]} />
-                                                                    </BarChart>
-                                                                </ResponsiveContainer>
-                                                            </div>
-                                                        </Card>
-
-                                                        <Card>
-                                                            <div className="flex items-center justify-between mb-6">
-                                                                <div>
-                                                                    <h4 className="text-heading text-sm font-bold">Média Pontos por Evento</h4>
-                                                                    <p className="text-label mt-1">Ranking de campeonatos</p>
-                                                                </div>
-                                                                <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><Target size={16} /></div>
-                                                            </div>
-                                                            <div className="overflow-auto max-h-56">
-                                                                <table className="w-full text-sm">
-                                                                    <thead>
-                                                                        <tr className="border-b border-[var(--border-subtle)]">
-                                                                            <th className="text-left py-2 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">#Evento</th>
-                                                                            <th className="text-right py-2 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Média</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody className="divide-y divide-[var(--border-subtle)]">
-                                                                        {overviewExtras.avgByChamp.map((row, i) => (
-                                                                            <tr key={row.evento} className="hover:bg-[var(--bg-hover)] transition-colors">
-                                                                                <td className="py-3 text-[var(--text-primary)] font-semibold">
-                                                                                    <span className="text-[var(--text-tertiary)] mr-2 font-mono text-xs">{i + 1}</span>
-                                                                                    {row.evento}
-                                                                                </td>
-                                                                                <td className="py-3 text-right font-bold" style={{ color: i === 0 ? '#EAB308' : 'var(--text-primary)' }}>
-                                                                                    {row.media.toLocaleString('pt-BR')}
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </Card>
-                                                    </div>
 
                                                     {/* Linha 3: Histórico Média Pontos/Queda */}
                                                     {overviewExtras.avgPontosByRound.length > 1 && (
