@@ -396,13 +396,19 @@ export const InputData: React.FC = () => {
         if (!user || resetLoading) return;
         setResetLoading(true);
         try {
-            const { error: errorPerf } = await supabase.from('performance_jogadores').delete().eq('user_id', user.id);
-            if (errorPerf) throw errorPerf;
+            // Executamos as deleções em paralelo para maior performance e resiliência
+            const [resPerf, resGeral, resConq] = await Promise.all([
+                supabase.from('performance_jogadores').delete().eq('user_id', user.id),
+                supabase.from('partidas_geral').delete().eq('user_id', user.id),
+                supabase.from('conquistas_jogadores').delete().eq('jogador_id', user.id)
+            ]);
 
-            const { error: errorGeral } = await supabase.from('partidas_geral').delete().eq('user_id', user.id);
-            if (errorGeral) throw errorGeral;
+            if (resPerf.error) throw resPerf.error;
+            if (resGeral.error) throw resGeral.error;
+            // Se as conquistas falharem não bloqueia o usuário principal mas logamos como segurança
+            if (resConq.error) console.warn('[RESET] Erro ao limpar conquistas:', resConq.error);
 
-            showToast('Tabela reiniciada com sucesso', 'success');
+            showToast('Tabela e histórico reiniciados!', 'success');
             setIsResetModalOpen(false);
             navigate('/');
         } catch (err: any) {

@@ -210,16 +210,14 @@ export const Dashboard: React.FC = () => {
             }
         };
 
-
-
         const fetchDashboardData = async () => {
             if (!user) return;
             setIsDashboardLoading(true);
             setFetchError(null);
             try {
                 const [generalRes, playersRes] = await Promise.all([
-                    supabase.from('partidas_geral').select('*').eq('user_id', user.id).order('rodada', { ascending: true }),
-                    supabase.from('performance_jogadores').select('*').eq('user_id', user.id)
+                    supabase.from('partidas_geral').select('*').eq('user_id', user.id).order('data', { ascending: false }).order('created_at', { ascending: false }),
+                    supabase.from('performance_jogadores').select('*').eq('user_id', user.id).order('data', { ascending: false }).order('created_at', { ascending: false })
                 ]);
 
                 if (generalRes.error) throw generalRes.error;
@@ -288,11 +286,6 @@ export const Dashboard: React.FC = () => {
         };
     }, [user]);
 
-
-
-
-
-
     useEffect(() => {
         if (allGeneralRows.length === 0 && allPlayerRows.length === 0) {
             setData(null);
@@ -354,8 +347,6 @@ export const Dashboard: React.FC = () => {
     const playerList = useMemo(() => {
         return Array.from(new Set(filteredPlayerRows.map((p: any) => p.Player).filter(Boolean))).sort() as string[];
     }, [filteredPlayerRows]);
-
-
 
     // ─── Novos Dados da Aba Jogadores (Tabela, Funil, Donut, Linha) ───
     const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'abates', direction: 'desc' });
@@ -508,8 +499,6 @@ export const Dashboard: React.FC = () => {
         };
     }, [data, allGeneralRows, filters.date, filters.championship, timeFilter]);
 
-    // Gráfico de Tendência: kills totais de todos os jogadores agrupadas por data
-    
     const pointsByMapData = useMemo(() => {
         if (!data?.byMap) return [];
         return data.byMap.map(m => ({
@@ -517,8 +506,6 @@ export const Dashboard: React.FC = () => {
             total: (m.totalPontos || 0) + (m.totalKills || 0)
         })).sort((a, b) => b.total - a.total);
     }, [data?.byMap]);
-
-    
 
     const handleTemplateDownload = () => {
         const wb = XLSX.utils.book_new();
@@ -685,9 +672,6 @@ export const Dashboard: React.FC = () => {
 
             {/* ── Content ── */}
             <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[var(--bg-main)]">
-
-
-
 
                 {/* Header / Top Bar */}
                 <header

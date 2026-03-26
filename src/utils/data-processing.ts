@@ -73,9 +73,10 @@ const processPlayerMetrics = (players: PlayerRow[]): { metrics: PlayerMetrics, s
     const kdRatio = totalDeaths > 0 ? Number(Math.max(0, totalKills / totalDeaths).toFixed(2)) : totalKills;
 
     // Squad Metrics (Averages per Match)
-    // We need to know how many matches are represented. 
-    // Usually players rows = match_count * players_per_match
-    const uniqueMatches = new Set(players.map(p => `${p.Data}-${p.Mapa}-${p.Posicao}`)).size || 1;
+    // Usar Queda (Rodada) + Mapa + Data para garantir unicidade absoluta
+    const uniqueMatches = new Set(players.map(p => `${p.Data}-${p.Mapa}-${p.Posicao}-${p.Queda}`)).size || 1;
+
+
 
     const squad: SquadMetrics = {
         avgDamage: Number((totalDano / uniqueMatches).toFixed(0)),
@@ -278,10 +279,17 @@ export const processData = (rawData: unknown[], rawPlayerData?: unknown[]): Dash
     return {
         general,
         byMap,
-        rawData: validRows.sort((a, b) => (Number(a.Rodada) || 0) - (Number(b.Rodada) || 0)),
-        playerData: validPlayers,
         playerMetrics: metrics,
-        squadMetrics: squad
+        squadMetrics: squad,
+        rawData: validRows.sort((a, b) => {
+            // Ordenar por data (decrescente) e depois por Rodada (decrescente)
+            const dateA = new Date(String(a.Data)).getTime();
+            const dateB = new Date(String(b.Data)).getTime();
+            if (dateA !== dateB) return dateB - dateA;
+            return (Number(b.Rodada) || 0) - (Number(a.Rodada) || 0);
+        }),
+        playerData: validPlayers
     };
+
 };
 
