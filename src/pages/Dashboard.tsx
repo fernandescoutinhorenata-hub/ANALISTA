@@ -8,7 +8,7 @@ import {
     LineChart, Line, CartesianGrid
 } from 'recharts';
 import {
-    Trophy, Target, Map, Zap, FileSpreadsheet, RefreshCcw,
+    Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
     CheckCircle, XCircle, AlertCircle, Link, CreditCard
@@ -850,10 +850,10 @@ export const Dashboard: React.FC = () => {
                                                     icon={Trophy}
                                                 />
                                                 <MetricCard
-                                                    title="Sucesso em Call"
-                                                    value={`${data.general.percentSucessoCall}%`}
-                                                    subValue={`${data.general.callsGanhas}W / ${data.general.callsPerdidas}L`}
-                                                    icon={Zap}
+                                                    title="Dano Médio"
+                                                    value={data.squadMetrics.avgDamage.toLocaleString("pt-BR")}
+                                                    subValue="por queda"
+                                                    icon={Sword}
                                                 />
                                             </div>
 
