@@ -65,7 +65,6 @@ export const PublicSquad: React.FC = () => {
     const [allGeneralRows, setAllGeneralRows] = useState<any[]>([]);
     const [allPlayerRows, setAllPlayerRows] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isExporting, setIsExporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'overview' | 'players' | 'coletivo'>('overview');
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos', timeFilter: 'all' as '7d' | '30d' | 'all' });
@@ -227,73 +226,23 @@ export const PublicSquad: React.FC = () => {
     }, [allPlayerRows]);
 
     const handleExportPDF = async () => {
-        if (!data || isExporting) return;
-        setIsExporting(true);
-        const originalTab = activeTab;
+        const coachName = coachProfile?.nome || 'Analista';
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const element = document.getElementById('public-squad-content');
+        if (!element) return;
         
-        try {
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            let yOffset = 10;
-
-            const captureElement = async (id: string, title?: string) => {
-                const element = document.getElementById(id);
-                if (!element) return;
-                
-                if (title) {
-                    pdf.setFontSize(14);
-                    pdf.setTextColor(168, 85, 247); // S.accent
-                    pdf.text(title, 10, yOffset + 5);
-                    yOffset += 12;
-                }
-
-                const canvas = await html2canvas(element, {
-                    backgroundColor: '#0B0B0C',
-                    scale: 2,
-                    logging: false,
-                    useCORS: true
-                });
-                
-                const imgData = canvas.toDataURL('image/png');
-                const imgWidth = pageWidth - 20;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                if (yOffset + imgHeight > pageHeight - 10) {
-                    pdf.addPage();
-                    yOffset = 10;
-                }
-
-                pdf.addImage(imgData, 'PNG', 10, yOffset, imgWidth, imgHeight);
-                yOffset += imgHeight + 10;
-            };
-
-            // 1. Header
-            await captureElement('public-header');
-
-            // 2. Estatísticas
-            setActiveTab('overview');
-            await new Promise(r => setTimeout(r, 600));
-            await captureElement('overview-section', 'ESTATÍSTICAS GERAIS');
-
-            // 3. Jogadores
-            setActiveTab('players');
-            await new Promise(r => setTimeout(r, 600));
-            await captureElement('players-section', 'DESEMPENHO DOS JOGADORES');
-
-            // 4. Coletivo
-            setActiveTab('coletivo');
-            await new Promise(r => setTimeout(r, 600));
-            await captureElement('coletivo-section', 'ANÁLISE COLETIVA');
-
-            const dateStr = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-            pdf.save(`CeloTracker_${coachProfile?.nome || 'Analista'}_${dateStr}.pdf`);
-        } catch (err) {
-            console.error('Erro ao gerar PDF:', err);
-        } finally {
-            setActiveTab(originalTab);
-            setIsExporting(false);
-        }
+        const canvas = await html2canvas(element, { 
+            scale: 1,
+            useCORS: true,
+            backgroundColor: '#0a0a0f'
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save(`CeloTracker_${coachName}_${new Date().toLocaleDateString('pt-BR')}.pdf`);
     };
 
     const HorizontalBarChart = ({ data, dataKey, title, color }: any) => (
@@ -337,187 +286,189 @@ export const PublicSquad: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#0B0B0C] text-white font-['Inter',sans-serif]">
-            {/* ─── HEADER ─── */}
-            <header id="public-header" className="h-20 bg-[#0B0B0C]/80 backdrop-blur-xl border-b border-[#2D2D30] sticky top-0 z-50 px-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <img src="/image_10.png" alt="Logo" className="h-10 w-auto" />
-                    <div className="h-8 w-px bg-[#2D2D30]" />
-                    <div>
-                        <span className="block text-[9px] font-black text-[#A855F7] uppercase tracking-[0.2em] mb-0.5">Analytics Público</span>
-                        <span className="block text-xs font-black uppercase">Coach: {coachProfile?.nome || 'Analista'}</span>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="hidden lg:flex items-center gap-2 bg-[#161618] border border-[#2D2D30] p-1.5 rounded-xl">
-                        <select className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-3 border-r border-[#2D2D30]" 
-                                value={filters.date} onChange={e => setFilters(prev => ({...prev, date: e.target.value}))}>
-                            <option value="Todos">Todas as Datas</option>
-                            {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
-                        </select>
-                        <select className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-3"
-                                value={filters.championship} onChange={e => setFilters(prev => ({...prev, championship: e.target.value}))}>
-                            <option value="Todos">Todos Eventos</option>
-                            {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                    </div>
-                    <button onClick={() => navigate('/register')} className="bg-white text-black px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-zinc-200 transition-colors shadow-lg shadow-white/5">
-                        Começar
-                    </button>
-                </div>
-            </header>
-
-            <main className="max-w-7xl mx-auto p-6 lg:p-10 space-y-8">
-                {/* ─── TABS ─── */}
-                <div className="flex gap-2 p-1 bg-[#161618] border border-[#2D2D30] rounded-2xl w-fit">
-                    {[
-                        { id: 'overview', label: 'Estatísticas', icon: LayoutDashboard },
-                        { id: 'players', label: 'Jogadores', icon: Users },
-                        { id: 'coletivo', label: 'Coletivo', icon: Activity },
-                    ].map(tab => (
-                        <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-[#A855F7] text-white shadow-lg shadow-[#A855F7]/20' : 'text-zinc-500 hover:text-white'}`}>
-                            <tab.icon size={14} /> {tab.label}
-                        </button>
-                    ))}
-                </div>
-
-                {/* ─── FILTERS ROW ─── */}
-                <div className="flex flex-wrap items-center gap-6 bg-[#161618] border border-[#2D2D30] p-6 rounded-2xl">
-                    <div className="space-y-2">
-                        <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-widest">Período</span>
-                        <div className="flex bg-[#0B0B0C] p-1 rounded-xl border border-[#2D2D30]">
-                            {(['7d', '30d', 'all'] as const).map((t) => (
-                                <button key={t} onClick={() => setFilters(prev => ({ ...prev, timeFilter: t, date: 'Todos' }))}
-                                    className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${filters.timeFilter === t && filters.date === 'Todos' ? 'bg-[#7C3AED] text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
-                                    {t === '7d' ? '7 Dias' : t === '30d' ? '30 Dias' : 'Tudo'}
-                                </button>
-                            ))}
+            <div id="public-squad-content">
+                {/* ─── HEADER ─── */}
+                <header id="public-header" className="h-20 bg-[#0B0B0C]/80 backdrop-blur-xl border-b border-[#2D2D30] sticky top-0 z-50 px-6 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <img src="/image_10.png" alt="Logo" className="h-10 w-auto" />
+                        <div className="h-8 w-px bg-[#2D2D30]" />
+                        <div>
+                            <span className="block text-[9px] font-black text-[#A855F7] uppercase tracking-[0.2em] mb-0.5">Analytics Público</span>
+                            <span className="block text-xs font-black uppercase">Coach: {coachProfile?.nome || 'Analista'}</span>
                         </div>
                     </div>
-                    <div className="h-10 w-px bg-[#2D2D30] hidden md:block" />
-                    <div className="space-y-2">
-                        <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-widest">Data Específica</span>
-                        <select className="bg-[#0B0B0C] border border-[#2D2D30] text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-4 py-2.5 rounded-xl min-w-[180px]"
-                            value={filters.date} onChange={e => setFilters(prev => ({ ...prev, date: e.target.value, timeFilter: 'all' }))}>
-                            <option value="Todos">Todas as Datas</option>
-                            {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
-                        </select>
-                    </div>
-                    <div className="h-10 w-px bg-[#2D2D30] hidden md:block" />
-                    <div className="space-y-2">
-                        <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-widest">Equipe / Campeonato</span>
-                        <select className="bg-[#0B0B0C] border border-[#2D2D30] text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-4 py-2.5 rounded-xl min-w-[200px]"
-                            value={filters.championship} onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}>
-                            <option value="Todos">Todos os Campeonatos</option>
-                            {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                    </div>
-                </div>
 
-                {/* ─── SEÇÕES ─── */}
-                <div ref={exportRef}>
-                    {activeTab === 'overview' && data && (
-                        <div id="overview-section" className="space-y-8 animate-fade-in">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                                <MetricCard title="Total Kills" value={data.playerMetrics.totalKills || 0} icon={Sword} glow />
-                                <MetricCard title="Pontuação Total" value={data.general.totalPontos || 0} icon={Trophy} />
-                                <MetricCard title="Booyahs" value={data.general.totalBooyahs || 0} icon={TrendingUp} color="#10B981" />
-                                <MetricCard title="Dano Médio / Queda" value={(data.squadMetrics.avgDamage || 0).toLocaleString()} icon={Target} color="#BEF264" />
+                    <div className="flex items-center gap-3">
+                        <div className="hidden lg:flex items-center gap-2 bg-[#161618] border border-[#2D2D30] p-1.5 rounded-xl">
+                            <select className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-3 border-r border-[#2D2D30]" 
+                                    value={filters.date} onChange={e => setFilters(prev => ({...prev, date: e.target.value}))}>
+                                <option value="Todos">Todas as Datas</option>
+                                {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
+                            </select>
+                            <select className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-3"
+                                    value={filters.championship} onChange={e => setFilters(prev => ({...prev, championship: e.target.value}))}>
+                                <option value="Todos">Todos Eventos</option>
+                                {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                        </div>
+                        <button onClick={() => navigate('/register')} className="bg-white text-black px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-zinc-200 transition-colors shadow-lg shadow-white/5">
+                            Começar
+                        </button>
+                    </div>
+                </header>
+
+                <main className="max-w-7xl mx-auto p-6 lg:p-10 space-y-8">
+                    {/* ─── TABS ─── */}
+                    <div className="flex gap-2 p-1 bg-[#161618] border border-[#2D2D30] rounded-2xl w-fit">
+                        {[
+                            { id: 'overview', label: 'Estatísticas', icon: LayoutDashboard },
+                            { id: 'players', label: 'Jogadores', icon: Users },
+                            { id: 'coletivo', label: 'Coletivo', icon: Activity },
+                        ].map(tab => (
+                            <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-[#A855F7] text-white shadow-lg shadow-[#A855F7]/20' : 'text-zinc-500 hover:text-white'}`}>
+                                <tab.icon size={14} /> {tab.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* ─── FILTERS ROW ─── */}
+                    <div className="flex flex-wrap items-center gap-6 bg-[#161618] border border-[#2D2D30] p-6 rounded-2xl">
+                        <div className="space-y-2">
+                            <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-widest">Período</span>
+                            <div className="flex bg-[#0B0B0C] p-1 rounded-xl border border-[#2D2D30]">
+                                {(['7d', '30d', 'all'] as const).map((t) => (
+                                    <button key={t} onClick={() => setFilters(prev => ({ ...prev, timeFilter: t, date: 'Todos' }))}
+                                        className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${filters.timeFilter === t && filters.date === 'Todos' ? 'bg-[#7C3AED] text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                                        {t === '7d' ? '7 Dias' : t === '30d' ? '30 Dias' : 'Tudo'}
+                                    </button>
+                                ))}
                             </div>
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <Card className="lg:col-span-2 min-h-[400px]">
-                                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-10">Evolução Diária (Kills)</h4>
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <AreaChart data={[...fGenFilteredMain].reverse().map(r => ({ data: r.Data, kill: r.Kill }))}>
-                                            <defs>
-                                                <linearGradient id="gradPublic" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor="#A855F7" stopOpacity={0.3} />
-                                                    <stop offset="100%" stopColor="#A855F7" stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <XAxis dataKey="data" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#52525B' }} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#52525B' }} />
-                                            <Tooltip contentStyle={{ backgroundColor: '#161618', border: '1px solid #2D2D30', borderRadius: '12px' }} />
-                                            <Area type="monotone" dataKey="kill" stroke="#A855F7" fill="url(#gradPublic)" strokeWidth={3} />
-                                        </AreaChart>
-                                    </ResponsiveContainer>
-                                </Card>
+                        </div>
+                        <div className="h-10 w-px bg-[#2D2D30] hidden md:block" />
+                        <div className="space-y-2">
+                            <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-widest">Data Específica</span>
+                            <select className="bg-[#0B0B0C] border border-[#2D2D30] text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-4 py-2.5 rounded-xl min-w-[180px]"
+                                value={filters.date} onChange={e => setFilters(prev => ({ ...prev, date: e.target.value, timeFilter: 'all' }))}>
+                                <option value="Todos">Todas as Datas</option>
+                                {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
+                            </select>
+                        </div>
+                        <div className="h-10 w-px bg-[#2D2D30] hidden md:block" />
+                        <div className="space-y-2">
+                            <span className="block text-[9px] font-black text-zinc-500 uppercase tracking-widest">Equipe / Campeonato</span>
+                            <select className="bg-[#0B0B0C] border border-[#2D2D30] text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-4 py-2.5 rounded-xl min-w-[200px]"
+                                value={filters.championship} onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}>
+                                <option value="Todos">Todos os Campeonatos</option>
+                                {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                        </div>
+                    </div>
 
-                                <div className="space-y-6">
-                                    <Card>
-                                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6">Squad Performance</h4>
-                                        <div className="space-y-5">
-                                            {[
-                                                { label: 'Total Quedas', value: data.general.totalQuedas, icon: Activity },
-                                                { label: 'K/D Equipe', value: data.playerMetrics.kdRatio, icon: Zap },
-                                                { label: 'Booyah Rate', value: `${data.general.percentBooyah}%`, icon: Trophy },
-                                            ].map((item, i) => (
-                                                <div key={i} className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3 text-zinc-400">
-                                                        <item.icon size={12} />
-                                                        <span className="text-[10px] uppercase font-bold tracking-widest">{item.label}</span>
+                    {/* ─── SEÇÕES ─── */}
+                    <div ref={exportRef}>
+                        {activeTab === 'overview' && data && (
+                            <div id="overview-section" className="space-y-8 animate-fade-in">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                                    <MetricCard title="Total Kills" value={data.playerMetrics.totalKills || 0} icon={Sword} glow />
+                                    <MetricCard title="Pontuação Total" value={data.general.totalPontos || 0} icon={Trophy} />
+                                    <MetricCard title="Booyahs" value={data.general.totalBooyahs || 0} icon={TrendingUp} color="#10B981" />
+                                    <MetricCard title="Dano Médio / Queda" value={(data.squadMetrics.avgDamage || 0).toLocaleString()} icon={Target} color="#BEF264" />
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    <Card className="lg:col-span-2 min-h-[400px]">
+                                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-10">Evolução Diária (Kills)</h4>
+                                        <ResponsiveContainer width="100%" height={300}>
+                                            <AreaChart data={[...fGenFilteredMain].reverse().map(r => ({ data: r.Data, kill: r.Kill }))}>
+                                                <defs>
+                                                    <linearGradient id="gradPublic" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stopColor="#A855F7" stopOpacity={0.3} />
+                                                        <stop offset="100%" stopColor="#A855F7" stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <XAxis dataKey="data" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#52525B' }} />
+                                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#52525B' }} />
+                                                <Tooltip contentStyle={{ backgroundColor: '#161618', border: '1px solid #2D2D30', borderRadius: '12px' }} />
+                                                <Area type="monotone" dataKey="kill" stroke="#A855F7" fill="url(#gradPublic)" strokeWidth={3} />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </Card>
+
+                                    <div className="space-y-6">
+                                        <Card>
+                                            <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6">Squad Performance</h4>
+                                            <div className="space-y-5">
+                                                {[
+                                                    { label: 'Total Quedas', value: data.general.totalQuedas, icon: Activity },
+                                                    { label: 'K/D Equipe', value: data.playerMetrics.kdRatio, icon: Zap },
+                                                    { label: 'Booyah Rate', value: `${data.general.percentBooyah}%`, icon: Trophy },
+                                                ].map((item, i) => (
+                                                    <div key={i} className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3 text-zinc-400">
+                                                            <item.icon size={12} />
+                                                            <span className="text-[10px] uppercase font-bold tracking-widest">{item.label}</span>
+                                                        </div>
+                                                        <span className="text-white font-black text-sm">{item.value}</span>
                                                     </div>
-                                                    <span className="text-white font-black text-sm">{item.value}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </Card>
-                                    <Card>
-                                        <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Mapa Dominante</h4>
-                                        <div className="text-center py-4">
-                                            <Map className="mx-auto text-[#A855F7] mb-2" size={32} />
-                                            <span className="block text-2xl font-black uppercase text-white">{data.byMap[0]?.mapa || 'N/A'}</span>
-                                            <span className="text-[9px] text-zinc-500 uppercase font-black">{data.byMap[0]?.totalPontos || 0} Pontos Acumulados</span>
-                                        </div>
-                                    </Card>
+                                                ))}
+                                            </div>
+                                        </Card>
+                                        <Card>
+                                            <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Mapa Dominante</h4>
+                                            <div className="text-center py-4">
+                                                <Map className="mx-auto text-[#A855F7] mb-2" size={32} />
+                                                <span className="block text-2xl font-black uppercase text-white">{data.byMap[0]?.mapa || 'N/A'}</span>
+                                                <span className="text-[9px] text-zinc-500 uppercase font-black">{data.byMap[0]?.totalPontos || 0} Pontos Acumulados</span>
+                                            </div>
+                                        </Card>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {activeTab === 'players' && (
-                        <div id="players-section" className="animate-fade-in">
-                            <Card className="!p-0 overflow-hidden">
-                                <table className="w-full text-left">
-                                    <thead>
-                                        <tr className="bg-[#1C1C1F] border-b border-[#2D2D30]">
-                                            {['Jogador', 'Abates', 'Mortes', 'Assists', 'Dano', 'KD'].map((h, i) => (
-                                                <th key={i} className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">{h}</th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {playerTableData.map((p, idx) => (
-                                            <tr key={idx} className="border-b border-[#2D2D30]/50 hover:bg-[#A855F7]/5 transition-colors">
-                                                <td className="px-6 py-5 font-black text-white uppercase text-xs">{p.name}</td>
-                                                <td className="px-6 py-5 font-bold text-[#A855F7]">{p.kills}</td>
-                                                <td className="px-6 py-5 text-zinc-400">{p.deaths}</td>
-                                                <td className="px-6 py-5 text-zinc-400">{p.assists}</td>
-                                                <td className="px-6 py-5 font-mono text-zinc-300">{p.damage.toLocaleString()}</td>
-                                                <td className="px-6 py-5">
-                                                    <span className="bg-[#A855F7]/10 text-[#A855F7] px-2 py-1 rounded text-[10px] font-black">{p.kd} KD</span>
-                                                </td>
+                        {activeTab === 'players' && (
+                            <div id="players-section" className="animate-fade-in">
+                                <Card className="!p-0 overflow-hidden">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="bg-[#1C1C1F] border-b border-[#2D2D30]">
+                                                {['Jogador', 'Abates', 'Mortes', 'Assists', 'Dano', 'KD'].map((h, i) => (
+                                                    <th key={i} className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">{h}</th>
+                                                ))}
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </Card>
-                        </div>
-                    )}
+                                        </thead>
+                                        <tbody>
+                                            {playerTableData.map((p, idx) => (
+                                                <tr key={idx} className="border-b border-[#2D2D30]/50 hover:bg-[#A855F7]/5 transition-colors">
+                                                    <td className="px-6 py-5 font-black text-white uppercase text-xs">{p.name}</td>
+                                                    <td className="px-6 py-5 font-bold text-[#A855F7]">{p.kills}</td>
+                                                    <td className="px-6 py-5 text-zinc-400">{p.deaths}</td>
+                                                    <td className="px-6 py-5 text-zinc-400">{p.assists}</td>
+                                                    <td className="px-6 py-5 font-mono text-zinc-300">{p.damage.toLocaleString()}</td>
+                                                    <td className="px-6 py-5">
+                                                        <span className="bg-[#A855F7]/10 text-[#A855F7] px-2 py-1 rounded text-[10px] font-black">{p.kd} KD</span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </Card>
+                            </div>
+                        )}
 
-                    {activeTab === 'coletivo' && (
-                        <div id="coletivo-section" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-reveal">
-                            <HorizontalBarChart title="Kills" data={collectiveData.kills} dataKey="kills" color="#A855F7" />
-                            <HorizontalBarChart title="Assists" data={collectiveData.assists} dataKey="assists" color="#A855F7" />
-                            <HorizontalBarChart title="Dano Causado" data={collectiveData.dano} dataKey="dano" color="#A855F7" />
-                            <HorizontalBarChart title="Mortes" data={collectiveData.mortes} dataKey="mortes" color="#A855F7" />
-                            <HorizontalBarChart title="Derrubados" data={collectiveData.derrubados} dataKey="derrubados" color="#A855F7" />
-                            <HorizontalBarChart title="Revividos" data={collectiveData.revividos} dataKey="revividos" color="#A855F7" />
-                        </div>
-                    )}
-                </div>
-            </main>
+                        {activeTab === 'coletivo' && (
+                            <div id="coletivo-section" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-reveal">
+                                <HorizontalBarChart title="Kills" data={collectiveData.kills} dataKey="kills" color="#A855F7" />
+                                <HorizontalBarChart title="Assists" data={collectiveData.assists} dataKey="assists" color="#A855F7" />
+                                <HorizontalBarChart title="Dano Causado" data={collectiveData.dano} dataKey="dano" color="#A855F7" />
+                                <HorizontalBarChart title="Mortes" data={collectiveData.mortes} dataKey="mortes" color="#A855F7" />
+                                <HorizontalBarChart title="Derrubados" data={collectiveData.derrubados} dataKey="derrubados" color="#A855F7" />
+                                <HorizontalBarChart title="Revividos" data={collectiveData.revividos} dataKey="revividos" color="#A855F7" />
+                            </div>
+                        )}
+                    </div>
+                </main>
+            </div>
 
             {/* ─── BOTÃO FLUTUANTE PDF ─── */}
             <button
