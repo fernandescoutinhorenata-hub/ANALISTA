@@ -36,18 +36,17 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
   return (
     <div className={`w-full max-w-7xl mx-auto px-6 py-12 select-none ${className}`}>
       
-      {/* HUD HEADER - Estilo Cyber-Athlete */}
-      <div className="relative mb-24 text-center">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[300px] bg-[radial-gradient(circle,rgba(245,158,11,0.05)_0%,transparent_70%)] pointer-events-none" />
+      <div className="relative mb-24 text-center pt-12">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[400px] bg-[radial-gradient(circle,rgba(245,158,11,0.08)_0%,transparent_70%)] pointer-events-none" />
         
         <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 border border-white/5 bg-white/[0.02] rounded-full backdrop-blur-sm animate-fade">
           <Target size={12} className="text-[var(--accent-amber)]" />
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">SQUAD PERFORMANCE HUB</span>
         </div>
 
-        <h2 className="text-5xl md:text-7xl font-black tracking-[-0.04em] text-white leading-[0.9] mb-6">
+        <h2 className="text-5xl md:text-7xl font-[1000] tracking-[-0.04em] text-white leading-[1.1] mb-6">
           PARE DE JOGAR NO <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-b from-[var(--accent-amber)] to-[#B48A00] drop-shadow-[0_0_20px_rgba(245,158,11,0.15)]">ACHISMO.</span>
+          <span className="inline-block text-transparent bg-clip-text bg-gradient-to-b from-[var(--accent-amber)] to-[#B48A00] py-2">ACHISMO.</span>
         </h2>
         
         <p className="text-white/70 text-lg md:text-xl max-w-2xl mx-auto font-medium tracking-tight">
