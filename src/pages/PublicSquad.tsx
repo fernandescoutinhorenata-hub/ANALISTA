@@ -116,7 +116,7 @@ export const PublicSquad: React.FC = () => {
                     Kill: r.kill,
                     "Pontos/Posicao": r.pontos_posicao,
                     Pontos_Total: r.pontos_total,
-                    Booyah: r.booyah ? 'SIM' : 'NAO',
+                    Booyah: (r.booyah || r.colocacao === 1) ? 'SIM' : 'NAO',
                 }));
 
                 const mappedPlay = (playersRes.data || []).map((r: any) => ({
@@ -171,8 +171,15 @@ export const PublicSquad: React.FC = () => {
     useEffect(() => {
         if (allGeneralRows.length > 0) {
             const fGen = fGenFilteredMain;
-            const activeMatchKeys = new Set(fGen.map(r => `${r.Data}|${r.Mapa}|${r.Rodada}|${r.Equipe}`));
-            const fPlay = allPlayerRows.filter(r => activeMatchKeys.has(`${r.Data}|${r.Mapa}|${r.Queda}|${r.Equipe}`));
+            // Normalizar chaves para garantir o cruzamento correto
+            const activeMatchKeys = new Set(fGen.map(r => 
+                `${String(r.Data).trim()}|${String(r.Mapa).trim().toUpperCase()}|${Number(r.Rodada)}|${String(r.Equipe).trim().toUpperCase()}`
+            ));
+
+            const fPlay = allPlayerRows.filter(r => 
+                activeMatchKeys.has(`${String(r.Data).trim()}|${String(r.Mapa).trim().toUpperCase()}|${Number(r.Queda)}|${String(r.Equipe).trim().toUpperCase()}`)
+            );
+            
             setData(processData(fGen, fPlay));
         }
     }, [filters, allGeneralRows, allPlayerRows, fGenFilteredMain]);
