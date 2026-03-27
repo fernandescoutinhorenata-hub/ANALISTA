@@ -69,10 +69,6 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
         
         {/* CARD 1: Gratuito - Industrial Minimalist */}
         <div className="group relative flex flex-col p-10 bg-[#0C0C10] border border-white/5 hover:border-white/10 rounded-sm transition-all duration-500 animate-reveal [animation-delay:100ms] hover:z-20">
-          <div className="absolute top-0 right-0 p-4 opacity-10 font-mono text-[10px] text-white tracking-widest leading-none">
-            01/03 <br /> FREE_TIER
-          </div>
-          
           <div className="mb-12">
             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--accent-green)] mb-6 flex items-center gap-2">
               <div className="w-1 h-1 bg-[var(--accent-green)] animate-pulse" />
@@ -100,10 +96,6 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
 
         {/* CARD 2: Modo Competitivo - Blue Ops */}
         <div className="group relative flex flex-col p-10 bg-[#0E0E14] border border-white/5 hover:border-blue-500/20 rounded-sm transition-all duration-500 animate-reveal [animation-delay:200ms] lg:translate-y-[-10px] hover:z-20">
-           <div className="absolute top-0 right-0 p-4 opacity-10 font-mono text-[10px] text-white tracking-widest leading-none text-right">
-            02/03 <br /> COMP_CORE
-          </div>
-
           <div className="mb-12">
             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400 mb-6 flex items-center gap-2">
                <div className="w-1 h-1 bg-blue-400 animate-pulse" />
