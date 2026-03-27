@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Session, User } from '@supabase/supabase-js';
 
+const CACHE_KEY = 'isSubscriber';
+
 interface AuthContextType {
     session: Session | null;
     user: User | null;
@@ -14,15 +16,31 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Lê o cache do sessionStorage de forma segura
+const getCachedSubscriber = (): boolean | null => {
+    try {
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        return cached !== null ? JSON.parse(cached) : null;
+    } catch {
+        return null;
+    }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [isSubscriber, setIsSubscriber] = useState<boolean>(false);
-    const [subscriberLoading, setSubscriberLoading] = useState(true);
+
+    // Inicializa isSubscriber com o cache — sem flash na troca de rota
+    const cached = getCachedSubscriber();
+    const [isSubscriber, setIsSubscriber] = useState<boolean>(cached ?? false);
+    const [subscriberLoading, setSubscriberLoading] = useState<boolean>(cached === null);
 
     const checkSubscription = async (userId: string) => {
-        setSubscriberLoading(true);
+        // Se já temos cache, não mostra loading (verificação em background)
+        const hasCached = getCachedSubscriber() !== null;
+        if (!hasCached) setSubscriberLoading(true);
+
         try {
             const { data, error } = await supabase
                 .from('subscriptions')
@@ -35,17 +53,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .maybeSingle();
 
             if (error) throw error;
-            setIsSubscriber(!!data);
+
+            const result = !!data;
+            setIsSubscriber(result);
+            // Salva resultado no cache da sessão
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify(result));
         } catch (err) {
             console.error('Erro ao validar assinatura:', err);
-            setIsSubscriber(false);
+            // Em caso de erro, mantém o cache anterior se existir
+            if (getCachedSubscriber() === null) {
+                setIsSubscriber(false);
+                sessionStorage.setItem(CACHE_KEY, JSON.stringify(false));
+            }
         } finally {
             setSubscriberLoading(false);
         }
     };
 
     const refreshSubscription = async () => {
-        if (user) await checkSubscription(user.id);
+        if (user) {
+            // Força re-verificação limpando o cache primeiro
+            sessionStorage.removeItem(CACHE_KEY);
+            setSubscriberLoading(true);
+            await checkSubscription(user.id);
+        }
     };
 
     useEffect(() => {
@@ -54,10 +85,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const currentUser = session?.user ?? null;
             setUser(currentUser);
             setLoading(false);
-            
+
             if (currentUser) {
                 checkSubscription(currentUser.id);
             } else {
+                // Sem usuário: limpar cache e estado
+                sessionStorage.removeItem(CACHE_KEY);
+                setIsSubscriber(false);
                 setSubscriberLoading(false);
             }
         });
@@ -69,18 +103,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setLoading(false);
 
             if (event === 'SIGNED_OUT') {
-                // Logout: limpar tudo
+                // Logout: limpar cache e estado
+                sessionStorage.removeItem(CACHE_KEY);
                 setIsSubscriber(false);
                 setSubscriberLoading(false);
             } else if (event === 'SIGNED_IN' && currentUser) {
-                // Novo login: verificar assinatura
+                // Novo login: verificar assinatura (cache ainda vazio)
                 checkSubscription(currentUser.id);
             } else if (event === 'TOKEN_REFRESHED') {
-                // Refresh de token: NÃO re-verificar assinatura
-                // O estado já está correto do getSession() inicial
+                // Refresh silencioso: manter estado atual, apenas garantir que loading=false
                 setSubscriberLoading(false);
             }
-            // Outros eventos (INITIAL_SESSION, USER_UPDATED) não alteram loading
+            // Outros eventos (INITIAL_SESSION, USER_UPDATED) não alteram o estado
         });
 
         return () => subscription.unsubscribe();

@@ -3,12 +3,26 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
+const getCachedSubscriber = (): boolean | null => {
+    try {
+        const cached = sessionStorage.getItem('isSubscriber');
+        return cached !== null ? JSON.parse(cached) : null;
+    } catch {
+        return null;
+    }
+};
+
 export const SubscriberRoute = ({ children }: { children: React.ReactNode }) => {
     const { user, loading: authLoading, isSubscriber, subscriberLoading } = useAuth();
     const location = useLocation();
 
-    // Aguarda auth E validação de assinatura antes de qualquer decisão
-    if (authLoading || subscriberLoading) {
+    // Usar cache para decisão instantânea — sem flash de loading
+    const cached = getCachedSubscriber();
+    const effectiveSubscriber = cached !== null ? cached : isSubscriber;
+    const isStillLoading = authLoading || (cached === null && subscriberLoading);
+
+    // Só mostra spinner se não temos cache E ainda estamos carregando
+    if (isStillLoading) {
         return (
             <div className="flex h-screen items-center justify-center bg-[#0A0E17]">
                 <div className="flex flex-col items-center gap-4">
@@ -19,8 +33,8 @@ export const SubscriberRoute = ({ children }: { children: React.ReactNode }) => 
         );
     }
 
-    // Só redireciona após loading completo
-    if (!user || !isSubscriber) {
+    // Redireciona com base no valor mais atualizado disponível
+    if (!user || !effectiveSubscriber) {
         return <Navigate
             to="/planos"
             state={{
