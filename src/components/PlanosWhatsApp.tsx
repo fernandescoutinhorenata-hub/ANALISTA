@@ -151,7 +151,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-4">
                 <span className="text-6xl font-[1000] text-white tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">R$25</span>
-                <span className="text-white/40 text-xl line-through font-bold opacity-30 italic leading-none">R$40</span>
+                <span className="text-white/50 text-xl line-through font-bold italic leading-none">R$40</span>
               </div>
               <span className="text-white/60 text-[10px] font-black uppercase tracking-widest mt-1">/ mês de acesso pleno</span>
             </div>
