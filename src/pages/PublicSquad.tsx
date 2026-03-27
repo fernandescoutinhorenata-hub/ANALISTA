@@ -11,6 +11,7 @@ import {
     LayoutDashboard,
     AlertCircle, Map, Activity
 } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
 import { processData } from '../utils/data-processing';
@@ -77,15 +78,20 @@ export const PublicSquad: React.FC = () => {
                 }
                 setCoachProfile(profile);
 
-                // 2. Buscar Dados usando o Token no Header (para o RLS funcionar com current_setting)
-                // O Supabase JS não injeta headers no RLS facilmente, então usaremos o filtro ID + Token na query
+                // 2. Criar um client temporário com o header x-share-token para o RLS funcionar como usuário público
+                const publicSupabase = createClient(
+                    import.meta.env.VITE_SUPABASE_URL,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    { global: { headers: { 'x-share-token': token } } }
+                );
+
                 const [generalRes, playersRes] = await Promise.all([
-                    supabase
+                    publicSupabase
                         .from('partidas_geral')
                         .select('*')
                         .eq('user_id', profile.id)
                         .order('data', { ascending: false }),
-                    supabase
+                    publicSupabase
                         .from('performance_jogadores')
                         .select('*')
                         .eq('user_id', profile.id)
@@ -93,7 +99,7 @@ export const PublicSquad: React.FC = () => {
 
                 if (generalRes.error || playersRes.error) throw new Error('Erro ao carregar banco.');
 
-                const mappedGen = (generalRes.data || []).map(r => ({
+                const mappedGen = (generalRes.data || []).map((r: any) => ({
                     Data: r.data,
                     Campeonato: r.campeonato,
                     Rodada: r.rodada,
@@ -106,7 +112,7 @@ export const PublicSquad: React.FC = () => {
                     Booyah: r.booyah ? 'SIM' : 'NAO',
                 }));
 
-                const mappedPlay = (playersRes.data || []).map(r => ({
+                const mappedPlay = (playersRes.data || []).map((r: any) => ({
                     Data: r.data,
                     Equipe: r.equipe,
                     Modo: r.modo,
@@ -160,8 +166,8 @@ export const PublicSquad: React.FC = () => {
         if (allGeneralRows.length > 0) {
             const fGen = fGenFilteredMain;
 
-            // 3. Filtrar Player Rows baseado nas partidas resultantes do fGen para precisão total (Data, Mapa, Rodada)
-            const activeMatchKeys = new Set(fGen.map(r => `${r.Data}|${r.Mapa}|${r.Rodada}|${r.Campeonato}`));
+            // 3. Filtrar Player Rows baseado nas partidas resultantes do fGen para precisão total (Data, Mapa, Rodada, Equipe)
+            const activeMatchKeys = new Set(fGen.map(r => `${r.Data}|${r.Mapa}|${r.Rodada}|${r.Equipe}`));
             const fPlay = allPlayerRows.filter(r => activeMatchKeys.has(`${r.Data}|${r.Mapa}|${r.Queda}|${r.Equipe}`));
 
             setData(processData(fGen, fPlay));
@@ -195,7 +201,7 @@ export const PublicSquad: React.FC = () => {
                 return md >= cutoff;
             });
         }
-        const matchKeys = new Set(fGenFiltered.map(r => `${r.Data}|${r.Mapa}|${r.Rodada}|${r.Campeonato}`));
+        const matchKeys = new Set(fGenFiltered.map(r => `${r.Data}|${r.Mapa}|${r.Rodada}|${r.Equipe}`));
 
         allPlayerRows.filter(r => matchKeys.has(`${r.Data}|${r.Mapa}|${r.Queda}|${r.Equipe}`)).forEach(p => {
             if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, deaths: 0, assists: 0, damage: 0, knocks: 0 };
