@@ -171,13 +171,13 @@ export const PublicSquad: React.FC = () => {
     useEffect(() => {
         if (allGeneralRows.length > 0) {
             const fGen = fGenFilteredMain;
-            // Normalizar chaves para garantir o cruzamento correto
+            // Normalizar chaves para garantir o cruzamento correto ignorando Rodada/Queda divergente
             const activeMatchKeys = new Set(fGen.map(r => 
-                `${String(r.Data).trim()}|${String(r.Mapa).trim().toUpperCase()}|${Number(r.Rodada)}|${String(r.Equipe).trim().toUpperCase()}`
+                `${String(r.Data).trim()}|${String(r.Mapa).trim().toUpperCase()}|${String(r.Equipe).trim().toUpperCase()}`
             ));
 
             const fPlay = allPlayerRows.filter(r => 
-                activeMatchKeys.has(`${String(r.Data).trim()}|${String(r.Mapa).trim().toUpperCase()}|${Number(r.Queda)}|${String(r.Equipe).trim().toUpperCase()}`)
+                activeMatchKeys.has(`${String(r.Data).trim()}|${String(r.Mapa).trim().toUpperCase()}|${String(r.Equipe).trim().toUpperCase()}`)
             );
             
             setData(processData(fGen, fPlay));
