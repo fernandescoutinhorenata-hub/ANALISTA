@@ -519,20 +519,41 @@ export const PublicSquad: React.FC = () => {
                 </div>
             </main>
 
-            {/* ─── BOTÃO FLUTUANTE ─── */}
+            {/* ─── BOTÃO FLUTUANTE PDF ─── */}
             <button
                 onClick={handleExportPDF}
                 disabled={isExporting}
-                className="fixed bottom-8 right-8 z-[100] flex items-center gap-3 px-6 py-4 bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-[#7C3AED]/40 transition-all hover:scale-105 active:scale-95 disabled:opacity-70"
+                style={{
+                    position: 'fixed',
+                    bottom: '24px',
+                    right: '24px',
+                    zIndex: 9999,
+                    background: isExporting ? '#5B21B6' : '#7C3AED',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '14px 22px',
+                    cursor: isExporting ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    boxShadow: '0 4px 24px rgba(124,58,237,0.5)',
+                    opacity: isExporting ? 0.75 : 1,
+                    transition: 'all 0.2s ease',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                }}
             >
                 {isExporting ? (
                     <>
-                        <Loader2 size={18} className="animate-spin" />
+                        <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
                         Gerando PDF...
                     </>
                 ) : (
                     <>
-                        <FileText size={18} />
+                        <FileText size={16} />
                         Salvar PDF
                     </>
                 )}
