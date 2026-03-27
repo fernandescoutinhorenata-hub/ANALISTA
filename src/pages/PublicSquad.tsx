@@ -9,7 +9,7 @@ import {
     Trophy, Target, Zap, 
     TrendingUp, Users, Sword,
     LayoutDashboard,
-    AlertCircle, Map, Activity, FileText, Loader2
+    AlertCircle, Map, Activity
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -522,41 +522,26 @@ export const PublicSquad: React.FC = () => {
             {/* ─── BOTÃO FLUTUANTE PDF ─── */}
             <button
                 onClick={handleExportPDF}
-                disabled={isExporting}
                 style={{
                     position: 'fixed',
                     bottom: '24px',
                     right: '24px',
                     zIndex: 9999,
-                    background: isExporting ? '#5B21B6' : '#7C3AED',
+                    background: '#7C3AED',
                     color: 'white',
                     border: 'none',
-                    borderRadius: '12px',
-                    padding: '14px 22px',
-                    cursor: isExporting ? 'not-allowed' : 'pointer',
+                    borderRadius: '8px',
+                    padding: '12px 20px',
+                    cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    fontSize: '13px',
-                    fontWeight: '700',
-                    boxShadow: '0 4px 24px rgba(124,58,237,0.5)',
-                    opacity: isExporting ? 0.75 : 1,
-                    transition: 'all 0.2s ease',
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    boxShadow: '0 4px 12px rgba(124,58,237,0.4)'
                 }}
             >
-                {isExporting ? (
-                    <>
-                        <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                        Gerando PDF...
-                    </>
-                ) : (
-                    <>
-                        <FileText size={16} />
-                        Salvar PDF
-                    </>
-                )}
+                📥 Salvar PDF
             </button>
         </div>
     );
