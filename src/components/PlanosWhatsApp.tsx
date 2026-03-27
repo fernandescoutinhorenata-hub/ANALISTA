@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, MessageCircle, Zap, X, Star, TrendingUp } from 'lucide-react';
+import { MessageCircle, Zap, X, Star, TrendingUp, Target, ShieldCheck, Activity } from 'lucide-react';
 
 interface PlanosWhatsAppProps {
   className?: string;
@@ -14,19 +14,19 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
   };
 
   const FeatureItem = ({ text, available = true, badge = '' }: { text: string, available?: boolean, badge?: string }) => (
-    <li className={`flex items-start gap-3 text-sm transition-opacity ${available ? 'text-[var(--text-secondary)] font-medium' : 'text-[var(--text-tertiary)] opacity-50'}`}>
-      <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${available ? 'bg-[var(--accent-green-muted)]' : 'bg-white/5'}`}>
+    <li className={`flex items-start gap-3 text-[13px] transition-all duration-300 ${available ? 'text-white/80 group-hover:text-white' : 'text-white/20'}`}>
+      <div className="mt-1 flex-shrink-0">
         {available ? (
-          <Check size={12} className="text-[var(--accent-green)]" strokeWidth={3} />
+          <div className="w-1.5 h-1.5 bg-[var(--accent-amber)] rotate-45 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
         ) : (
-          <X size={10} className="text-[var(--text-tertiary)]" strokeWidth={3} />
+          <X size={12} className="opacity-30" strokeWidth={3} />
         )}
       </div>
       <div className="flex flex-col">
-        <span className="leading-tight">{text}</span>
+        <span className={`${!available ? 'line-through decoration-white/10' : ''}`}>{text}</span>
         {badge && (
-          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--accent-amber)] mt-1.5 flex items-center gap-1">
-             {badge}
+          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--accent-amber)] mt-1 opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+             <Activity size={8} /> {badge}
           </span>
         )}
       </div>
@@ -34,34 +34,57 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
   );
 
   return (
-    <div className={`w-full max-w-6xl mx-auto px-4 py-8 ${className}`}>
+    <div className={`w-full max-w-7xl mx-auto px-6 py-12 select-none ${className}`}>
       
-      {/* Header Centralizado */}
-      <div className="text-center mb-16 space-y-4">
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[var(--text-primary)]">
-          Pare de jogar no <span className="text-[var(--accent-amber)]">achismo.</span>
+      {/* HUD HEADER - Estilo Cyber-Athlete */}
+      <div className="relative mb-24 text-center">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[300px] bg-[radial-gradient(circle,rgba(245,158,11,0.05)_0%,transparent_70%)] pointer-events-none" />
+        
+        <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 border border-white/5 bg-white/[0.02] rounded-full backdrop-blur-sm animate-fade">
+          <Target size={12} className="text-[var(--accent-amber)]" />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">SQUAD PERFORMANCE HUB</span>
+        </div>
+
+        <h2 className="text-5xl md:text-7xl font-black tracking-[-0.04em] text-white leading-[0.9] mb-6">
+          PARE DE JOGAR NO <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-b from-[var(--accent-amber)] to-[#B48A00] drop-shadow-[0_0_20px_rgba(245,158,11,0.15)]">ACHISMO.</span>
         </h2>
-        <p className="text-[var(--text-secondary)] text-lg max-w-2xl mx-auto opacity-70">
-          Transforme seus resultados com análise de dados profissional.
+        
+        <p className="text-white/40 text-lg md:text-xl max-w-2xl mx-auto font-medium tracking-tight">
+          Transforme seus resultados com análise de dados profissional utilizada por Pro Players.
         </p>
-        <div className="h-px w-24 bg-[var(--accent-amber)] mx-auto opacity-40 rounded-full" />
+        
+        <div className="mt-8 flex justify-center gap-1">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-1 w-8 bg-[var(--accent-amber)] opacity-20 rounded-full" />
+          ))}
+          <div className="h-1 w-16 bg-[var(--accent-amber)] rounded-full shadow-[0_0_10px_rgba(245,158,11,0.4)]" />
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-1 w-8 bg-[var(--accent-amber)] opacity-20 rounded-full" />
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 items-stretch perspective-1000">
         
-        {/* PLANO 1: Gratuito */}
-        <div className="group relative flex flex-col p-8 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-[32px] transition-all hover:bg-[var(--bg-hover)] animate-reveal [animation-delay:100ms]">
-          <div className="mb-8">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent-green-muted)] text-[var(--accent-green)] text-[10px] font-black uppercase tracking-widest mb-4 border border-[var(--accent-green-muted)]">
+        {/* CARD 1: Gratuito - Industrial Minimalist */}
+        <div className="group relative flex flex-col p-10 bg-[#0C0C10] border border-white/5 hover:border-white/10 rounded-sm transition-all duration-500 animate-reveal [animation-delay:100ms] hover:z-20">
+          <div className="absolute top-0 right-0 p-4 opacity-10 font-mono text-[10px] text-white tracking-widest leading-none">
+            01/03 <br /> FREE_TIER
+          </div>
+          
+          <div className="mb-12">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--accent-green)] mb-6 flex items-center gap-2">
+              <div className="w-1 h-1 bg-[var(--accent-green)] animate-pulse" />
               GRATUITO
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-4xl font-black text-[var(--text-primary)]">R$0</span>
-              <span className="text-[var(--text-tertiary)] text-sm font-bold uppercase tracking-widest">/ para sempre</span>
+            </h3>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-black text-white tracking-tighter">R$0</span>
+              <span className="text-white/20 text-[10px] font-black uppercase tracking-widest">/ para sempre</span>
             </div>
           </div>
 
-          <ul className="space-y-5 mb-10 flex-1">
+          <ul className="space-y-6 mb-12 flex-1 border-t border-white/5 pt-8">
             <FeatureItem text="4 leituras automáticas" badge="limite de uso" />
             <FeatureItem text="Acesso limitado às métricas" />
             <FeatureItem text="Preenchimento manual" available={false} />
@@ -69,26 +92,30 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
             <FeatureItem text="Sem suporte prioritário" available={false} />
           </ul>
 
-          <button 
-            className="w-full py-4 bg-transparent border-2 border-[var(--border-strong)] hover:border-[var(--text-primary)] text-[var(--text-primary)] text-xs font-black uppercase tracking-widest rounded-2xl transition-all"
-          >
-            Testar agora
+          <button className="relative w-full py-4 bg-transparent border border-white/10 hover:border-white text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all overflow-hidden group">
+            <div className="absolute inset-0 bg-white/5 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+            <span className="relative">Testar agora</span>
           </button>
         </div>
 
-        {/* PLANO 2: Modo Competitivo */}
-        <div className="group relative flex flex-col p-8 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-[32px] transition-all hover:bg-[var(--bg-hover)] animate-reveal [animation-delay:200ms]">
-          <div className="mb-8">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest mb-4 border border-blue-500/20">
-              MODO COMPETITIVO
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-4xl font-black text-[var(--text-primary)]">R$10</span>
-              <span className="text-[var(--text-secondary)] text-sm font-bold uppercase tracking-widest opacity-60">/ semana</span>
+        {/* CARD 2: Modo Competitivo - Blue Ops */}
+        <div className="group relative flex flex-col p-10 bg-[#0E0E14] border border-white/5 hover:border-blue-500/20 rounded-sm transition-all duration-500 animate-reveal [animation-delay:200ms] lg:translate-y-[-10px] hover:z-20">
+           <div className="absolute top-0 right-0 p-4 opacity-10 font-mono text-[10px] text-white tracking-widest leading-none text-right">
+            02/03 <br /> COMP_CORE
+          </div>
+
+          <div className="mb-12">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400 mb-6 flex items-center gap-2">
+               <div className="w-1 h-1 bg-blue-400 animate-pulse" />
+               MODO COMPETITIVO
+            </h3>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-black text-white tracking-tighter">R$10</span>
+              <span className="text-white/20 text-[10px] font-black uppercase tracking-widest">/ semana</span>
             </div>
           </div>
 
-          <ul className="space-y-5 mb-10 flex-1">
+          <ul className="space-y-6 mb-12 flex-1 border-t border-white/5 pt-8">
             <FeatureItem text="Preenchimento automático" />
             <FeatureItem text="Dashboard completo" />
             <FeatureItem text="Radar de habilidades" />
@@ -98,38 +125,49 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
 
           <button 
             onClick={() => handlePlanClick('Modo Competitivo', 'R$10/semana')}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-[0_4px_16px_rgba(59,130,246,0.2)]"
+            className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_30px_rgba(37,99,235,0.2)] hover:shadow-[0_0_40px_rgba(37,99,235,0.4)]"
           >
             Quero subir de nível
           </button>
         </div>
 
-        {/* PLANO 3: Elite Squad (DESTAQUE) */}
-        <div className="group relative flex flex-col p-8 bg-[#18181B] border border-[var(--accent-amber)]/40 rounded-[32px] transition-all hover:translate-y-[-8px] scale-105 z-10 animate-reveal [animation-delay:300ms] shadow-[0_20px_50px_-20px_rgba(245,158,11,0.2)]">
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-2 bg-[var(--accent-amber)] text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg flex items-center gap-2">
+        {/* CARD 3: Elite Squad - GOLDEN MASTER (HIGH TENSION) */}
+        <div className="group relative flex flex-col p-10 bg-[#121218] border-2 border-[var(--accent-amber)]/30 scale-105 z-10 transition-all duration-700 animate-reveal [animation-delay:300ms] shadow-[0_0_60px_-15px_rgba(245,158,11,0.25)] lg:translate-y-[-20px] rounded-sm overflow-hidden">
+          
+          {/* Efeito Visual Interno */}
+          <div className="absolute -right-20 -top-20 w-40 h-40 bg-[var(--accent-amber)] opacity-[0.03] blur-[60px] pointer-events-none group-hover:opacity-[0.08] transition-opacity duration-700" />
+          
+          {/* TOP BADGE - ELITE HUD */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 px-6 py-1 bg-[var(--accent-amber)] text-black text-[9px] font-black uppercase tracking-[0.5em] shadow-lg flex items-center gap-2">
             <Star size={10} fill="black" />
             MAIS POPULAR
           </div>
 
-          <div className="mb-8">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent-amber)]/10 text-[var(--accent-amber)] text-[10px] font-black uppercase tracking-widest mb-4 border border-[var(--accent-amber)]/20">
+          <div className="mb-12 mt-4">
+             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--accent-amber)] mb-6 flex items-center gap-2">
+               <div className="w-1 h-1 bg-[var(--accent-amber)] animate-pulse" />
                ELITE SQUAD
-            </span>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-4xl font-black text-[var(--text-primary)]">R$25</span>
-                <span className="text-[var(--text-tertiary)] text-lg line-through font-bold">R$40</span>
+            </h3>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-4">
+                <span className="text-6xl font-[1000] text-white tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">R$25</span>
+                <span className="text-white/20 text-xl line-through font-bold opacity-30 italic leading-none">R$40</span>
               </div>
-              <span className="text-[var(--text-secondary)] text-sm font-bold uppercase tracking-widest opacity-60">/ mês</span>
+              <span className="text-white/20 text-[10px] font-black uppercase tracking-widest mt-1">/ mês de acesso pleno</span>
             </div>
             
-            <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--accent-amber)]/5 border border-[var(--accent-amber)]/10">
+            <div className="mt-8 inline-flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-[var(--accent-amber)]/10 to-transparent border-l-2 border-[var(--accent-amber)] animate-pulse">
               <TrendingUp size={14} className="text-[var(--accent-amber)]" />
-              <span className="text-[10px] font-black text-[var(--accent-amber)] uppercase tracking-tight">Economize R$15 todo mês</span>
+              <span className="text-[10px] font-black text-white uppercase tracking-wider">Economize R$15 TODO MÊS</span>
             </div>
           </div>
 
-          <ul className="space-y-5 mb-10 flex-1">
+          <ul className="space-y-6 mb-12 flex-1 border-t border-[var(--accent-amber)]/10 pt-8 relative">
+             {/* Decoração Estilo HUD */}
+            <div className="absolute top-4 -right-2 w-1 h-16 bg-gradient-to-b from-[var(--accent-amber)]/20 to-transparent flex flex-col gap-1 items-center">
+                <div className="w-full h-1 bg-[var(--accent-amber)]/40" />
+            </div>
+
             <FeatureItem text="Preenchimento automático" />
             <FeatureItem text="Prioridade na fila de leituras" />
             <FeatureItem text="Dashboard completo" />
@@ -140,24 +178,40 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
 
           <button 
             onClick={() => handlePlanClick('Elite Squad', 'R$25/mês')}
-            className="w-full py-4 bg-[var(--accent-amber)] hover:bg-[#FACC15] text-black text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-[0_8px_20px_rgba(245,158,11,0.3)] flex items-center justify-center gap-2"
+            className="w-full py-5 bg-[var(--accent-amber)] hover:bg-[#FFD700] text-black text-[12px] font-black uppercase tracking-[0.3em] transition-all shadow-[0_10px_40px_rgba(245,158,11,0.2)] hover:shadow-[0_15px_50px_rgba(245,158,11,0.4)] flex items-center justify-center gap-3 relative group"
           >
-            <Zap size={14} fill="black" />
-            Entrar para o Elite
+            <Zap size={16} fill="black" />
+            <span>Entrar para o Elite</span>
+            <div className="absolute bottom-0 left-0 w-full h-[2px] bg-black/20" />
           </button>
         </div>
 
       </div>
 
-      {/* Rodapé Informativo */}
-      <div className="mt-20 pt-8 border-t border-[var(--border-subtle)] flex flex-col md:flex-row items-center justify-center gap-6 opacity-40">
-        <div className="flex items-center gap-3">
-           <img src="https://logopng.com.br/logos/pix-106.png" alt="PIX" className="h-4 grayscale invert" />
-           <MessageCircle size={18} />
+      {/* FOOTER HUD */}
+      <div className="mt-32 pt-12 border-t border-white/5 flex flex-col items-center gap-10">
+        <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-20">
+          <div className="flex items-center gap-3 grayscale invert">
+            <img src="https://logopng.com.br/logos/pix-106.png" alt="PIX" className="h-5" />
+            <span className="text-[10px] font-black uppercase tracking-widest">SISTEMA PIX</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <ShieldCheck size={20} className="text-white" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-white">PROTOCOLO SEGURO</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <MessageCircle size={20} className="text-white" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-white">WHATSAPP SYNC</span>
+          </div>
         </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-center">
-          Pagamento via PIX ou Transferência direto no WhatsApp. Sua assinatura é liberada instantaneamente.
-        </p>
+        
+        <div className="relative group cursor-help">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 text-center max-w-lg leading-loose group-hover:text-white/60 transition-colors">
+            PAGAMENTO VIA PIX OU TRANSFERÊNCIA DIRETO NO WHATSAPP. <br />
+            SUA ASSINATURA É LIBERADA INSTANTANEAMENTE PELA CENTRAL CELO.
+          </p>
+          <div className="absolute -bottom-2 left-0 w-full h-[1px] bg-[var(--accent-amber)] scale-x-0 group-hover:scale-x-50 transition-transform duration-700 mx-auto" />
+        </div>
       </div>
     </div>
   );
