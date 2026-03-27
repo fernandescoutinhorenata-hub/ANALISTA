@@ -171,18 +171,14 @@ export const Planos: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] p-6 md:p-12 font-['Inter',sans-serif] animate-reveal">
-            <header className="max-w-6xl mx-auto mb-16 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <button 
-                        onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4 text-sm font-medium"
-                    >
-                        <ChevronLeft size={16} />
-                        Voltar
-                    </button>
-                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Evolua seu Squad</h1>
-                    <p className="text-[var(--text-secondary)] mt-2">Profissionalize suas análises via WhatsApp.</p>
-                </div>
+            <header className="max-w-6xl mx-auto mb-16">
+                <button 
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4 text-sm font-medium"
+                >
+                    <ChevronLeft size={16} />
+                    Voltar
+                </button>
             </header>
 
             <PlanosWhatsApp />
