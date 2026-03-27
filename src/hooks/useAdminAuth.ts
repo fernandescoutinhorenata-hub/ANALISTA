@@ -1,45 +1,44 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase'; // Ajustado para o caminho correto do projeto
 
 export function useAdminAuth() {
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function checkAdminStatus() {
+    const checkAdmin = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { user } } = await supabase.auth.getUser();
         
-        if (!session) {
-          setIsAdmin(false);
-          setLoading(false);
+        if (!user) {
           navigate('/login');
           return;
         }
 
-        // Chama a Edge Function para validação no servidor
-        const { data, error } = await supabase.functions.invoke('check-admin');
+        const { data: profile, error } = await supabase
+          .from('perfis')
+          .select('role')
+          .eq('id', user.id)
+          .single();
 
-        if (error || !data?.isAdmin) {
-          console.error('Acesso administrativo negado:', error);
-          setIsAdmin(false);
-          // Redireciona para home se não for admin
+        if (error || profile?.role !== 'admin') {
+          console.error('Acesso administrativo negado ou perfil não encontrado.');
           navigate('/');
-        } else {
-          setIsAdmin(true);
+          return;
         }
+
+        setIsAdmin(true);
       } catch (err) {
-        console.error('Erro ao verificar status de admin:', err);
-        setIsAdmin(false);
+        console.error('Erro ao verificar permissão de admin:', err);
         navigate('/');
       } finally {
         setLoading(false);
       }
-    }
+    };
 
-    checkAdminStatus();
+    checkAdmin();
   }, [navigate]);
 
   return { isAdmin, loading };
