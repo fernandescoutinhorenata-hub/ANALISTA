@@ -1100,29 +1100,7 @@ export const Dashboard: React.FC = () => {
                                                 <>
 
 
-                                                    {/* Linha 3: Histórico Média Pontos/Queda */}
-                                                    {overviewExtras.avgPontosByRound.length > 1 && (
-                                                        <Card>
-                                                            <div className="flex items-center justify-between mb-6">
-                                                                <div>
-                                                                    <h4 className="text-heading text-sm font-bold">Histórico — Média Pontos / Queda</h4>
-                                                                    <p className="text-label mt-1">Evolução de performance por rodada</p>
-                                                                </div>
-                                                                <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]"><TrendingUp size={16} /></div>
-                                                            </div>
-                                                            <div className="h-56">
-                                                                <ResponsiveContainer width="100%" height="100%">
-                                                                    <LineChart data={overviewExtras.avgPontosByRound} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
-                                                                        <CartesianGrid stroke="var(--border-subtle)" vertical={false} strokeDasharray="3 3" />
-                                                                        <XAxis dataKey="rodada" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} />
-                                                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
-                                                                        <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
-                                                                        <Line type="monotone" dataKey="media" name="Média Pts" stroke="#10B981" strokeWidth={2.5} dot={{ r: 3, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 5 }} />
-                                                                    </LineChart>
-                                                                </ResponsiveContainer>
-                                                            </div>
-                                                        </Card>
-                                                    )}
+
                                                 </>
                                             )}
 
