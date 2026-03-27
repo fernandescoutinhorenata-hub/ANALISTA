@@ -62,18 +62,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             setSession(session);
             const currentUser = session?.user ?? null;
             setUser(currentUser);
             setLoading(false);
 
-            if (currentUser) {
-                checkSubscription(currentUser.id);
-            } else {
+            if (event === 'SIGNED_OUT') {
+                // Logout: limpar tudo
                 setIsSubscriber(false);
                 setSubscriberLoading(false);
+            } else if (event === 'SIGNED_IN' && currentUser) {
+                // Novo login: verificar assinatura
+                checkSubscription(currentUser.id);
+            } else if (event === 'TOKEN_REFRESHED') {
+                // Refresh de token: NÃO re-verificar assinatura
+                // O estado já está correto do getSession() inicial
+                setSubscriberLoading(false);
             }
+            // Outros eventos (INITIAL_SESSION, USER_UPDATED) não alteram loading
         });
 
         return () => subscription.unsubscribe();
