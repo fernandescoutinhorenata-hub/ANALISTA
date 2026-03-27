@@ -68,7 +68,7 @@ const neonTooltipStyle = {
 };
 
 export default function Quebras() {
-    const { user } = useAuth();
+    const { user, isSubscriber } = useAuth();
     const [loading, setLoading] = useState(true);
     const [allQuebras, setAllQuebras] = useState<any[]>([]);
     
@@ -182,7 +182,7 @@ export default function Quebras() {
     }
 
     return (
-        <SidebarLayout activeTab="quebras" isSubscriber={true}>
+        <SidebarLayout activeTab="quebras" isSubscriber={isSubscriber}>
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <header className="sticky top-0 z-50 bg-[var(--bg-main)]/80 backdrop-blur-xl border-b border-[var(--border-subtle)]">
                     <div className="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">

@@ -37,7 +37,7 @@ export const Coletivo: React.FC = () => {
     const [selectedMap, setSelectedMap] = useState<string>('Todos');
     const [nomeUsuario, setNomeUsuario] = useState<string>('');
 
-    const { user } = useAuth();
+    const { user, isSubscriber } = useAuth();
 
     // ─── Fetch Data ─────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -182,7 +182,7 @@ export const Coletivo: React.FC = () => {
     );
 
     return (
-        <SidebarLayout activeTab="coletivo">
+        <SidebarLayout activeTab="coletivo" isSubscriber={isSubscriber}>
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <header className="h-20 flex items-center justify-between px-8 z-40 backdrop-blur-md sticky top-0 bg-[var(--bg-main)]/80 border-b border-[var(--border-default)]">
                     <div className="flex items-center gap-4">
