@@ -6,7 +6,10 @@ interface AuthContextType {
     session: Session | null;
     user: User | null;
     loading: boolean;
+    isSubscriber: boolean;
+    subscriberLoading: boolean;
     signOut: () => Promise<void>;
+    refreshSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,18 +18,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [session, setSession] = useState<Session | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isSubscriber, setIsSubscriber] = useState<boolean>(false);
+    const [subscriberLoading, setSubscriberLoading] = useState(true);
+
+    const checkSubscription = async (userId: string) => {
+        setSubscriberLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('status', 'ativo')
+                .gt('data_fim', new Date().toISOString())
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (error) throw error;
+            setIsSubscriber(!!data);
+        } catch (err) {
+            console.error('Erro ao validar assinatura:', err);
+            setIsSubscriber(false);
+        } finally {
+            setSubscriberLoading(false);
+        }
+    };
+
+    const refreshSubscription = async () => {
+        if (user) await checkSubscription(user.id);
+    };
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
-            setUser(session?.user ?? null);
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
             setLoading(false);
+            
+            if (currentUser) {
+                checkSubscription(currentUser.id);
+            } else {
+                setSubscriberLoading(false);
+            }
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            setUser(session?.user ?? null);
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
             setLoading(false);
+
+            if (currentUser) {
+                checkSubscription(currentUser.id);
+            } else {
+                setIsSubscriber(false);
+                setSubscriberLoading(false);
+            }
         });
 
         return () => subscription.unsubscribe();
@@ -40,7 +87,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         user,
         loading,
+        isSubscriber,
+        subscriberLoading,
         signOut,
+        refreshSubscription
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,44 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
 
 export const SubscriberRoute = ({ children }: { children: React.ReactNode }) => {
-    const { user, loading: authLoading } = useAuth();
-    const [isSubscriber, setIsSubscriber] = useState<boolean | null>(null);
+    const { user, loading: authLoading, isSubscriber, subscriberLoading } = useAuth();
     const location = useLocation();
 
-    useEffect(() => {
-        if (!user) {
-            if (!authLoading) setIsSubscriber(false);
-            return;
-        }
-
-        const checkSubscription = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('subscriptions')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .eq('status', 'ativo')
-                    .gt('data_fim', new Date().toISOString())
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-
-                if (error) throw error;
-                setIsSubscriber(!!data);
-            } catch (err) {
-                console.error('Erro ao validar assinatura:', err);
-                setIsSubscriber(false);
-            }
-        };
-
-        checkSubscription();
-    }, [user, authLoading]);
-
-    if (authLoading || isSubscriber === null) {
+    // Se o auth ainda carregar ou o status do assinante ainda estiver sendo validado
+    if (authLoading || (user && subscriberLoading)) {
         return (
             <div className="flex h-screen items-center justify-center bg-[#0A0E17]">
                 <div className="flex flex-col items-center gap-4">
@@ -49,8 +19,8 @@ export const SubscriberRoute = ({ children }: { children: React.ReactNode }) => 
         );
     }
 
-    if (!isSubscriber) {
-        // Redireciona para planos com estado de mensagem
+    // Se não estiver logado ou não for assinante
+    if (!user || !isSubscriber) {
         return <Navigate 
             to="/planos" 
             state={{ 
