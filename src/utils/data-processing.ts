@@ -70,14 +70,12 @@ const processPlayerMetrics = (players: PlayerRow[]): { metrics: PlayerMetrics, s
         }
     });
 
-    // Approximate KD
-    const kdRatio = totalDeaths > 0 ? Number(Math.max(0, totalKills / totalDeaths).toFixed(2)) : totalKills;
-
     // Squad Metrics (Averages per Match)
     // Usar Queda (Rodada) + Mapa + Data para garantir unicidade absoluta
     const uniqueMatches = new Set(players.map(p => `${p.Data}-${p.Mapa}-${p.Posicao}-${p.Queda}`)).size || 1;
 
-
+    // Média de Kills por Partida (Antigo KD)
+    const kdRatio = Number((totalKills / uniqueMatches).toFixed(2));
 
     const squad: SquadMetrics = {
         avgDamage: Number((totalDano / uniqueMatches).toFixed(0)),

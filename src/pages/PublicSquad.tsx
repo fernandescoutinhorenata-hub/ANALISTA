@@ -193,18 +193,27 @@ export const PublicSquad: React.FC = () => {
     const playerTableData = useMemo(() => {
         if (allPlayerRows.length === 0) return [];
         const agg: Record<string, any> = {};
+        const playerMatches: Record<string, Set<string>> = {};
+
         allPlayerRows.forEach((p: any) => {
             if (!p.Player) return;
-            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, deaths: 0, assists: 0, damage: 0, knocks: 0 };
-            agg[p.Player].kills += p.Kill || 0;
-            agg[p.Player].deaths += p.Morte || 0;
-            agg[p.Player].assists += p.Assistencia || 0;
-            agg[p.Player].damage += p["Dano causado"] || 0;
-            agg[p.Player].knocks += p.Derrubados || 0;
+            const playerName = p.Player;
+            if (!agg[playerName]) agg[playerName] = { name: playerName, kills: 0, deaths: 0, assists: 0, damage: 0, knocks: 0 };
+            if (!playerMatches[playerName]) playerMatches[playerName] = new Set();
+            
+            agg[playerName].kills += p.Kill || 0;
+            agg[playerName].deaths += p.Morte || 0;
+            agg[playerName].assists += p.Assistencia || 0;
+            agg[playerName].damage += p["Dano causado"] || 0;
+            agg[playerName].knocks += p.Derrubados || 0;
+            
+            // Chave única para identificar a partida do jogador
+            playerMatches[playerName].add(`${p.Data}|${p.Mapa}|${p.Queda}|${p.Posicao}`);
         });
+
         return Object.values(agg).map((a: any) => ({
             ...a,
-            kd: parseFloat((a.kills / (a.deaths || 1)).toFixed(2))
+            kd: parseFloat((a.kills / (playerMatches[a.name]?.size || 1)).toFixed(2))
         })).sort((a: any, b: any) => b.kills - a.kills);
     }, [allPlayerRows]);
 

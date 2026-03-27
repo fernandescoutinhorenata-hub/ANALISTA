@@ -398,17 +398,23 @@ export const Dashboard: React.FC = () => {
     const playerTableData = useMemo(() => {
         if (filteredPlayerRows.length === 0) return [];
         const agg: Record<string, any> = {};
+        const playerMatches: Record<string, Set<string>> = {};
         
         filteredPlayerRows.forEach((p: any) => {
             if (selectedPlayer !== 'Todos' && p.Player !== selectedPlayer) return;
             if (!p.Player) return;
-            if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0 };
+            const playerName = p.Player;
             
-            agg[p.Player].kills += Number(p.Kill) || 0;
-            agg[p.Player].damage += Number(p['Dano causado']) || 0;
-            agg[p.Player].assists += Number(p.Assistencia) || 0;
-            agg[p.Player].deaths += Number(p.Morte) || 0;
-            agg[p.Player].derrubados += Number(p['Derrubados']) || 0;
+            if (!agg[playerName]) agg[playerName] = { name: playerName, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0 };
+            if (!playerMatches[playerName]) playerMatches[playerName] = new Set();
+            
+            agg[playerName].kills += Number(p.Kill) || 0;
+            agg[playerName].damage += Number(p['Dano causado']) || 0;
+            agg[playerName].assists += Number(p.Assistencia) || 0;
+            agg[playerName].deaths += Number(p.Morte) || 0;
+            agg[playerName].derrubados += Number(p['Derrubados']) || 0;
+            
+            playerMatches[playerName].add(`${p.Data}|${p.Mapa}|${p.Queda}|${p.Posicao}`);
         });
         
         let arr = Object.values(agg).map((p: any) => {
@@ -418,7 +424,7 @@ export const Dashboard: React.FC = () => {
                 mortes: p.deaths,
                 assistencias: p.assists,
                 dano: p.damage,
-                kd: parseFloat((p.kills / (p.deaths || 1)).toFixed(2)),
+                kd: parseFloat((p.kills / (playerMatches[p.name]?.size || 1)).toFixed(2)),
                 derrubados: p.derrubados,
             }
         });
@@ -469,12 +475,11 @@ export const Dashboard: React.FC = () => {
     const globalSquadStats = useMemo(() => {
         const quedas = allGeneralRows.length || 1;
         const totalKills = filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0);
-        const totalMortes = filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Morte) || 0), 0);
         const totalDerrubados = filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Derrubados) || 0), 0);
         
         return {
             quedas: allGeneralRows.length,
-            kd: parseFloat((totalKills / (totalMortes || 1)).toFixed(2)),
+            kd: parseFloat((totalKills / (allGeneralRows.length || 1)).toFixed(2)),
             medAbates: parseFloat((totalKills / quedas).toFixed(2)),
             medDerrubados: parseFloat((totalDerrubados / quedas).toFixed(2))
         };
