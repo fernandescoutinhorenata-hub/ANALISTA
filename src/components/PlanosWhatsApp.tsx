@@ -14,7 +14,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
   };
 
   const FeatureItem = ({ text, available = true, badge = '' }: { text: string, available?: boolean, badge?: string }) => (
-    <li className={`flex items-start gap-3 text-[13px] transition-all duration-300 ${available ? 'text-white/80 group-hover:text-white' : 'text-white/20'}`}>
+    <li className={`flex items-start gap-3 text-[13px] transition-all duration-300 ${available ? 'text-white group-hover:text-white' : 'text-white/30'}`}>
       <div className="mt-1 flex-shrink-0">
         {available ? (
           <div className="w-1.5 h-1.5 bg-[var(--accent-amber)] rotate-45 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
@@ -50,7 +50,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
           <span className="text-transparent bg-clip-text bg-gradient-to-b from-[var(--accent-amber)] to-[#B48A00] drop-shadow-[0_0_20px_rgba(245,158,11,0.15)]">ACHISMO.</span>
         </h2>
         
-        <p className="text-white/40 text-lg md:text-xl max-w-2xl mx-auto font-medium tracking-tight">
+        <p className="text-white/70 text-lg md:text-xl max-w-2xl mx-auto font-medium tracking-tight">
           Transforme seus resultados com análise de dados profissional utilizada por Pro Players.
         </p>
         
@@ -80,7 +80,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
             </h3>
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-black text-white tracking-tighter">R$0</span>
-              <span className="text-white/20 text-[10px] font-black uppercase tracking-widest">/ para sempre</span>
+              <span className="text-white/60 text-[10px] font-black uppercase tracking-widest">/ para sempre</span>
             </div>
           </div>
 
@@ -111,7 +111,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
             </h3>
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-black text-white tracking-tighter">R$10</span>
-              <span className="text-white/20 text-[10px] font-black uppercase tracking-widest">/ semana</span>
+              <span className="text-white/60 text-[10px] font-black uppercase tracking-widest">/ semana</span>
             </div>
           </div>
 
@@ -151,9 +151,9 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-4">
                 <span className="text-6xl font-[1000] text-white tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">R$25</span>
-                <span className="text-white/20 text-xl line-through font-bold opacity-30 italic leading-none">R$40</span>
+                <span className="text-white/40 text-xl line-through font-bold opacity-30 italic leading-none">R$40</span>
               </div>
-              <span className="text-white/20 text-[10px] font-black uppercase tracking-widest mt-1">/ mês de acesso pleno</span>
+              <span className="text-white/60 text-[10px] font-black uppercase tracking-widest mt-1">/ mês de acesso pleno</span>
             </div>
             
             <div className="mt-8 inline-flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-[var(--accent-amber)]/10 to-transparent border-l-2 border-[var(--accent-amber)] animate-pulse">
@@ -206,7 +206,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
         </div>
         
         <div className="relative group cursor-help">
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 text-center max-w-lg leading-loose group-hover:text-white/60 transition-colors">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/70 text-center max-w-lg leading-loose group-hover:text-white transition-colors">
             PAGAMENTO VIA PIX OU TRANSFERÊNCIA DIRETO NO WHATSAPP. <br />
             SUA ASSINATURA É LIBERADA INSTANTANEAMENTE PELA CENTRAL CELO.
           </p>
