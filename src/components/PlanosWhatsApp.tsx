@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, MessageCircle, Zap, Shield, Sparkles, X, Star, TrendingUp } from 'lucide-react';
+import { Check, MessageCircle, Zap, X, Star, TrendingUp } from 'lucide-react';
 
 interface PlanosWhatsAppProps {
   className?: string;
