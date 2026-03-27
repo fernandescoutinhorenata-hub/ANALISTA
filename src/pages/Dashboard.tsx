@@ -1132,7 +1132,7 @@ export const Dashboard: React.FC = () => {
                                                     <div className="flex items-center justify-between mb-8">
                                                         <div>
                                                             <h4 className="text-heading text-sm font-bold">Pontos por Mapa</h4>
-                                                            <p className="text-label mt-1">Somas de pontos + abates por terreno</p>
+                                                            <p className="text-label mt-1">Total de pontos por mapa</p>
                                                         </div>
                                                         <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
                                                             <Map size={16} />
