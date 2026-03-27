@@ -332,7 +332,7 @@ export const Dashboard: React.FC = () => {
 
         const filteredGeneral = allGeneralRows.filter(row => {
             const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
-            const matchMap = !selectedMap || String(row.Mapa) === selectedMap;
+            const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
             
             if (specificDate) {
                 const rowDateStr = String(row.Data || '');
@@ -345,7 +345,7 @@ export const Dashboard: React.FC = () => {
             return matchDate && matchChamp && matchTime && matchMap;
         });
         const filteredPlayers = allPlayerRows.filter(row => {
-            const matchMap = !selectedMap || String(row.Mapa) === selectedMap;
+            const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
             if (specificDate) {
                 const rowDateStr = String(row.Data || '');
                 const formattedSpecific = specificDate.split('-').reverse().join('/');
@@ -369,7 +369,7 @@ export const Dashboard: React.FC = () => {
                 : null;
 
         return allPlayerRows.filter(row => {
-            const matchMap = !selectedMap || String(row.Mapa) === selectedMap;
+            const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
             if (playerSpecificDate) {
                 const rowDateStr = String(row.Data || '');
                 const formattedSpecific = playerSpecificDate.split('-').reverse().join('/');
