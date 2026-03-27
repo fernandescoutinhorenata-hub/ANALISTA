@@ -11,7 +11,6 @@ import {
     LayoutDashboard,
     AlertCircle, Map, Activity
 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { DashboardData } from '../types';
 import { processData } from '../utils/data-processing';
@@ -78,26 +77,20 @@ export const PublicSquad: React.FC = () => {
                 }
                 setCoachProfile(profile);
 
-                // 2. Criar um client temporário com o header x-share-token para o RLS funcionar como usuário público
-                const publicSupabase = createClient(
-                    import.meta.env.VITE_SUPABASE_URL,
-                    import.meta.env.VITE_SUPABASE_ANON_KEY,
-                    { global: { headers: { 'x-share-token': token } } }
-                );
-
+                // 2. Buscar dados diretamente pelo coach ID
                 const [generalRes, playersRes] = await Promise.all([
-                    publicSupabase
+                    supabase
                         .from('partidas_geral')
                         .select('*')
                         .eq('user_id', profile.id)
                         .order('data', { ascending: false }),
-                    publicSupabase
+                    supabase
                         .from('performance_jogadores')
                         .select('*')
                         .eq('user_id', profile.id)
                 ]);
 
-                if (generalRes.error || playersRes.error) throw new Error('Erro ao carregar banco.');
+                if (generalRes.error) throw new Error('Erro ao carregar partidas.');
 
                 const mappedGen = (generalRes.data || []).map((r: any) => ({
                     Data: r.data,
@@ -181,29 +174,11 @@ export const PublicSquad: React.FC = () => {
     }, [allGeneralRows]);
 
     const playerTableData = useMemo(() => {
-        if (!data || allPlayerRows.length === 0) return [];
-        // Agora usamos o data.playerRows processado pelo processData que já recebeu o fPlay filtrado correamente
+        // Agrupa diretamente todos os jogadores do coach — sem cruzamento de chaves
+        if (allPlayerRows.length === 0) return [];
         const agg: Record<string, any> = {};
-        
-        // Buscamos as chaves da partidas filtradas do fGen para garantir sincronia cirúrgica
-        let fGenFiltered = [...allGeneralRows];
-        if (filters.championship !== 'Todos') fGenFiltered = fGenFiltered.filter(r => r.Campeonato === filters.championship);
-        if (filters.date !== 'Todos') {
-            fGenFiltered = fGenFiltered.filter(r => r.Data === filters.date);
-        } else if (filters.timeFilter !== 'all') {
-            const now = new Date();
-            const days = filters.timeFilter === '7d' ? 7 : 30;
-            const cutoff = new Date(now.setDate(now.getDate() - days));
-            fGenFiltered = fGenFiltered.filter(r => {
-                if (!r.Data) return false;
-                const [d,m,y] = r.Data.split('/').map(Number);
-                const md = new Date(y, m-1, d);
-                return md >= cutoff;
-            });
-        }
-        const matchKeys = new Set(fGenFiltered.map(r => `${r.Data}|${r.Mapa}|${r.Rodada}|${r.Equipe}`));
-
-        allPlayerRows.filter(r => matchKeys.has(`${r.Data}|${r.Mapa}|${r.Queda}|${r.Equipe}`)).forEach(p => {
+        allPlayerRows.forEach((p: any) => {
+            if (!p.Player) return;
             if (!agg[p.Player]) agg[p.Player] = { name: p.Player, kills: 0, deaths: 0, assists: 0, damage: 0, knocks: 0 };
             agg[p.Player].kills += p.Kill || 0;
             agg[p.Player].deaths += p.Morte || 0;
@@ -211,11 +186,11 @@ export const PublicSquad: React.FC = () => {
             agg[p.Player].damage += p["Dano causado"] || 0;
             agg[p.Player].knocks += p.Derrubados || 0;
         });
-        return Object.values(agg).map(a => ({
+        return Object.values(agg).map((a: any) => ({
             ...a,
             kd: parseFloat((a.kills / (a.deaths || 1)).toFixed(2))
-        })).sort((a,b) => b.kills - a.kills);
-    }, [data, allPlayerRows, allGeneralRows, filters]);
+        })).sort((a: any, b: any) => b.kills - a.kills);
+    }, [allPlayerRows]);
 
     if (isLoading) return (
         <div className="min-h-screen bg-[#0B0B0C] flex flex-col items-center justify-center text-white">

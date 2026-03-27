@@ -7,8 +7,8 @@ export const SubscriberRoute = ({ children }: { children: React.ReactNode }) => 
     const { user, loading: authLoading, isSubscriber, subscriberLoading } = useAuth();
     const location = useLocation();
 
-    // Se o auth ainda carregar ou o status do assinante ainda estiver sendo validado
-    if (authLoading || (user && subscriberLoading)) {
+    // Aguarda auth E validação de assinatura antes de qualquer decisão
+    if (authLoading || subscriberLoading) {
         return (
             <div className="flex h-screen items-center justify-center bg-[#0A0E17]">
                 <div className="flex flex-col items-center gap-4">
@@ -19,15 +19,15 @@ export const SubscriberRoute = ({ children }: { children: React.ReactNode }) => 
         );
     }
 
-    // Se não estiver logado ou não for assinante
+    // Só redireciona após loading completo
     if (!user || !isSubscriber) {
-        return <Navigate 
-            to="/planos" 
-            state={{ 
+        return <Navigate
+            to="/planos"
+            state={{
                 from: location.pathname,
-                message: "Esta funcionalidade é exclusiva para assinantes. Assine um plano para ter acesso completo." 
-            }} 
-            replace 
+                message: "Esta funcionalidade é exclusiva para assinantes. Assine um plano para ter acesso completo."
+            }}
+            replace
         />;
     }
 
