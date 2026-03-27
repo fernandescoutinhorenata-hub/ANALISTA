@@ -1,70 +1,38 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useAdminAuth } from '../hooks/useAdminAuth';
 
+// Componente de Rota Protegida para Administradores
 export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const [senha, setSenha] = useState('');
-  const [autenticado, setAutenticado] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const { isAdmin, loading } = useAdminAuth();
 
-  // Senha secreta lida das variáveis de ambiente
-  const SENHA_SECRETA = import.meta.env.VITE_ADMIN_PASSWORD;
-
-  const handleLogin = () => {
-    if (!SENHA_SECRETA) {
-      console.error("VITE_ADMIN_PASSWORD não está configurado no .env ou Vercel");
-      setErro("FALHA CRÍTICA: Variável de senha não detectada no Vercel.");
-      return;
-    }
-    
-    if (senha.trim() === SENHA_SECRETA.trim()) {
-      setAutenticado(true);
-      setErro(null);
-    } else {
-      setErro("ACESSO NEGADO: Senha Incorreta.");
-    }
-  };
-
-  if (autenticado) return <>{children}</>;
-
-  return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: 'var(--bg-main)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
-      backgroundSize: '40px 40px',
-      fontFamily: "'Inter', sans-serif"
-    }}>
-      <div className="card" style={{ width: 360, padding: 32, textAlign: 'center' }}>
-        <h2 style={{ color: 'var(--text-primary)', marginBottom: 8, fontSize: 20, fontWeight: 700 }}>
-          Protocolo Celo Master
-        </h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 24 }}>
-          Insira a chave de criptografia para acessar o painel restrito.
-        </p>
-        <input
-          type="password"
-          className="input-base"
-          placeholder="Senha secreta"
-          value={senha}
-          onChange={e => setSenha(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleLogin()}
-          style={{ marginBottom: 12, textAlign: 'center' }}
-        />
-        {erro && (
-          <p style={{ color: 'var(--accent-red)', fontSize: 13, marginBottom: 16, fontWeight: 700 }}>
-            {erro}
+  // Enquanto a Edge Function verifica o status, mostramos um estado de carregamento
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: 'var(--bg-main)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--text-primary)',
+        fontFamily: "'Inter', sans-serif"
+      }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 border-4 border-[var(--accent)] border-t-transparent animate-spin rounded-full" />
+          <p className="text-xs font-black uppercase tracking-widest opacity-50">
+            Validando Credenciais Celo Master...
           </p>
-        )}
-        <button 
-          className="btn-primary" 
-          style={{ width: '100%', padding: '14px' }} 
-          onClick={handleLogin}
-        >
-          Autenticar Acesso
-        </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Se não for admin, o hook useAdminAuth já terá efetuado o redirecionamento.
+  // Renderizamos os componentes filhos apenas se for admin confirmado.
+  if (isAdmin) {
+    return <>{children}</>;
+  }
+
+  // Fallback opcional caso o redirecionamento demore a acontecer
+  return null;
 };
