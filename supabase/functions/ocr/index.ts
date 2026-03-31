@@ -73,7 +73,7 @@ serve(async (req) => {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 1024,
         messages: [{
           role: 'user',
@@ -86,36 +86,41 @@ serve(async (req) => {
               type: 'text',
               text: `Analise esta imagem de resultado de partida do Free Fire e retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem blocos de código.
 
-ATENÇÃO — MAPEAMENTO EXATO DAS COLUNAS NA TELA:
-A tela de resultado do Free Fire tem estas colunas nesta ordem:
-K/D/A | DMG | DANO REAL | DERRUBADOS | CURA | LEVANTADOS | RESSURGIMENTO
+ESTRUTURA DA TABELA — COLUNAS NESTA ORDEM EXATA:
+[CLÃ + NOME] | [K/D/A] | [DMG] | [DANO REAL] | [DERRUBADOS] | [CURA] | [LEVANTADOS] | [RESSURGIMENTO] | [% CABEÇA]
 
-REGRAS CRÍTICAS:
-1. DERRUBADOS: É a 4ª coluna. Números PEQUENOS entre 0 e 15. NUNCA use o valor da coluna CURA (5ª coluna) aqui.
-2. CURA: Tem valores ALTOS (500, 1000, 3000+). IGNORE essa coluna.
-3. DANO: Use a coluna DMG (2ª coluna), números grandes como 1500-5000.
-4. kills/mortes/assists: Vêm do K/D/A (1ª coluna), formato X/Y/Z.
-5. ressurgimentos: Vem da coluna RESSURGIMENTO (7ª coluna).
+REGRAS DE EXTRAÇÃO — LEIA COM ATENÇÃO:
 
-Formato de retorno:
+NOME: A célula do jogador contém clã + nick. Extraia SOMENTE o nick sem prefixo de clã.
+  Exemplos: "7RS Mgking" → "Mgking" | "RST.pepeu10" → "pepeu10" | "KG5 gustamvp" → "gustamvp"
+
+K/D/A: Está na 2ª coluna, formato numérico X/Y/Z onde X=kills, Y=mortes, Z=assists.
+  Exemplo: "9/1/3" = kills:9, mortes:1, assists:3
+  Exemplo: "8/2/7" = kills:8, mortes:2, assists:7
+  Exemplo: "6/1/6" = kills:6, mortes:1, assists:6
+  ATENÇÃO: Leia os três números separados pela barra. Não invente, não troque a ordem.
+
+DANO: Coluna DMG (3ª coluna). Números grandes: 1500 a 6000.
+
+DERRUBADOS: Coluna DERRUBADOS (5ª coluna). Números pequenos: 0 a 15. NUNCA use valor da coluna CURA.
+
+RESSURGIMENTOS: Última coluna numérica antes do % cabeça. Geralmente 0, 1 ou 2.
+
+COLOCAÇÃO: Número em destaque no topo da tela (ex: #1, #3). Se mostrar "BOOYAH" = colocação 1.
+
+MAPA: Nome do mapa exibido no topo da tela (ex: PURGATÓRIO, BERMUDA, KALAHARI).
+
+Formato de retorno obrigatório:
 {
   "mapa": "NOME_DO_MAPA",
   "colocacao": 1,
   "jogadores": [
-    { 
-      "nome": "NOME_SEM_CLA", 
-      "kills": 9, 
-      "mortes": 0, 
-      "assists": 3, 
-      "dano": 3901, 
-      "derrubados": 10, 
-      "ressurgimentos": 4 
-    }
+    { "nome": "Mgking", "kills": 9, "mortes": 1, "assists": 3, "dano": 4784, "derrubados": 12, "ressurgimentos": 0 },
+    { "nome": "pepeu10", "kills": 8, "mortes": 2, "assists": 7, "dano": 2745, "derrubados": 7, "ressurgimentos": 0 }
   ]
 }
-KDA aparece como K/D/A abaixo do nome. Ex: 4/1/2 = kills:4, mortes:1, assists:2.
-Para o nome do jogador, extraia APENAS o nome sem clã/guild. Remova qualquer prefixo de clã (ex: GRT, RUSH, LOUD) e símbolos (#, ., espaços extras). Retorne apenas o nick limpo. Ex: 'GRT COACH7' → 'COACH7', 'GRT.HEROXIT7' → 'HEROXIT7'.
-IMPORTANTE: Retorne SOMENTE o JSON puro, sem nenhum texto antes ou depois.`
+
+IMPORTANTE: Retorne SOMENTE o JSON puro. Nenhum texto antes ou depois.`
             }
           ]
         }]
