@@ -6,6 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// LÓGICA DE EXTRAÇÃO (v17 ESTÁVEL):
+// - O K/D/A no Free Fire aparece como um campo composto (ex: 10/1/3) logo ABAIXO do nickname do jogador.
+// - As colunas da tabela à direita começam diretamente com o Dano (DMG), que deve ser mapeado separadamente.
+// - Regras de extração documentadas em: supabase/functions/ocr/PARSING_RULES.md
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -73,7 +78,7 @@ serve(async (req) => {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1024,
         messages: [{
           role: 'user',
@@ -86,41 +91,46 @@ serve(async (req) => {
               type: 'text',
               text: `Analise esta imagem de resultado de partida do Free Fire e retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem blocos de código.
 
-ESTRUTURA DA TABELA — COLUNAS NESTA ORDEM EXATA:
-[CLÃ + NOME] | [K/D/A] | [DMG] | [DANO REAL] | [DERRUBADOS] | [CURA] | [LEVANTADOS] | [RESSURGIMENTO] | [% CABEÇA]
+ESTRUTURA VISUAL DA LINHA DO JOGADOR:
+[CLÃ + NICK] -> Abaixo dele tem o [K/D/A] (ex: 9/1/3) -> Ao lado começam as colunas numéricas:
+[DMG] | [DANO REAL] | [DERRUBADOS] | [CURA] | [LEVANTADOS] | [RESSURGIMENTO] | [% CABEÇA]
 
-REGRAS DE EXTRAÇÃO — LEIA COM ATENÇÃO:
+REGRAS DE EXTRAÇÃO — CRÍTICO:
 
-NOME: A célula do jogador contém clã + nick. Extraia SOMENTE o nick sem prefixo de clã.
-  Exemplos: "7RS Mgking" → "Mgking" | "RST.pepeu10" → "pepeu10" | "KG5 gustamvp" → "gustamvp"
+1. NICKNAME: Extraia apenas o Nick, removendo tags de clã (ex: "7RS Mgking" -> "Mgking").
+2. K/D/A (Kills/Deaths/Assists): Localizado LOGO ABAIXO do nick. Formato numérico X/Y/Z. 
+   - Kills = primeiro número (X)
+   - Mortes = segundo número (Y) 
+   - Assists = terceiro número (Z)
+   IMPORTANTE: Não confunda o K/D/A com as colunas à direita.
 
-K/D/A: Está na 2ª coluna, formato numérico X/Y/Z onde X=kills, Y=mortes, Z=assists.
-  Exemplo: "9/1/3" = kills:9, mortes:1, assists:3
-  Exemplo: "8/2/7" = kills:8, mortes:2, assists:7
-  Exemplo: "6/1/6" = kills:6, mortes:1, assists:6
-  ATENÇÃO: Leia os três números separados pela barra. Não invente, não troque a ordem.
+3. ESTATÍSTICAS (Colunas à direita do Nick/KDA):
+   - dano (DMG): Primeira coluna numérica após o bloco do nick. Valores altos (ex: 4126).
+   - derrubados: Terceira coluna numérica da tabela. NUNCA use o valor da coluna CURA ou Kills para este campo.
+   - ressurgimentos: Sexta coluna numérica (geralmente 0 ou 1).
 
-DANO: Coluna DMG (3ª coluna). Números grandes: 1500 a 6000.
-
-DERRUBADOS: Coluna DERRUBADOS (5ª coluna). Números pequenos: 0 a 15. NUNCA use valor da coluna CURA.
-
-RESSURGIMENTOS: Última coluna numérica antes do % cabeça. Geralmente 0, 1 ou 2.
-
-COLOCAÇÃO: Número em destaque no topo da tela (ex: #1, #3). Se mostrar "BOOYAH" = colocação 1.
-
-MAPA: Nome do mapa exibido no topo da tela (ex: PURGATÓRIO, BERMUDA, KALAHARI).
+4. GERAL:
+   - mapa: Nome do mapa no topo (ex: BERMUDA, PURGATÓRIO).
+   - colocacao: Número em destaque no topo (ex: #1, #3). "BOOYAH" = 1.
 
 Formato de retorno obrigatório:
 {
   "mapa": "NOME_DO_MAPA",
   "colocacao": 1,
   "jogadores": [
-    { "nome": "Mgking", "kills": 9, "mortes": 1, "assists": 3, "dano": 4784, "derrubados": 12, "ressurgimentos": 0 },
-    { "nome": "pepeu10", "kills": 8, "mortes": 2, "assists": 7, "dano": 2745, "derrubados": 7, "ressurgimentos": 0 }
+    { 
+      "nome": "NickDoJogador", 
+      "kills": 10, 
+      "mortes": 1, 
+      "assists": 3, 
+      "dano": 4126, 
+      "derrubados": 8, 
+      "ressurgimentos": 0 
+    }
   ]
 }
 
-IMPORTANTE: Retorne SOMENTE o JSON puro. Nenhum texto antes ou depois.`
+IMPORTANTE: Retorne SOMENTE o JSON puro.`
             }
           ]
         }]

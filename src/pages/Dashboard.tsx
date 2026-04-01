@@ -308,58 +308,10 @@ export const Dashboard: React.FC = () => {
         };
     }, [user]);
 
-    useEffect(() => {
-        if (allGeneralRows.length === 0 && allPlayerRows.length === 0) {
-            setData(null);
-            return;
-        }
-
-        const now = new Date();
-        const timeLimit = timeFilter === '7d'
-            ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-            : timeFilter === '30d'
-                ? new Date(now.getFullYear(), now.getMonth(), 1)
-                : null;
-
-        const isInTimeRange = (dateStr: string) => {
-            if (!timeLimit || !dateStr) return true;
-            const parts = dateStr.split('/');
-            const parsed = parts.length === 3
-                ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
-                : new Date(dateStr);
-            return !isNaN(parsed.getTime()) && parsed >= timeLimit;
-        };
-
-        const filteredGeneral = allGeneralRows.filter(row => {
-            const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
-            const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
-            
-            if (specificDate) {
-                const rowDateStr = String(row.Data || '');
-                const formattedSpecific = specificDate.split('-').reverse().join('/');
-                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp && matchMap;
-            }
-
-            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
-            const matchTime = isInTimeRange(String(row.Data || ''));
-            return matchDate && matchChamp && matchTime && matchMap;
-        });
-        const filteredPlayers = allPlayerRows.filter(row => {
-            const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
-            if (specificDate) {
-                const rowDateStr = String(row.Data || '');
-                const formattedSpecific = specificDate.split('-').reverse().join('/');
-                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchMap;
-            }
-
-            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
-            const matchTime = isInTimeRange(String(row.Data || ''));
-            return matchDate && matchTime && matchMap;
-        });
         setData(processData(filteredGeneral, filteredPlayers));
     }, [filters, timeFilter, specificDate, selectedMap, allGeneralRows, allPlayerRows]);
 
-    // ─── Métricas derivadas de performance_jogadores ───────────────────────────
+    // ─── Métricas unificadas e filtradas ─────────────────────────────────────────
     const filteredPlayerRows = useMemo(() => {
         const now = new Date();
         const timeLimit = timeFilter === '7d'
@@ -370,14 +322,49 @@ export const Dashboard: React.FC = () => {
 
         return allPlayerRows.filter(row => {
             const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
-            if (playerSpecificDate) {
+            
+            // Usar specificDate (filtro global) como fonte primária de verdade
+            if (specificDate) {
                 const rowDateStr = String(row.Data || '');
-                const formattedSpecific = playerSpecificDate.split('-').reverse().join('/');
-                return (rowDateStr === playerSpecificDate || rowDateStr === formattedSpecific) && matchMap;
+                const formattedSpecific = specificDate.split('-').reverse().join('/');
+                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchMap;
             }
 
             const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
             if (!matchDate || !matchMap) return false;
+            
+            if (!timeLimit) return true;
+            
+            const dateStr = String(row.Data || '');
+            const parts = dateStr.split('/');
+            const parsed = parts.length === 3
+                ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
+                : new Date(dateStr);
+            return !isNaN(parsed.getTime()) && parsed >= timeLimit;
+        });
+    }, [allPlayerRows, filters.date, timeFilter, specificDate, selectedMap]);
+
+    const filteredGeneralRows = useMemo(() => {
+        const now = new Date();
+        const timeLimit = timeFilter === '7d'
+            ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+            : timeFilter === '30d'
+                ? new Date(now.getFullYear(), now.getMonth(), 1)
+                : null;
+
+        return allGeneralRows.filter(row => {
+            const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
+            const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
+            
+            if (specificDate) {
+                const rowDateStr = String(row.Data || '');
+                const formattedSpecific = specificDate.split('-').reverse().join('/');
+                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp && matchMap;
+            }
+
+            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
+            if (!matchDate || !matchChamp || !matchMap) return false;
+
             if (!timeLimit) return true;
             const dateStr = String(row.Data || '');
             const parts = dateStr.split('/');
@@ -386,11 +373,24 @@ export const Dashboard: React.FC = () => {
                 : new Date(dateStr);
             return !isNaN(parsed.getTime()) && parsed >= timeLimit;
         });
-    }, [allPlayerRows, filters.date, timeFilter, playerSpecificDate, selectedMap]);
+    }, [allGeneralRows, filters.date, filters.championship, timeFilter, specificDate, selectedMap]);
+
+    // ─── Atribuir processData baseado no novo filtered central ──────────────
+    useEffect(() => {
+        if (filteredGeneralRows.length === 0 && filteredPlayerRows.length === 0) {
+            if (allGeneralRows.length > 0 || allPlayerRows.length > 0) {
+                setData(processData([], [])); // Mantém estrutura mas zerado
+            } else {
+                setData(null);
+            }
+            return;
+        }
+        setData(processData(filteredGeneralRows, filteredPlayerRows));
+    }, [filteredGeneralRows, filteredPlayerRows]);
 
     const playerList = useMemo(() => {
-        return Array.from(new Set(filteredPlayerRows.map((p: any) => p.Player).filter(Boolean))).sort() as string[];
-    }, [filteredPlayerRows]);
+        return Array.from(new Set(allPlayerRows.map((p: any) => p.Player).filter(Boolean))).sort() as string[];
+    }, [allPlayerRows]);
 
     // ─── Novos Dados da Aba Jogadores (Tabela, Funil, Donut, Linha) ───
     const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'abates', direction: 'desc' });
@@ -473,40 +473,23 @@ export const Dashboard: React.FC = () => {
         [filteredPlayerRows]);
 
     const globalSquadStats = useMemo(() => {
-        const quedas = allGeneralRows.length || 1;
+        const quedas = filteredGeneralRows.length || 1;
         const totalKills = filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0);
         const totalDerrubados = filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Derrubados) || 0), 0);
         
         return {
-            quedas: allGeneralRows.length,
-            kd: parseFloat((totalKills / (allGeneralRows.length || 1)).toFixed(2)),
+            quedas: filteredGeneralRows.length,
+            kd: parseFloat((totalKills / (filteredGeneralRows.length || 1)).toFixed(2)),
             medAbates: parseFloat((totalKills / quedas).toFixed(2)),
             medDerrubados: parseFloat((totalDerrubados / quedas).toFixed(2))
         };
-    }, [allGeneralRows, filteredPlayerRows]);
+    }, [filteredGeneralRows, filteredPlayerRows]);
 
     // ─── Métricas novas da aba overview ───────────────────────────────────────
     const overviewExtras = useMemo(() => {
         if (!data) return null;
 
-        // Filtra as linhas gerais com o mesmo filtro do overview
-        const now = new Date();
-        const timeLimit = timeFilter === '7d'
-            ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-            : timeFilter === '30d' ? new Date(now.getFullYear(), now.getMonth(), 1) : null;
-        const isInRange = (dateStr: string) => {
-            if (!timeLimit || !dateStr) return true;
-            const parts = dateStr.split('/');
-            const parsed = parts.length === 3
-                ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
-                : new Date(dateStr);
-            return !isNaN(parsed.getTime()) && parsed >= timeLimit;
-        };
-        const rows = allGeneralRows.filter(row => {
-            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
-            const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
-            return matchDate && matchChamp && isInRange(String(row.Data || ''));
-        });
+        const rows = filteredGeneralRows;
         const total = rows.length || 1;
 
         // Taxas TOP
@@ -560,13 +543,13 @@ export const Dashboard: React.FC = () => {
             avgByChamp,
             avgPontosByRound,
         };
-    }, [data, allGeneralRows, filters.date, filters.championship, timeFilter]);
+    }, [data, filteredGeneralRows]);
 
     // Cálculo da evolução diária (Média e Total por dia)
     const dailyEvolData = useMemo(() => {
         if (!allGeneralRows || allGeneralRows.length === 0) return [];
         
-        const groups = allGeneralRows.reduce((acc: Record<string, { total: number; count: number }>, row) => {
+        const groups = filteredGeneralRows.reduce((acc: Record<string, { total: number; count: number }>, row) => {
             const dateStr = String(row.Data || '');
             if (!dateStr) return acc;
             
@@ -591,7 +574,7 @@ export const Dashboard: React.FC = () => {
                 const dateB = b.date.includes('/') ? new Date(b.date.split('/').reverse().join('-')) : new Date(b.date);
                 return dateA.getTime() - dateB.getTime();
             });
-    }, [allGeneralRows]);
+    }, [filteredGeneralRows]);
 
     const pointsByMapData = useMemo(() => {
         if (!data?.byMap) return [];
@@ -606,7 +589,7 @@ export const Dashboard: React.FC = () => {
         if (!allGeneralRows || allGeneralRows.length === 0) return null;
         
         const mapStats: Record<string, { total: number; count: number }> = {};
-        allGeneralRows.forEach(row => {
+        filteredGeneralRows.forEach(row => {
             const m = String(row.Mapa || 'Desconhecido');
             if (!mapStats[m]) mapStats[m] = { total: 0, count: 0 };
             mapStats[m].total += Number(row.Pontos_Total) || 0;
@@ -627,7 +610,7 @@ export const Dashboard: React.FC = () => {
             best: sorted[0],
             worst: sorted[sorted.length - 1]
         };
-    }, [allGeneralRows]);
+    }, [filteredGeneralRows]);
 
     const handleTemplateDownload = () => {
         const wb = XLSX.utils.book_new();
@@ -1333,29 +1316,7 @@ export const Dashboard: React.FC = () => {
                                             </select>
                                         </div>
 
-                                        {/* Dropdown de Datas na Aba Jogadores */}
-                                        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)] transition-all ${playerSpecificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
-                                            <Calendar size={16} className={playerSpecificDate ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)]'} />
-                                            <select 
-                                                value={playerSpecificDate}
-                                                onChange={(e) => {
-                                                    setPlayerSpecificDate(e.target.value);
-                                                    if (e.target.value) setTimeFilter('all'); // Desativa período
-                                                }}
-                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer text-sm font-medium appearance-none min-w-[120px]"
-                                            >
-                                                <option value="" className="bg-[#141416]">Todas as Datas</option>
-                                                {filterOptions.dates.map(d => {
-                                                    const displayDate = d.includes('-') ? d.split('-').reverse().join('/') : d;
-                                                    return <option key={d} value={d} className="bg-[#141416]">{displayDate}</option>;
-                                                })}
-                                            </select>
-                                            {playerSpecificDate && (
-                                                <button onClick={() => setPlayerSpecificDate('')} className="ml-1 text-[var(--text-tertiary)] hover:text-white transition-colors">
-                                                    <XCircle size={16} />
-                                                </button>
-                                            )}
-                                        </div>
+                                        {/* REMOVIDO FILTRO DE DATA LOCAL PARA USAR GLOBAL */}
                                     </div>
                                     
                                     {selectedPlayer !== 'Todos' && (
