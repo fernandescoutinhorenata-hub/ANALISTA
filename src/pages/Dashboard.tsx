@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import {
-    Trophy, Target, Map, FileSpreadsheet, RefreshCcw,
+    Trophy, Target, Map as MapIcon, FileSpreadsheet, RefreshCcw,
     TrendingUp, LogOut, Users, Sword, Shield,
     Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
     CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2,
@@ -310,6 +310,16 @@ export const Dashboard: React.FC = () => {
 
 
 
+    // ─── Mapeamento de Campeonatos por Partida ──────────────────────────────────
+    const matchChampionships = useMemo(() => {
+        const map = new Map<string, string>();
+        allGeneralRows.forEach(r => {
+            const key = `${r.Data}|${r.Mapa}|${r.Rodada}`;
+            map.set(key, String(r.Campeonato));
+        });
+        return map;
+    }, [allGeneralRows]);
+
     // ─── Métricas unificadas e filtradas ─────────────────────────────────────────
     const filteredPlayerRows = useMemo(() => {
         const now = new Date();
@@ -320,6 +330,11 @@ export const Dashboard: React.FC = () => {
                 : null;
 
         return allPlayerRows.filter(row => {
+            const matchKey = `${row.Data}|${row.Mapa}|${row.Posicao}`;
+            const champ = matchChampionships.get(matchKey) || 'Todos';
+            const matchChamp = filters.championship === 'Todos' || champ === filters.championship;
+            if (!matchChamp) return false;
+
             const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
             
             // Usar specificDate (filtro global) como fonte primária de verdade
@@ -341,7 +356,7 @@ export const Dashboard: React.FC = () => {
                 : new Date(dateStr);
             return !isNaN(parsed.getTime()) && parsed >= timeLimit;
         });
-    }, [allPlayerRows, filters.date, timeFilter, specificDate, selectedMap]);
+    }, [allPlayerRows, filters.date, filters.championship, timeFilter, specificDate, selectedMap, matchChampionships]);
 
     const filteredGeneralRows = useMemo(() => {
         const now = new Date();
@@ -476,9 +491,7 @@ export const Dashboard: React.FC = () => {
     }, [filteredPlayerRows, selectedPlayer]);
 
     // Total de Kills somado de todos os jogadores (performance_jogadores)
-    const totalKillsFromPlayers = useMemo(() =>
-        filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0),
-        [filteredPlayerRows]);
+
 
     const globalSquadStats = useMemo(() => {
         const quedas = filteredGeneralRows.length || 1;
@@ -1049,7 +1062,7 @@ export const Dashboard: React.FC = () => {
                                             {selectedMap && (
                                                 <div className="flex items-center gap-2 mb-6 animate-fade-in group pointer-events-none">
                                                     <div className="bg-[var(--accent)]/10 border border-[var(--accent)]/20 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg shadow-[var(--accent)]/5 backdrop-blur-sm pointer-events-auto">
-                                                        <Map size={12} className="text-[var(--accent)]" />
+                                                        <MapIcon size={12} className="text-[var(--accent)]" />
                                                         <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">
                                                             Filtrando por: {selectedMap}
                                                         </span>
@@ -1067,7 +1080,7 @@ export const Dashboard: React.FC = () => {
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                                                 <MetricCard
                                                     title="Total de Kills"
-                                                    value={totalKillsFromPlayers}
+                                                    value={data.general.totalKills}
                                                     subValue={`${data.general.mediaKills} por queda`}
                                                     icon={Sword}
                                                 />
@@ -1086,7 +1099,7 @@ export const Dashboard: React.FC = () => {
                                                 <MetricCard
                                                     title="Dano Médio"
                                                     value={data.squadMetrics.avgDamage.toLocaleString("pt-BR")}
-                                                    subValue="por queda"
+                                                    subValue={`${data.squadMetrics.avgDamage} por queda`}
                                                     icon={Sword}
                                                 />
                                             </div>
@@ -1109,7 +1122,7 @@ export const Dashboard: React.FC = () => {
                                                             <p className="text-label mt-1">Total de pontos por mapa</p>
                                                         </div>
                                                         <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
-                                                            <Map size={16} />
+                                                            <MapIcon size={16} />
                                                         </div>
                                                     </div>
                                                     <div className="h-72">
@@ -1166,13 +1179,13 @@ export const Dashboard: React.FC = () => {
                                                             <p className="text-label mt-1">Comparação de pontuação extrema</p>
                                                         </div>
                                                         <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
-                                                            <Map size={16} />
+                                                            <MapIcon size={16} />
                                                         </div>
                                                     </div>
 
                                                     {!mapComparisonData ? (
                                                         <div className="flex flex-col items-center justify-center h-full py-10 opacity-30">
-                                                            <Map size={48} className="mb-4" />
+                                                            <MapIcon size={48} className="mb-4" />
                                                             <p className="text-label">Sem dados para comparar</p>
                                                         </div>
                                                     ) : (
