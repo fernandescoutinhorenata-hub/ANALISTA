@@ -324,15 +324,47 @@ export const Dashboard: React.FC = () => {
     const normalizeMap = (m: any) => String(m || '').trim().toUpperCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-    // ─── Mapeamento de Campeonatos por Partida ──────────────────────────────────
-    const matchChampionships = useMemo(() => {
-        const map = new Map<string, string>();
-        allGeneralRows.forEach(r => {
-            const key = `${normalizeDate(r.Data)}|${normalizeMap(r.Mapa)}|${r.Rodada}`;
-            map.set(key, String(r.Campeonato));
+
+
+    const filteredGeneralRows = useMemo(() => {
+        const now = new Date();
+        const timeLimit = timeFilter === '7d'
+            ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+            : timeFilter === '30d'
+                ? new Date(now.getFullYear(), now.getMonth(), 1)
+                : null;
+
+        return allGeneralRows.filter(row => {
+            const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
+            const matchMap = !selectedMap || normalizeMap(row.Mapa) === normalizeMap(selectedMap);
+            
+            if (specificDate) {
+                const rowDateStr = String(row.Data || '');
+                const formattedSpecific = specificDate.split('-').reverse().join('/');
+                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp && matchMap;
+            }
+
+            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
+            if (!matchDate || !matchChamp || !matchMap) return false;
+
+            if (!timeLimit) return true;
+            const dateStr = String(row.Data || '');
+            const parts = dateStr.split('/');
+            const parsed = parts.length === 3
+                ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
+                : new Date(dateStr);
+            return !isNaN(parsed.getTime()) && parsed >= timeLimit;
         });
-        return map;
-    }, [allGeneralRows]);
+    }, [allGeneralRows, filters.date, filters.championship, timeFilter, specificDate, selectedMap]);
+
+    // ─── Chaves de Partidas Válidas (Baseadas no Geral Filtrado) ───────────────
+    const validMatchKeys = useMemo(() => {
+        const keys = new Set<string>();
+        filteredGeneralRows.forEach(r => {
+            keys.add(`${normalizeDate(r.Data)}|${normalizeMap(r.Mapa)}`);
+        });
+        return keys;
+    }, [filteredGeneralRows]);
 
     // ─── Métricas unificadas e filtradas ─────────────────────────────────────────
     const filteredPlayerRows = useMemo(() => {
@@ -346,16 +378,11 @@ export const Dashboard: React.FC = () => {
         return allPlayerRows.filter(row => {
             const date = normalizeDate(row.Data);
             const map = normalizeMap(row.Mapa);
-            const round1 = Number(row.Queda);
-            const round2 = Number(row.Posicao);
             
-            // Tenta casar por Queda ou Posicao com o campo Rodada do Geral
-            const champ = matchChampionships.get(`${date}|${map}|${round1}`) || 
-                          matchChampionships.get(`${date}|${map}|${round2}`) || 
-                          'Todos';
-                          
-            const matchChamp = filters.championship === 'Todos' || champ === filters.championship;
-            if (!matchChamp) return false;
+            // Filtro por Cruzamento com Tabela Geral (Fix: Data + Mapa)
+            if (filters.championship !== 'Todos' || specificDate || selectedMap) {
+               if (!validMatchKeys.has(`${date}|${map}`)) return false;
+            }
 
             const matchMap = !selectedMap || normalizeMap(row.Mapa) === normalizeMap(selectedMap);
             
@@ -378,38 +405,9 @@ export const Dashboard: React.FC = () => {
                 : new Date(dateStr);
             return !isNaN(parsed.getTime()) && parsed >= timeLimit;
         });
-    }, [allPlayerRows, filters.date, filters.championship, timeFilter, specificDate, selectedMap, matchChampionships]);
+    }, [allPlayerRows, filters.date, filters.championship, timeFilter, specificDate, selectedMap, validMatchKeys]);
 
-    const filteredGeneralRows = useMemo(() => {
-        const now = new Date();
-        const timeLimit = timeFilter === '7d'
-            ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-            : timeFilter === '30d'
-                ? new Date(now.getFullYear(), now.getMonth(), 1)
-                : null;
 
-        return allGeneralRows.filter(row => {
-            const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
-            const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
-            
-            if (specificDate) {
-                const rowDateStr = String(row.Data || '');
-                const formattedSpecific = specificDate.split('-').reverse().join('/');
-                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp && matchMap;
-            }
-
-            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
-            if (!matchDate || !matchChamp || !matchMap) return false;
-
-            if (!timeLimit) return true;
-            const dateStr = String(row.Data || '');
-            const parts = dateStr.split('/');
-            const parsed = parts.length === 3
-                ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
-                : new Date(dateStr);
-            return !isNaN(parsed.getTime()) && parsed >= timeLimit;
-        });
-    }, [allGeneralRows, filters.date, filters.championship, timeFilter, specificDate, selectedMap]);
 
     // ─── Atribuir processData baseado no novo filtered central ──────────────
     useEffect(() => {
