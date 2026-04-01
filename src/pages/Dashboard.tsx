@@ -177,7 +177,7 @@ export const Dashboard: React.FC = () => {
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos' });
     const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
     const [specificDate, setSpecificDate] = useState<string>(''); // Novo filtro de data Dashboard
-    const [playerSpecificDate, setPlayerSpecificDate] = useState<string>(''); // Novo filtro de data Jogadores
+
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -308,8 +308,7 @@ export const Dashboard: React.FC = () => {
         };
     }, [user]);
 
-        setData(processData(filteredGeneral, filteredPlayers));
-    }, [filters, timeFilter, specificDate, selectedMap, allGeneralRows, allPlayerRows]);
+
 
     // ─── Métricas unificadas e filtradas ─────────────────────────────────────────
     const filteredPlayerRows = useMemo(() => {
@@ -426,6 +425,7 @@ export const Dashboard: React.FC = () => {
                 dano: p.damage,
                 kd: parseFloat((p.kills / (playerMatches[p.name]?.size || 1)).toFixed(2)),
                 derrubados: p.derrubados,
+                quedas: playerMatches[p.name]?.size || 0,
             }
         });
 
@@ -447,6 +447,14 @@ export const Dashboard: React.FC = () => {
         return playerTableData.map((p: any, i: number) => ({
             name: p.name,
             value: p.abates,
+            fill: ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#D946EF'][i % 7]
+        }));
+    }, [playerTableData]);
+
+    const quedasDonutData = useMemo(() => {
+        return playerTableData.map((p: any, i: number) => ({
+            name: p.name,
+            value: p.quedas,
             fill: ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#D946EF'][i % 7]
         }));
     }, [playerTableData]);
@@ -1343,7 +1351,7 @@ export const Dashboard: React.FC = () => {
                                             <table className="w-full text-left">
                                                 <thead className="border-b border-[#27272A] bg-[#18181B]">
                                                     <tr>
-                                                        {[{ l: 'Player', k: 'name' }, { l: 'Abates', k: 'abates' }, { l: 'Mortes', k: 'mortes' }, { l: 'Assists', k: 'assistencias' }, { l: 'Dano', k: 'dano' }, { l: 'KD', k: 'kd' }, { l: 'Derrubados', k: 'derrubados' }].map(col => (
+                                                        {[{ l: 'Player', k: 'name' }, { l: 'Abates', k: 'abates' }, { l: 'Mortes', k: 'mortes' }, { l: 'Assists', k: 'assistencias' }, { l: 'Dano', k: 'dano' }, { l: 'KD', k: 'kd' }, { l: 'Derrubados', k: 'derrubados' }, { l: 'Quedas', k: 'quedas' }].map(col => (
                                                             <th key={col.k} 
                                                                 className="px-6 py-4 text-xs font-bold text-[#A1A1AA] uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                                                                 onClick={() => setSortConfig({ key: col.k, direction: sortConfig.key === col.k && sortConfig.direction === 'desc' ? 'asc' : 'desc' })}
@@ -1366,6 +1374,7 @@ export const Dashboard: React.FC = () => {
                                                             <td className="px-6 py-4">{row.dano.toLocaleString('pt-BR')}</td>
                                                             <td className="px-6 py-4 font-mono text-[#A1A1AA]">{String(row.kd).replace('.', ',')}</td>
                                                             <td className="px-6 py-4">{row.derrubados}</td>
+                                                            <td className="px-6 py-4">{row.quedas}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -1373,8 +1382,8 @@ export const Dashboard: React.FC = () => {
                                         </div>
                                     </Card>
 
-                                    {/* BLOCO 2: Dano (Pyramid) & Kills (Donut) */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    {/* BLOCO 2: Dano | Kills | Quedas */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                         <Card className="!bg-[#141416] border-none flex flex-col items-center justify-center min-h-[300px]">
                                             <h4 className="text-[#EAB308] text-sm font-bold uppercase mb-6 tracking-widest">DANO</h4>
                                             <div className="w-full flex flex-col items-center gap-1">
@@ -1410,6 +1419,42 @@ export const Dashboard: React.FC = () => {
                                                             }}
                                                         >
                                                             {donutData.map((d: any, i: number) => (
+                                                                <Cell 
+                                                                    key={`cell-${i}`} 
+                                                                    fill={d.fill} 
+                                                                    opacity={selectedPlayer === 'Todos' || selectedPlayer === d.name ? 1 : 0.4}
+                                                                    stroke={selectedPlayer === d.name ? '#FFFFFF' : 'none'}
+                                                                    strokeWidth={selectedPlayer === d.name ? 3 : 0}
+                                                                />
+                                                            ))}
+                                                        </Pie>
+                                                        <Tooltip contentStyle={{ backgroundColor: '#18181B', border: 'none', borderRadius: '8px', color: '#FAFAFA' }} itemStyle={{ color: '#FAFAFA' }} />
+                                                        <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '10px', color: '#FAFAFA', fontWeight: 'bold' }} />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </Card>
+
+                                        <Card className="!bg-[#141416] border-none flex flex-col items-center justify-center min-h-[300px]">
+                                            <h4 className="text-[#EAB308] text-sm font-bold uppercase mb-2 tracking-widest text-center">
+                                                QUEDAS
+                                                <span className="block text-[10px] text-[#A1A1AA] mt-1 font-normal lowercase italic tracking-normal">Partidas por jogador</span>
+                                            </h4>
+                                            <div className="w-full h-48 relative">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={quedasDonutData} cx="50%" cy="50%" innerRadius={45} outerRadius={75}
+                                                            paddingAngle={2} dataKey="value" stroke="none" labelLine={false}
+                                                            label={({ percent }) => `${((percent || 0) * 100).toFixed(1)}%`}
+                                                            style={{ cursor: 'pointer' }}
+                                                            onClick={(data: any) => {
+                                                                if (data && data.name) {
+                                                                    setSelectedPlayer(prev => prev === data.name ? 'Todos' : data.name);
+                                                                }
+                                                            }}
+                                                        >
+                                                            {quedasDonutData.map((d: any, i: number) => (
                                                                 <Cell 
                                                                     key={`cell-${i}`} 
                                                                     fill={d.fill} 
