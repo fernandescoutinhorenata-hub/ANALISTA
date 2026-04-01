@@ -310,11 +310,25 @@ export const Dashboard: React.FC = () => {
 
 
 
+    // ─── Helpers de Normalização para Joins ─────────────────────────────────────
+    const normalizeDate = (d: any) => {
+        if (!d) return '';
+        const s = String(d).trim();
+        if (s.includes('/')) {
+            const parts = s.split('/');
+            if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+        return s;
+    };
+
+    const normalizeMap = (m: any) => String(m || '').trim().toUpperCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
     // ─── Mapeamento de Campeonatos por Partida ──────────────────────────────────
     const matchChampionships = useMemo(() => {
         const map = new Map<string, string>();
         allGeneralRows.forEach(r => {
-            const key = `${r.Data}|${r.Mapa}|${r.Rodada}`;
+            const key = `${normalizeDate(r.Data)}|${normalizeMap(r.Mapa)}|${r.Rodada}`;
             map.set(key, String(r.Campeonato));
         });
         return map;
@@ -330,12 +344,20 @@ export const Dashboard: React.FC = () => {
                 : null;
 
         return allPlayerRows.filter(row => {
-            const matchKey = `${row.Data}|${row.Mapa}|${row.Posicao}`;
-            const champ = matchChampionships.get(matchKey) || 'Todos';
+            const date = normalizeDate(row.Data);
+            const map = normalizeMap(row.Mapa);
+            const round1 = Number(row.Queda);
+            const round2 = Number(row.Posicao);
+            
+            // Tenta casar por Queda ou Posicao com o campo Rodada do Geral
+            const champ = matchChampionships.get(`${date}|${map}|${round1}`) || 
+                          matchChampionships.get(`${date}|${map}|${round2}`) || 
+                          'Todos';
+                          
             const matchChamp = filters.championship === 'Todos' || champ === filters.championship;
             if (!matchChamp) return false;
 
-            const matchMap = !selectedMap || String(row.Mapa || '').trim().toUpperCase() === selectedMap.trim().toUpperCase();
+            const matchMap = !selectedMap || normalizeMap(row.Mapa) === normalizeMap(selectedMap);
             
             // Usar specificDate (filtro global) como fonte primária de verdade
             if (specificDate) {

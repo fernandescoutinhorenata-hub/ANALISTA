@@ -204,9 +204,10 @@ export const processData = (rawData: unknown[], rawPlayerData?: unknown[]): Dash
 
         totalPlacement += row.Colocacao;
 
-        if (!mapStats[row.Mapa]) {
-            mapStats[row.Mapa] = {
-                mapa: row.Mapa,
+        const mapName = row.Mapa?.toString().trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || 'DESCONHECIDO';
+        if (!mapStats[mapName]) {
+            mapStats[mapName] = {
+                mapa: mapName,
                 quedas: 0,
                 totalKills: 0,
                 mediaKills: 0,
@@ -221,7 +222,7 @@ export const processData = (rawData: unknown[], rawPlayerData?: unknown[]): Dash
             };
         }
 
-        const m = mapStats[row.Mapa];
+        const m = mapStats[mapName];
         m.quedas++;
         m.totalKills += row.Kill;
         m.totalPontos += row.Pontos_Total;
@@ -249,7 +250,7 @@ export const processData = (rawData: unknown[], rawPlayerData?: unknown[]): Dash
             ? Number(((m.callsGanhas / m.tentativasCall) * 100).toFixed(1))
             : 0;
 
-        const mapRows = validRows.filter(r => r.Mapa === m.mapa);
+        const mapRows = validRows.filter(r => (r.Mapa || '').toString().trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === m.mapa);
         const points = mapRows.map(r => r.Pontos_Total);
         const mean = points.reduce((a, b) => a + b, 0) / points.length;
         const variance = points.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / points.length;
