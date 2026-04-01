@@ -1068,7 +1068,7 @@ export const Dashboard: React.FC = () => {
                                                 <MetricCard
                                                     title="Total de Kills"
                                                     value={totalKillsFromPlayers}
-                                                    subValue={filteredPlayerRows.length > 0 ? `${filteredPlayerRows.length} registros` : `${data.general.mediaKills}/queda`}
+                                                    subValue={`${data.general.mediaKills} por queda`}
                                                     icon={Sword}
                                                 />
                                                 <MetricCard

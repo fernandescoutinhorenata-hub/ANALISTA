@@ -43,7 +43,7 @@ const normalizeKey = (key: string) => {
 };
 
 // Helper to process player data
-const processPlayerMetrics = (players: PlayerRow[]): { metrics: PlayerMetrics, squad: SquadMetrics } => {
+const processPlayerMetrics = (players: PlayerRow[], dropCount?: number): { metrics: PlayerMetrics, squad: SquadMetrics } => {
     let totalKills = 0;
     let totalDano = 0;
     let totalDeaths = 0;
@@ -71,16 +71,16 @@ const processPlayerMetrics = (players: PlayerRow[]): { metrics: PlayerMetrics, s
     });
 
     // Squad Metrics (Averages per Match)
-    // Usar Queda (Rodada) + Mapa + Data para garantir unicidade absoluta
-    const uniqueMatches = new Set(players.map(p => `${p.Data}-${p.Mapa}-${p.Posicao}-${p.Queda}`)).size || 1;
+    // Usar o dropCount passado (tabela geral) ou capturar unicidade absoluta se não houver
+    const matchDenominator = dropCount || new Set(players.map(p => `${p.Data}-${p.Mapa}-${p.Posicao}-${p.Queda}`)).size || 1;
 
     // Média de Kills por Partida (Antigo KD)
-    const kdRatio = Number((totalKills / uniqueMatches).toFixed(2));
+    const kdRatio = Number((totalKills / matchDenominator).toFixed(2));
 
     const squad: SquadMetrics = {
-        avgDamage: Number((totalDano / uniqueMatches).toFixed(0)),
+        avgDamage: Number((totalDano / matchDenominator).toFixed(0)),
         totalKills: totalKills,
-        survivalRate: Number((totalDeaths / uniqueMatches).toFixed(2))
+        survivalRate: Number((totalDeaths / matchDenominator).toFixed(2))
     };
 
     // Last Match MVP Calculation (Kills * 10 + Damage)
@@ -275,7 +275,7 @@ export const processData = (rawData: unknown[], rawPlayerData?: unknown[]): Dash
     const globalVariance = allPoints.reduce((a, b) => a + Math.pow(b - globalMean, 2), 0) / (allPoints.length || 1);
     general.consistencyScore = Number(Math.sqrt(globalVariance).toFixed(2));
 
-    const { metrics, squad } = processPlayerMetrics(validPlayers);
+    const { metrics, squad } = processPlayerMetrics(validPlayers, general.totalQuedas);
 
     return {
         general,
