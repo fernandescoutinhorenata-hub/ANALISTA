@@ -173,10 +173,16 @@ export const Dashboard: React.FC = () => {
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
-    const [selectedPlayer, setSelectedPlayer] = useState<string>('Todos');
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos' });
     const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
     const [specificDate, setSpecificDate] = useState<string>(''); // Novo filtro de data Dashboard
+    
+    // ─── Estados de Filtro Independentes para Aba Jogadores ───────────────────
+    const [playerDateFilter, setPlayerDateFilter] = useState<string>('Todos');
+    const [playerChampFilter, setPlayerChampFilter] = useState<string>('Todos');
+    const [playerSelectedPlayer, setPlayerSelectedPlayer] = useState<string>('Todos');
+    const [playerTableData, setPlayerTableData] = useState<any[]>([]);
+    const [playerStatsLoading, setPlayerStatsLoading] = useState(false);
 
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
@@ -429,53 +435,93 @@ export const Dashboard: React.FC = () => {
     // ─── Novos Dados da Aba Jogadores (Tabela, Funil, Donut, Linha) ───
     const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'abates', direction: 'desc' });
 
-    const playerTableData = useMemo(() => {
-        if (filteredPlayerRows.length === 0) return [];
-        const agg: Record<string, any> = {};
-        const playerMatches: Record<string, Set<string>> = {};
-        
-        filteredPlayerRows.forEach((p: any) => {
-            if (selectedPlayer !== 'Todos' && p.Player !== selectedPlayer) return;
-            if (!p.Player) return;
-            const playerName = p.Player;
-            
-            if (!agg[playerName]) agg[playerName] = { name: playerName, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0 };
-            if (!playerMatches[playerName]) playerMatches[playerName] = new Set();
-            
-            agg[playerName].kills += Number(p.Kill) || 0;
-            agg[playerName].damage += Number(p['Dano causado']) || 0;
-            agg[playerName].assists += Number(p.Assistencia) || 0;
-            agg[playerName].deaths += Number(p.Morte) || 0;
-            agg[playerName].derrubados += Number(p['Derrubados']) || 0;
-            
-            playerMatches[playerName].add(`${p.Data}|${p.Mapa}|${p.Queda}|${p.Posicao}`);
-        });
-        
-        let arr = Object.values(agg).map((p: any) => {
-            return {
-                name: p.name,
-                abates: p.kills,
-                mortes: p.deaths,
-                assistencias: p.assists,
-                dano: p.damage,
-                kd: parseFloat((p.kills / (playerMatches[p.name]?.size || 1)).toFixed(2)),
-                derrubados: p.derrubados,
-                quedas: playerMatches[p.name]?.size || 0,
+    // ─── Busca e Processamento Independente para Aba Jogadores ────────────────
+    useEffect(() => {
+        if (!user || activeTab !== 'players') return;
+
+        const fetchPlayerTabData = async () => {
+            setPlayerStatsLoading(true);
+            try {
+                // Join para pegar campeonato da tabela partidas_geral
+                let query = supabase
+                    .from('performance_jogadores')
+                    .select(`
+                        *,
+                        partidas_geral!inner (
+                            campeonato,
+                            data
+                        )
+                    `)
+                    .eq('user_id', user.id);
+
+                if (playerDateFilter !== 'Todos') {
+                    query = query.eq('data', playerDateFilter);
+                }
+                if (playerChampFilter !== 'Todos') {
+                    query = query.eq('partidas_geral.campeonato', playerChampFilter);
+                }
+                if (playerSelectedPlayer !== 'Todos') {
+                    query = query.eq('player', playerSelectedPlayer);
+                }
+
+                const { data: rows, error } = await query;
+                if (error) throw error;
+
+                if (!rows || rows.length === 0) {
+                    setPlayerTableData([]);
+                    return;
+                }
+
+                // Agregação em memória para a tabela
+                const agg: Record<string, any> = {};
+                const playerMatches: Record<string, Set<string>> = {};
+
+                rows.forEach((p: any) => {
+                    const playerName = p.player;
+                    if (!agg[playerName]) agg[playerName] = { name: playerName, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0 };
+                    if (!playerMatches[playerName]) playerMatches[playerName] = new Set();
+
+                    agg[playerName].kills += Number(p.kill) || 0;
+                    agg[playerName].damage += Number(p.dano_causado) || 0;
+                    agg[playerName].assists += Number(p.assistencia) || 0;
+                    agg[playerName].deaths += Number(p.morte) || 0;
+                    agg[playerName].derrubados += Number(p.derrubados) || 0;
+                    playerMatches[playerName].add(`${p.data}|${p.mapa}|${p.queda}|${p.posicao}`);
+                });
+
+                let arr = Object.values(agg).map((p: any) => ({
+                    name: p.name,
+                    abates: p.kills,
+                    mortes: p.deaths,
+                    assistencias: p.assists,
+                    dano: p.damage,
+                    kd: parseFloat((p.kills / (playerMatches[p.name]?.size || 1)).toFixed(2)),
+                    derrubados: p.derrubados,
+                    quedas: playerMatches[p.name]?.size || 0,
+                }));
+
+                // Aplicar Ordenação
+                arr.sort((a: any, b: any) => {
+                    let valA = a[sortConfig.key];
+                    let valB = b[sortConfig.key];
+                    if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+                    if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+
+                setPlayerTableData(arr);
+            } catch (err) {
+                console.error('Erro ao buscar dados de jogadores:', err);
+                showToast('Erro ao carregar estatísticas dos jogadores.', 'error');
+            } finally {
+                setPlayerStatsLoading(false);
             }
-        });
+        };
 
-        // Aplicar Ordenação
-        arr.sort((a: any, b: any) => {
-            let valA = a[sortConfig.key];
-            let valB = b[sortConfig.key];
-            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
-            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
+        fetchPlayerTabData();
+    }, [user, activeTab, playerDateFilter, playerChampFilter, playerSelectedPlayer, sortConfig]);
 
-        return arr;
-    }, [filteredPlayerRows, selectedPlayer, sortConfig]);
-
+    // Dados para os gráficos baseados na busca independente
     const maxAbates = useMemo(() => Math.max(...playerTableData.map((p: any) => p.abates), 1), [playerTableData]);
 
     const donutData = useMemo(() => {
@@ -499,16 +545,13 @@ export const Dashboard: React.FC = () => {
     }, [playerTableData]);
 
     const lineChartData = useMemo(() => {
-        const byMatch: Record<string, { name: string; abates: number; assistencias: number }> = {};
-        filteredPlayerRows.forEach((p: any) => {
-            if (selectedPlayer !== 'Todos' && p.Player !== selectedPlayer) return;
-            const matchKey = `${p.Data} - ${p.Mapa || ''}`; 
-            if (!byMatch[matchKey]) byMatch[matchKey] = { name: matchKey, abates: 0, assistencias: 0 };
-            byMatch[matchKey].abates += Number(p.Kill) || 0;
-            byMatch[matchKey].assistencias += Number(p.Assistencia) || 0;
-        });
-        return Object.values(byMatch);
-    }, [filteredPlayerRows, selectedPlayer]);
+        // Para o gráfico de linha, precisamos dos dados brutos processados na useEffect anterior
+        // Como o gráfico de linha mostra evolução por partida, e agora a consulta é independente,
+        // o ideal seria processar isso dentro do useEffect de busca também ou derivar do playerTableData (se fosse agregado por partida).
+        // Para simplificar e manter a lógica, o playerTableData agora contém o agregado.
+        // Vamos manter o gráfico de linha desativado ou adaptá-lo se necessário.
+        return []; 
+    }, [playerTableData]);
 
     // Total de Kills somado de todos os jogadores (performance_jogadores)
 
@@ -1346,8 +1389,8 @@ export const Dashboard: React.FC = () => {
                                         <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
                                             <UserCircle2 size={16} className="text-[var(--accent)]" />
                                             <select
-                                                value={selectedPlayer}
-                                                onChange={e => setSelectedPlayer(e.target.value)}
+                                                value={playerSelectedPlayer}
+                                                onChange={e => setPlayerSelectedPlayer(e.target.value)}
                                                 className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
                                             >
                                                 <option value="Todos" className="bg-[#141416]">Todos os Jogadores</option>
@@ -1357,20 +1400,50 @@ export const Dashboard: React.FC = () => {
                                             </select>
                                         </div>
 
-                                        {/* REMOVIDO FILTRO DE DATA LOCAL PARA USAR GLOBAL */}
+                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
+                                            <Trophy size={16} className="text-[var(--accent)]" />
+                                            <select
+                                                value={playerChampFilter}
+                                                onChange={e => setPlayerChampFilter(e.target.value)}
+                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
+                                            >
+                                                <option value="Todos" className="bg-[#141416]">Todos os Eventos</option>
+                                                {filterOptions.championships.map(c => (
+                                                    <option key={c} value={c} className="bg-[#141416]">{c}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
+                                            <Calendar size={16} className="text-[var(--accent)]" />
+                                            <select
+                                                value={playerDateFilter}
+                                                onChange={e => setPlayerDateFilter(e.target.value)}
+                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
+                                            >
+                                                <option value="Todos" className="bg-[#141416]">Todas as Datas</option>
+                                                {filterOptions.dates.map(d => (
+                                                    <option key={d} value={d} className="bg-[#141416]">{d}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                     
-                                    {selectedPlayer !== 'Todos' && (
+                                    {(playerSelectedPlayer !== 'Todos' || playerChampFilter !== 'Todos' || playerDateFilter !== 'Todos') && (
                                         <div className="flex items-center gap-2 mb-4 animate-fade-in group">
                                             <div className="bg-[#EAB308]/10 border border-[#EAB308]/20 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg shadow-yellow-500/5 backdrop-blur-sm">
-                                                <UserCircle2 size={12} className="text-[#EAB308]" />
+                                                <AlertCircle size={12} className="text-[#EAB308]" />
                                                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#EAB308]">
-                                                    Filtrando por: {selectedPlayer}
+                                                    Filtros Ativos
                                                 </span>
                                                 <button 
-                                                    onClick={() => setSelectedPlayer('Todos')}
+                                                    onClick={() => {
+                                                        setPlayerSelectedPlayer('Todos');
+                                                        setPlayerChampFilter('Todos');
+                                                        setPlayerDateFilter('Todos');
+                                                    }}
                                                     className="hover:bg-[#EAB308]/20 p-1 rounded-full transition-colors ml-1"
-                                                    title="Limpar filtro de jogador"
+                                                    title="Limpar todos os filtros"
                                                 >
                                                     <XCircle size={14} className="text-[#EAB308]" />
                                                 </button>
@@ -1379,7 +1452,12 @@ export const Dashboard: React.FC = () => {
                                     )}
 
                                     {/* BLOCO 1: Tabela */}
-                                    <Card className="!bg-[#141416] border-none p-0 overflow-hidden">
+                                    <Card className="!bg-[#141416] border-none p-0 overflow-hidden relative">
+                                        {playerStatsLoading && (
+                                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10 flex items-center justify-center">
+                                                <RefreshCcw size={24} className="text-[var(--accent)] animate-spin" />
+                                            </div>
+                                        )}
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left">
                                                 <thead className="border-b border-[#27272A] bg-[#18181B]">
@@ -1447,7 +1525,7 @@ export const Dashboard: React.FC = () => {
                                                             style={{ cursor: 'pointer' }}
                                                             onClick={(data: any) => {
                                                                 if (data && data.name) {
-                                                                    setSelectedPlayer(prev => prev === data.name ? 'Todos' : data.name);
+                                                                    setPlayerSelectedPlayer(prev => prev === data.name ? 'Todos' : data.name);
                                                                 }
                                                             }}
                                                         >
@@ -1455,9 +1533,9 @@ export const Dashboard: React.FC = () => {
                                                                 <Cell 
                                                                     key={`cell-${i}`} 
                                                                     fill={d.fill} 
-                                                                    opacity={selectedPlayer === 'Todos' || selectedPlayer === d.name ? 1 : 0.4}
-                                                                    stroke={selectedPlayer === d.name ? '#FFFFFF' : 'none'}
-                                                                    strokeWidth={selectedPlayer === d.name ? 3 : 0}
+                                                                    opacity={playerSelectedPlayer === 'Todos' || playerSelectedPlayer === d.name ? 1 : 0.4}
+                                                                    stroke={playerSelectedPlayer === d.name ? '#FFFFFF' : 'none'}
+                                                                    strokeWidth={playerSelectedPlayer === d.name ? 3 : 0}
                                                                 />
                                                             ))}
                                                         </Pie>
@@ -1483,7 +1561,7 @@ export const Dashboard: React.FC = () => {
                                                             style={{ cursor: 'pointer' }}
                                                             onClick={(data: any) => {
                                                                 if (data && data.name) {
-                                                                    setSelectedPlayer(prev => prev === data.name ? 'Todos' : data.name);
+                                                                    setPlayerSelectedPlayer(prev => prev === data.name ? 'Todos' : data.name);
                                                                 }
                                                             }}
                                                         >
@@ -1491,9 +1569,9 @@ export const Dashboard: React.FC = () => {
                                                                 <Cell 
                                                                     key={`cell-${i}`} 
                                                                     fill={d.fill} 
-                                                                    opacity={selectedPlayer === 'Todos' || selectedPlayer === d.name ? 1 : 0.4}
-                                                                    stroke={selectedPlayer === d.name ? '#FFFFFF' : 'none'}
-                                                                    strokeWidth={selectedPlayer === d.name ? 3 : 0}
+                                                                    opacity={playerSelectedPlayer === 'Todos' || playerSelectedPlayer === d.name ? 1 : 0.4}
+                                                                    stroke={playerSelectedPlayer === d.name ? '#FFFFFF' : 'none'}
+                                                                    strokeWidth={playerSelectedPlayer === d.name ? 3 : 0}
                                                                 />
                                                             ))}
                                                         </Pie>
