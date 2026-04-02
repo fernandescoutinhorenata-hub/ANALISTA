@@ -442,30 +442,42 @@ export const Dashboard: React.FC = () => {
         const fetchPlayerTabData = async () => {
             setPlayerStatsLoading(true);
             try {
-                // Join para pegar campeonato da tabela partidas_geral
-                let query = supabase
-                    .from('performance_jogadores')
-                    .select(`
-                        *,
-                        partidas_geral!inner (
-                            campeonato,
-                            data
-                        )
-                    `)
-                    .eq('user_id', user.id);
+                // Fallback: Duas queries separadas para evitar problemas de Join/RLS direto
+                const [perfRes, genRes] = await Promise.all([
+                    supabase
+                        .from('performance_jogadores')
+                        .select('*')
+                        .eq('user_id', user.id),
+                    supabase
+                        .from('partidas_geral')
+                        .select('data, mapa, campeonato')
+                        .eq('user_id', user.id)
+                ]);
 
-                if (playerDateFilter !== 'Todos') {
-                    query = query.eq('data', playerDateFilter);
-                }
-                if (playerChampFilter !== 'Todos') {
-                    query = query.eq('partidas_geral.campeonato', playerChampFilter);
-                }
-                if (playerSelectedPlayer !== 'Todos') {
-                    query = query.eq('player', playerSelectedPlayer);
-                }
+                if (perfRes.error) throw perfRes.error;
+                if (genRes.error) throw genRes.error;
 
-                const { data: rows, error } = await query;
-                if (error) throw error;
+                const allPerfRows = perfRes.data || [];
+                const allGenData = genRes.data || [];
+
+                // Mapa para busca rápida de campeonato (chave: data|mapa)
+                const champMap: Record<string, string> = {};
+                allGenData.forEach(g => {
+                    const key = `${g.data}|${g.mapa}`;
+                    champMap[key] = g.campeonato;
+                });
+
+                // Filtragem em memória
+                const rows = allPerfRows.filter((p: any) => {
+                    const matchDate = playerDateFilter === 'Todos' || p.data === playerDateFilter;
+                    const matchPlayer = playerSelectedPlayer === 'Todos' || p.player === playerSelectedPlayer;
+                    
+                    const pKey = `${p.data}|${p.mapa}`;
+                    const champ = champMap[pKey] || 'Sem Evento';
+                    const matchChamp = playerChampFilter === 'Todos' || champ === playerChampFilter;
+
+                    return matchDate && matchPlayer && matchChamp;
+                });
 
                 if (!rows || rows.length === 0) {
                     setPlayerTableData([]);
@@ -510,9 +522,9 @@ export const Dashboard: React.FC = () => {
                 });
 
                 setPlayerTableData(arr);
-            } catch (err) {
-                console.error('Erro ao buscar dados de jogadores:', err);
-                showToast('Erro ao carregar estatísticas dos jogadores.', 'error');
+            } catch (err: any) {
+                console.error('DEBUG - Erro detalhado aba Jogadores:', err);
+                showToast(`Erro: ${err.message || 'Erro ao carregar estatísticas'}`, 'error');
             } finally {
                 setPlayerStatsLoading(false);
             }
