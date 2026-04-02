@@ -441,6 +441,7 @@ export const Dashboard: React.FC = () => {
 
         const fetchPlayerTabData = async () => {
             setPlayerStatsLoading(true);
+            setPlayerTableData([]); // BUG 4: Limpar estado antes da nova query
             try {
                 // Fallback: Duas queries separadas para evitar problemas de Join/RLS direto
                 const [perfRes, genRes] = await Promise.all([
@@ -460,11 +461,15 @@ export const Dashboard: React.FC = () => {
                 const allPerfRows = perfRes.data || [];
                 const allGenData = genRes.data || [];
 
-                // Mapa para busca rápida de campeonato (chave: data|mapa)
+                // BUG 3: Log dos campeonatos disponíveis no banco para debug
+                const distinctChamps = Array.from(new Set(allGenData.map((g: any) => g.campeonato))).sort();
+                console.log('DEBUG - Campeonatos no Banco:', distinctChamps);
+
+                // Mapa para busca rápida de campeonato (chave: data|mapa) com normalização
                 const champMap: Record<string, string> = {};
                 allGenData.forEach(g => {
-                    const key = `${g.data}|${g.mapa}`;
-                    champMap[key] = g.campeonato;
+                    const key = `${String(g.data).trim()}|${String(g.mapa).trim().toUpperCase()}`;
+                    champMap[key] = String(g.campeonato).trim();
                 });
 
                 // Filtragem em memória
@@ -472,9 +477,9 @@ export const Dashboard: React.FC = () => {
                     const matchDate = playerDateFilter === 'Todos' || p.data === playerDateFilter;
                     const matchPlayer = playerSelectedPlayer === 'Todos' || p.player === playerSelectedPlayer;
                     
-                    const pKey = `${p.data}|${p.mapa}`;
+                    const pKey = `${String(p.data).trim()}|${String(p.mapa).trim().toUpperCase()}`;
                     const champ = champMap[pKey] || 'Sem Evento';
-                    const matchChamp = playerChampFilter === 'Todos' || champ === playerChampFilter;
+                    const matchChamp = playerChampFilter === 'Todos' || champ.toUpperCase() === playerChampFilter.toUpperCase();
 
                     return matchDate && matchPlayer && matchChamp;
                 });
@@ -507,7 +512,8 @@ export const Dashboard: React.FC = () => {
                     mortes: p.deaths,
                     assistencias: p.assists,
                     dano: p.damage,
-                    kd: parseFloat((p.kills / (playerMatches[p.name]?.size || 1)).toFixed(2)),
+                    // BUG 1: KD real = Kills / Mortes (usar 1 se mortes for 0 para evitar Infinity/Kills puro)
+                    kd: parseFloat((p.kills / Math.max(1, p.deaths)).toFixed(2)),
                     derrubados: p.derrubados,
                     quedas: playerMatches[p.name]?.size || 0,
                 }));
@@ -1532,8 +1538,8 @@ export const Dashboard: React.FC = () => {
                                                     <PieChart>
                                                         <Pie
                                                             data={donutData} cx="50%" cy="50%" innerRadius={45} outerRadius={75}
-                                                            paddingAngle={2} dataKey="value" stroke="none" labelLine={false}
-                                                            label={({ percent }) => `${((percent || 0) * 100).toFixed(1)}%`}
+                                                            paddingAngle={2} dataKey="value" nameKey="name" stroke="none" labelLine={false}
+                                                            label={({ percent }) => (percent && percent > 0.05) ? `${(percent * 100).toFixed(0)}%` : ''}
                                                             style={{ cursor: 'pointer' }}
                                                             onClick={(data: any) => {
                                                                 if (data && data.name) {
@@ -1568,8 +1574,8 @@ export const Dashboard: React.FC = () => {
                                                     <PieChart>
                                                         <Pie
                                                             data={quedasDonutData} cx="50%" cy="50%" innerRadius={45} outerRadius={75}
-                                                            paddingAngle={2} dataKey="value" stroke="none" labelLine={false}
-                                                            label={({ percent }) => `${((percent || 0) * 100).toFixed(1)}%`}
+                                                            paddingAngle={2} dataKey="value" nameKey="name" stroke="none" labelLine={false}
+                                                            label={({ percent }) => (percent && percent > 0.05) ? `${(percent * 100).toFixed(0)}%` : ''}
                                                             style={{ cursor: 'pointer' }}
                                                             onClick={(data: any) => {
                                                                 if (data && data.name) {
