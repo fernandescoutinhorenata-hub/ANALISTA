@@ -567,7 +567,7 @@ export const Dashboard: React.FC = () => {
         };
 
         fetchPlayerTabData();
-    }, [user, activeTab, playerDateFilter, playerChampFilter, playerSelectedPlayer, sortConfig]);
+    }, [user, activeTab, playerDateFilter, playerChampFilter, playerRoundFilter, playerSelectedPlayer, sortConfig]);
 
     // Dados para os gráficos baseados na busca independente
     const maxAbates = useMemo(() => Math.max(...playerTableData.map((p: any) => p.abates), 1), [playerTableData]);
