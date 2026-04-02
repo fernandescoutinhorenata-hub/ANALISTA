@@ -465,21 +465,23 @@ export const Dashboard: React.FC = () => {
                 const distinctChamps = Array.from(new Set(allGenData.map((g: any) => g.campeonato))).sort();
                 console.log('DEBUG - Campeonatos no Banco:', distinctChamps);
 
-                // Mapa para busca rápida de campeonato (chave: data|mapa) com normalização
+                // Mapa para busca rápida de campeonato (chave: data|mapa) com normalização agressiva
                 const champMap: Record<string, string> = {};
                 allGenData.forEach(g => {
+                    const champName = g.campeonato ? String(g.campeonato).trim().toUpperCase() : 'SEM EVENTO';
                     const key = `${String(g.data).trim()}|${String(g.mapa).trim().toUpperCase()}`;
-                    champMap[key] = String(g.campeonato).trim();
+                    champMap[key] = champName;
                 });
 
                 // Filtragem em memória
                 const rows = allPerfRows.filter((p: any) => {
+                    const normPlayer = String(p.player).trim().toUpperCase();
                     const matchDate = playerDateFilter === 'Todos' || p.data === playerDateFilter;
-                    const matchPlayer = playerSelectedPlayer === 'Todos' || p.player === playerSelectedPlayer;
+                    const matchPlayer = playerSelectedPlayer === 'Todos' || normPlayer === playerSelectedPlayer.trim().toUpperCase();
                     
                     const pKey = `${String(p.data).trim()}|${String(p.mapa).trim().toUpperCase()}`;
-                    const champ = champMap[pKey] || 'Sem Evento';
-                    const matchChamp = playerChampFilter === 'Todos' || champ.toUpperCase() === playerChampFilter.toUpperCase();
+                    const champ = champMap[pKey] || 'SEM EVENTO';
+                    const matchChamp = playerChampFilter === 'Todos' || champ === playerChampFilter.trim().toUpperCase();
 
                     return matchDate && matchPlayer && matchChamp;
                 });
