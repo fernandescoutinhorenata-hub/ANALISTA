@@ -184,6 +184,12 @@ export const Dashboard: React.FC = () => {
     const [playerTableData, setPlayerTableData] = useState<any[]>([]);
     const [playerStatsLoading, setPlayerStatsLoading] = useState(false);
 
+    // ─── Estados para Aba Rodadas ──────────────────────────────────────────
+    const [roundChampFilter, setRoundChampFilter] = useState<string>('Todos');
+    const [roundDateFilter, setRoundDateFilter] = useState<string>('Todos');
+    const [expandedRound, setExpandedRound] = useState<string | null>(null); // data|mapa|rodada
+    const [roundPlayerData, setRoundPlayerData] = useState<any[]>([]);
+
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -649,6 +655,51 @@ export const Dashboard: React.FC = () => {
         };
     }, [data, filteredGeneralRows]);
 
+    const roundsTabRows = useMemo(() => {
+        return allGeneralRows.filter(row => {
+            const champ = String(row.Campeonato || '').trim().toUpperCase();
+            const matchChamp = roundChampFilter === 'Todos' || champ === roundChampFilter.trim().toUpperCase();
+            const matchDate = roundDateFilter === 'Todos' || String(row.Data) === roundDateFilter;
+            return matchChamp && matchDate;
+        }).sort((a, b) => {
+            const dateA = a.Data.includes('/') ? new Date(a.Data.split('/').reverse().join('-')) : new Date(a.Data);
+            const dateB = b.Data.includes('/') ? new Date(b.Data.split('/').reverse().join('-')) : new Date(b.Data);
+            if (dateA.getTime() !== dateB.getTime()) return dateA.getTime() - dateB.getTime();
+            return Number(a.Rodada) - Number(b.Rodada);
+        });
+    }, [allGeneralRows, roundChampFilter, roundDateFilter]);
+
+    const roundsStats = useMemo(() => {
+        if (roundsTabRows.length === 0) return null;
+        const points = roundsTabRows.map(r => Number(r.Pontos_Total) || 0);
+        const best = roundsTabRows.reduce((a, b) => (Number(a.Pontos_Total) || 0) > (Number(b.Pontos_Total) || 0) ? a : b);
+        const worst = roundsTabRows.reduce((a, b) => (Number(a.Pontos_Total) || 0) < (Number(b.Pontos_Total) || 0) ? a : b);
+        return {
+            total: roundsTabRows.length,
+            best: Number(best.Pontos_Total) || 0,
+            worst: Number(worst.Pontos_Total) || 0,
+            avg: parseFloat((points.reduce((a, b) => a + b, 0) / roundsTabRows.length).toFixed(1))
+        };
+    }, [roundsTabRows]);
+
+    useEffect(() => {
+        if (!expandedRound || !user) {
+            setRoundPlayerData([]);
+            return;
+        }
+        const [date, map] = expandedRound.split('|');
+        const fetchRoundPlayers = async () => {
+            const { data } = await supabase
+                .from('performance_jogadores')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('data', date)
+                .eq('mapa', map);
+            setRoundPlayerData(data || []);
+        };
+        fetchRoundPlayers();
+    }, [expandedRound, user]);
+
     // Cálculo da evolução diária (Média e Total por dia)
     const dailyEvolData = useMemo(() => {
         if (!allGeneralRows || allGeneralRows.length === 0) return [];
@@ -897,6 +948,7 @@ export const Dashboard: React.FC = () => {
                 <nav className="flex-1 px-4 space-y-2">
                     {[
                         { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, premium: false },
+                        { id: 'rounds', label: 'Rodadas', icon: PlusCircle, premium: false },
                         { id: 'players', label: 'Jogadores', icon: Users, premium: false },
                         { id: 'coletivo', label: 'Coletivo', icon: Activity, premium: false },
                         { id: 'quebras', label: 'Quebras', icon: Shield, premium: true },
@@ -1006,7 +1058,7 @@ export const Dashboard: React.FC = () => {
                             <span>Controle</span>
                             <ChevronRight size={14} className="mx-2 opacity-50" />
                             <span className="text-[var(--accent)]">
-                                {activeTab === 'overview' ? 'Visão Geral' : activeTab === 'players' ? 'Jogadores' : 'Histórico'}
+                                {activeTab === 'overview' ? 'Visão Geral' : activeTab === 'players' ? 'Jogadores' : activeTab === 'rounds' ? 'Rodadas' : 'Histórico'}
                             </span>
                         </div>
                     </div>
@@ -1622,6 +1674,125 @@ export const Dashboard: React.FC = () => {
                                             </LineChart>
                                         </ResponsiveContainer>
                                     </div>
+                                </div>
+                            )}
+
+                            {/* ══════════ ROUNDS TAB ══════════ */}
+                            {activeTab === 'rounds' && (
+                                <div className="space-y-6 animate-reveal">
+                                    <div className="flex flex-wrap items-center gap-4">
+                                        <div className="flex items-center gap-4 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
+                                            <Trophy size={16} className="text-[var(--accent)]" />
+                                            <select 
+                                                value={roundChampFilter}
+                                                onChange={(e) => setRoundChampFilter(e.target.value)}
+                                                className="bg-transparent text-heading text-xs font-bold focus:outline-none min-w-[120px]"
+                                            >
+                                                <option value="Todos">Todos Eventos</option>
+                                                {filterOptions.championships.map(c => (
+                                                    <option key={c} value={c}>{c}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="flex items-center gap-4 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
+                                            <Calendar size={16} className="text-[var(--accent)]" />
+                                            <select 
+                                                value={roundDateFilter}
+                                                onChange={(e) => setRoundDateFilter(e.target.value)}
+                                                className="bg-transparent text-heading text-xs font-bold focus:outline-none min-w-[120px]"
+                                            >
+                                                <option value="Todos">Todas as Datas</option>
+                                                {filterOptions.dates.map(d => (
+                                                    <option key={d} value={d}>{d}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                        <MetricCard title="Total de Rodadas" value={roundsStats?.total || 0} icon={Activity} />
+                                        <MetricCard title="Melhor Rodada" value={roundsStats?.best || 0} icon={Trophy} subValue="PONTOS" />
+                                        <MetricCard title="Pior Rodada" value={roundsStats?.worst || 0} icon={Target} subValue="PONTOS" />
+                                        <MetricCard title="Média de Pontos" value={roundsStats?.avg || 0} icon={TrendingUp} />
+                                    </div>
+
+                                    <Card className="p-0 overflow-hidden">
+                                        <div className="p-6 border-b border-[var(--border-subtle)] bg-[var(--bg-card)]">
+                                            <h4 className="text-heading text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                                                <TrendingUp size={16} className="text-[var(--accent)]" />
+                                                Evolução de Pontos por Rodada
+                                            </h4>
+                                        </div>
+                                        <div className="h-64 px-6 py-8">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={roundsTabRows.map(r => ({ name: `R${r.Rodada}`, pontos: r.Pontos_Total }))}>
+                                                    <CartesianGrid stroke="#27272A" vertical={false} strokeDasharray="3 3" />
+                                                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#A1A1AA' }} axisLine={false} tickLine={false} />
+                                                    <YAxis tick={{ fontSize: 10, fill: '#A1A1AA' }} axisLine={false} tickLine={false} />
+                                                    <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
+                                                    <Bar dataKey="pontos" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </Card>
+
+                                    <Card className="p-0 overflow-hidden">
+                                        <table className="w-full text-xs text-left">
+                                            <thead className="bg-[#18181B] border-b border-[#27272A]">
+                                                <tr>
+                                                    <th className="px-6 py-4 font-bold text-[#A1A1AA] uppercase">Rodada</th>
+                                                    <th className="px-6 py-4 font-bold text-[#A1A1AA] uppercase">Mapa</th>
+                                                    <th className="px-6 py-4 font-bold text-[#A1A1AA] uppercase text-center">Colocação</th>
+                                                    <th className="px-6 py-4 font-bold text-[#A1A1AA] uppercase text-center">Kills Squad</th>
+                                                    <th className="px-6 py-4 font-bold text-[#A1A1AA] uppercase text-center">Pontos</th>
+                                                    <th className="px-6 py-4 font-bold text-[#A1A1AA] uppercase">Data</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-[#27272A]">
+                                                {roundsTabRows.map((row, i) => (
+                                                    <React.Fragment key={i}>
+                                                        <tr 
+                                                            onClick={() => setExpandedRound(prev => prev === `${row.Data}|${row.Mapa}` ? null : `${row.Data}|${row.Mapa}`)}
+                                                            className="hover:bg-white/5 transition-colors cursor-pointer group"
+                                                        >
+                                                            <td className="px-6 py-4 font-bold text-white">#{String(row.Rodada).padStart(2, '0')}</td>
+                                                            <td className="px-6 py-4 font-bold uppercase text-[var(--text-primary)]">{row.Mapa}</td>
+                                                            <td className="px-6 py-4 text-center">
+                                                                <span className={`badge ${row.Colocacao === 1 ? 'badge-purple' : 'badge-ghost'}`}>
+                                                                    P{row.Colocacao}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-center font-mono text-[var(--accent-red)]">{row.Kill}</td>
+                                                            <td className="px-6 py-4 text-center font-bold text-white">{row.Pontos_Total}</td>
+                                                            <td className="px-6 py-4 text-[#A1A1AA]">{row.Data}</td>
+                                                        </tr>
+                                                        {expandedRound === `${row.Data}|${row.Mapa}` && (
+                                                            <tr className="bg-white/5 animate-fade-in">
+                                                                <td colSpan={6} className="px-8 py-4">
+                                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4">
+                                                                        {roundPlayerData.length === 0 ? (
+                                                                            <div className="col-span-full text-center py-4 text-[#A1A1AA] italic">Carregando performance individual...</div>
+                                                                        ) : (
+                                                                            roundPlayerData.map((p, idx) => (
+                                                                                <div key={idx} className="p-3 rounded-lg bg-black/30 border border-white/5">
+                                                                                    <div className="text-[10px] font-bold text-[var(--accent)] uppercase mb-1">{p.player}</div>
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        <span className="text-xs text-white"><Sword size={10} className="inline mr-1 opacity-50"/>{p.kill}</span>
+                                                                                        <span className="text-xs text-white"><Target size={10} className="inline mr-1 opacity-50"/>{p.dano_causado}</span>
+                                                                                        <span className={`text-[10px] ${p.morte === 0 ? 'text-green-400' : 'text-red-400'}`}>{p.morte === 0 ? 'SURVIVED' : 'ELIMINATED'}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ))
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </React.Fragment>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </Card>
                                 </div>
                             )}
 
