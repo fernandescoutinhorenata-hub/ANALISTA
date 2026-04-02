@@ -173,13 +173,14 @@ export const Dashboard: React.FC = () => {
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
-    const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos' });
+    const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos', round: 'Todos' });
     const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
     const [specificDate, setSpecificDate] = useState<string>(''); // Novo filtro de data Dashboard
     
     // ─── Estados de Filtro Independentes para Aba Jogadores ───────────────────
     const [playerDateFilter, setPlayerDateFilter] = useState<string>('Todos');
     const [playerChampFilter, setPlayerChampFilter] = useState<string>('Todos');
+    const [playerRoundFilter, setPlayerRoundFilter] = useState<string>('Todos');
     const [playerSelectedPlayer, setPlayerSelectedPlayer] = useState<string>('Todos');
     const [playerTableData, setPlayerTableData] = useState<any[]>([]);
     const [playerStatsLoading, setPlayerStatsLoading] = useState(false);
@@ -213,8 +214,21 @@ export const Dashboard: React.FC = () => {
             if (row.Data) dates.add(String(row.Data));
             if (row.Campeonato) championships.add(String(row.Campeonato));
         });
-        return { dates: Array.from(dates).sort(), championships: Array.from(championships).sort() };
-    }, [allGeneralRows]);
+
+        // Rodadas dinâmicas baseadas no campeonato ativo
+        const rounds = new Set<string>();
+        allGeneralRows.forEach(row => {
+            const matchChamp = filters.championship === 'Todos' || String(row.Campeonato).trim().toUpperCase() === filters.championship.trim().toUpperCase();
+            const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
+            if (matchChamp && matchDate && row.Rodada) rounds.add(String(row.Rodada));
+        });
+
+        return { 
+            dates: Array.from(dates).sort(), 
+            championships: Array.from(championships).sort(),
+            rounds: Array.from(rounds).sort((a, b) => Number(a) - Number(b))
+        };
+    }, [allGeneralRows, filters.championship, filters.date]);
 
     useEffect(() => {
         if (!user) return;
@@ -349,15 +363,16 @@ export const Dashboard: React.FC = () => {
         return allGeneralRows.filter(row => {
             const matchChamp = filters.championship === 'Todos' || String(row.Campeonato) === filters.championship;
             const matchMap = !selectedMap || normalizeMap(row.Mapa) === normalizeMap(selectedMap);
+            const matchRound = filters.round === 'Todos' || String(row.Rodada) === filters.round;
             
             if (specificDate) {
                 const rowDateStr = String(row.Data || '');
                 const formattedSpecific = specificDate.split('-').reverse().join('/');
-                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp && matchMap;
+                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp && matchMap && matchRound;
             }
 
             const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
-            if (!matchDate || !matchChamp || !matchMap) return false;
+            if (!matchDate || !matchChamp || !matchMap || !matchRound) return false;
 
             if (!timeLimit) return true;
             const dateStr = String(row.Data || '');
@@ -457,7 +472,7 @@ export const Dashboard: React.FC = () => {
                         .eq('user_id', user.id),
                     supabase
                         .from('partidas_geral')
-                        .select('data, mapa, campeonato')
+                        .select('data, mapa, campeonato, rodada')
                         .eq('user_id', user.id)
                 ]);
 
@@ -488,8 +503,15 @@ export const Dashboard: React.FC = () => {
                     const pKey = `${String(p.data).trim()}|${String(p.mapa).trim().toUpperCase()}`;
                     const champ = champMap[pKey] || 'SEM EVENTO';
                     const matchChamp = playerChampFilter === 'Todos' || champ === playerChampFilter.trim().toUpperCase();
+                    
+                    // Cruzamento para pegar a rodada da tabela geral (já que performance não tem rodada)
+                    const genMatch = allGenData.find((g: any) => 
+                        String(g.data).trim() === String(p.data).trim() && 
+                        normalizeMap(g.mapa) === normalizeMap(p.mapa)
+                    );
+                    const matchRound = playerRoundFilter === 'Todos' || (genMatch && String((genMatch as any).rodada) === playerRoundFilter);
 
-                    return matchDate && matchPlayer && matchChamp;
+                    return matchDate && matchPlayer && matchChamp && matchRound;
                 });
 
                 if (!rows || rows.length === 0) {
@@ -1114,6 +1136,21 @@ export const Dashboard: React.FC = () => {
                                     {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
+
+                            {/* Dropdown de Rodada Dashboard */}
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#09090b] border border-[var(--border-default)]">
+                                <Activity size={13} className="text-[var(--text-tertiary)]" />
+                                <select 
+                                    value={filters.round}
+                                    onChange={(e) => setFilters({ ...filters, round: e.target.value })}
+                                    className="bg-transparent text-white outline-none border-none text-xs cursor-pointer appearance-none min-w-[100px]"
+                                >
+                                    <option value="Todos" className="bg-[#09090b]">Todas Rodadas</option>
+                                    {filterOptions.rounds.map(r => (
+                                        <option key={r} value={r} className="bg-[#09090b]">Rodada {String(r).padStart(2, '0')}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
 
@@ -1496,6 +1533,20 @@ export const Dashboard: React.FC = () => {
                                                 <option value="Todos" className="bg-[#141416]">Todas as Datas</option>
                                                 {filterOptions.dates.map(d => (
                                                     <option key={d} value={d} className="bg-[#141416]">{d}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
+                                            <Activity size={16} className="text-[var(--accent)]" />
+                                            <select
+                                                value={playerRoundFilter}
+                                                onChange={e => setPlayerRoundFilter(e.target.value)}
+                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
+                                            >
+                                                <option value="Todos" className="bg-[#141416]">Todas as Rodadas</option>
+                                                {filterOptions.rounds.map(r => (
+                                                    <option key={r} value={r} className="bg-[#141416]">Rodada {String(r).padStart(2, '0')}</option>
                                                 ))}
                                             </select>
                                         </div>
