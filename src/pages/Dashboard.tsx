@@ -1776,13 +1776,20 @@ export const Dashboard: React.FC = () => {
                                         </div>
                                         <div className="h-64 px-6 py-8">
                                             <ResponsiveContainer width="100%" height="100%">
-                                                <BarChart data={roundsTabRows.map(r => ({ name: `R${r.Rodada}`, pontos: r.Pontos_Total }))}>
+                                                <LineChart data={roundsTabRows.map(r => ({ name: `R${r.Rodada}`, pontos: r.Pontos_Total }))}>
                                                     <CartesianGrid stroke="#27272A" vertical={false} strokeDasharray="3 3" />
                                                     <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#A1A1AA' }} axisLine={false} tickLine={false} />
                                                     <YAxis tick={{ fontSize: 10, fill: '#A1A1AA' }} axisLine={false} tickLine={false} />
-                                                    <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
-                                                    <Bar dataKey="pontos" fill="var(--accent)" radius={[4, 4, 0, 0]} />
-                                                </BarChart>
+                                                    <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
+                                                    <Line 
+                                                        type="monotone" 
+                                                        dataKey="pontos" 
+                                                        stroke="#7C3AED" 
+                                                        strokeWidth={3}
+                                                        dot={{ r: 5, fill: '#7C3AED', strokeWidth: 0 }}
+                                                        activeDot={{ r: 8, fill: '#7C3AED', stroke: '#FFF', strokeWidth: 2 }}
+                                                    />
+                                                </LineChart>
                                             </ResponsiveContainer>
                                         </div>
                                     </Card>
