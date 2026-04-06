@@ -300,6 +300,8 @@ export const InputData: React.FC = () => {
                     equipe: matchData.equipe,
                     modo: 'Campeonato',
                     mapa: matchData.mapa,
+                    campeonato: matchData.campeonato.toUpperCase(),
+                    rodada: Math.max(0, parseInt(matchData.rodada) || 0).toString(),
                     posicao: Math.max(1, parseInt(matchData.colocacao) || 1),
                     player: nomeSeguro || 'JOGADOR DESCONHECIDO',
                     kill: Math.max(0, parseInt(p.kills) || 0),

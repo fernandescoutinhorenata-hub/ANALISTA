@@ -278,6 +278,8 @@ export const Dashboard: React.FC = () => {
                 // Mapeia exatamente as colunas reais de performance_jogadores
                 const mappedPlayers = (playersRes.data || []).map(row => ({
                     Data: row.data,
+                    Campeonato: row.campeonato,
+                    Rodada: row.rodada,
                     Equipe: row.equipe,
                     Modo: row.modo,
                     Mapa: row.mapa,
@@ -337,15 +339,7 @@ export const Dashboard: React.FC = () => {
 
 
     // ─── Helpers de Normalização para Joins ─────────────────────────────────────
-    const normalizeDate = (d: any) => {
-        if (!d) return '';
-        const s = String(d).trim();
-        if (s.includes('/')) {
-            const parts = s.split('/');
-            if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        }
-        return s;
-    };
+
 
     const normalizeMap = (m: any) => String(m || '').trim().toUpperCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -384,14 +378,6 @@ export const Dashboard: React.FC = () => {
         });
     }, [allGeneralRows, filters.date, filters.championship, timeFilter, specificDate, selectedMap]);
 
-    // ─── Chaves de Partidas Válidas (Baseadas no Geral Filtrado) ───────────────
-    const validMatchKeys = useMemo(() => {
-        const keys = new Set<string>();
-        filteredGeneralRows.forEach(r => {
-            keys.add(`${normalizeDate(r.Data)}|${normalizeMap(r.Mapa)}`);
-        });
-        return keys;
-    }, [filteredGeneralRows]);
 
     // ─── Métricas unificadas e filtradas ─────────────────────────────────────────
     const filteredPlayerRows = useMemo(() => {
@@ -403,25 +389,22 @@ export const Dashboard: React.FC = () => {
                 : null;
 
         return allPlayerRows.filter(row => {
-            const date = normalizeDate(row.Data);
-            const map = normalizeMap(row.Mapa);
             
-            // Filtro por Cruzamento com Tabela Geral (Fix: Data + Mapa)
-            if (filters.championship !== 'Todos' || specificDate || selectedMap) {
-               if (!validMatchKeys.has(`${date}|${map}`)) return false;
-            }
-
+            const champ = String(row.Campeonato || '').trim().toUpperCase() || 'SEM EVENTO';
+            const matchChamp = filters.championship === 'Todos' || champ === filters.championship.trim().toUpperCase();
+            
+            const matchRound = filters.round === 'Todos' || String(row.Rodada) === filters.round;
             const matchMap = !selectedMap || normalizeMap(row.Mapa) === normalizeMap(selectedMap);
             
             // Usar specificDate (filtro global) como fonte primária de verdade
             if (specificDate) {
                 const rowDateStr = String(row.Data || '');
                 const formattedSpecific = specificDate.split('-').reverse().join('/');
-                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchMap;
+                return (rowDateStr === specificDate || rowDateStr === formattedSpecific) && matchChamp && matchMap && matchRound;
             }
 
             const matchDate = filters.date === 'Todos' || String(row.Data) === filters.date;
-            if (!matchDate || !matchMap) return false;
+            if (!matchDate || !matchChamp || !matchMap || !matchRound) return false;
             
             if (!timeLimit) return true;
             
@@ -432,7 +415,7 @@ export const Dashboard: React.FC = () => {
                 : new Date(dateStr);
             return !isNaN(parsed.getTime()) && parsed >= timeLimit;
         });
-    }, [allPlayerRows, filters.date, filters.championship, timeFilter, specificDate, selectedMap, validMatchKeys]);
+    }, [allPlayerRows, filters.date, filters.championship, filters.round, timeFilter, specificDate, selectedMap]);
 
 
 
@@ -486,30 +469,17 @@ export const Dashboard: React.FC = () => {
                 const distinctChamps = Array.from(new Set(allGenData.map((g: any) => g.campeonato))).sort();
                 console.log('DEBUG - Campeonatos no Banco:', distinctChamps);
 
-                // Mapa para busca rápida de campeonato (chave: data|mapa) com normalização agressiva
-                const champMap: Record<string, string> = {};
-                allGenData.forEach(g => {
-                    const champName = g.campeonato ? String(g.campeonato).trim().toUpperCase() : 'SEM EVENTO';
-                    const key = `${String(g.data).trim()}|${String(g.mapa).trim().toUpperCase()}`;
-                    champMap[key] = champName;
-                });
-
                 // Filtragem em memória
                 const rows = allPerfRows.filter((p: any) => {
                     const normPlayer = String(p.player).trim().toUpperCase();
                     const matchDate = playerDateFilter === 'Todos' || p.data === playerDateFilter;
                     const matchPlayer = playerSelectedPlayer === 'Todos' || normPlayer === playerSelectedPlayer.trim().toUpperCase();
                     
-                    const pKey = `${String(p.data).trim()}|${String(p.mapa).trim().toUpperCase()}`;
-                    const champ = champMap[pKey] || 'SEM EVENTO';
+                    const champ = p.campeonato ? String(p.campeonato).trim().toUpperCase() : 'SEM EVENTO';
                     const matchChamp = playerChampFilter === 'Todos' || champ === playerChampFilter.trim().toUpperCase();
                     
-                    // Cruzamento para pegar a rodada da tabela geral (já que performance não tem rodada)
-                    const genMatch = allGenData.find((g: any) => 
-                        String(g.data).trim() === String(p.data).trim() && 
-                        normalizeMap(g.mapa) === normalizeMap(p.mapa)
-                    );
-                    const matchRound = playerRoundFilter === 'Todos' || (genMatch && String((genMatch as any).rodada) === playerRoundFilter);
+                    const roundText = p.rodada ? String(p.rodada).trim() : '';
+                    const matchRound = playerRoundFilter === 'Todos' || roundText === playerRoundFilter;
 
                     return matchDate && matchPlayer && matchChamp && matchRound;
                 });
@@ -709,14 +679,14 @@ export const Dashboard: React.FC = () => {
             setRoundPlayerData([]);
             return;
         }
-        const [date, map] = expandedRound.split('|');
+        const [campeonato, rodada] = expandedRound.split('|');
         const fetchRoundPlayers = async () => {
             const { data } = await supabase
                 .from('performance_jogadores')
                 .select('*')
                 .eq('user_id', user.id)
-                .eq('data', date)
-                .eq('mapa', map);
+                .eq('campeonato', campeonato)
+                .eq('rodada', rodada);
             setRoundPlayerData(data || []);
         };
         fetchRoundPlayers();
@@ -1810,7 +1780,7 @@ export const Dashboard: React.FC = () => {
                                                 {roundsTabRows.map((row, i) => (
                                                     <React.Fragment key={i}>
                                                         <tr 
-                                                            onClick={() => setExpandedRound(prev => prev === `${row.Data}|${row.Mapa}` ? null : `${row.Data}|${row.Mapa}`)}
+                                                            onClick={() => setExpandedRound(prev => prev === `${row.Campeonato}|${row.Rodada}` ? null : `${row.Campeonato}|${row.Rodada}`)}
                                                             className="hover:bg-white/5 transition-colors cursor-pointer group"
                                                         >
                                                             <td className="px-6 py-4 font-bold text-white">#{String(row.Rodada).padStart(2, '0')}</td>
@@ -1824,7 +1794,7 @@ export const Dashboard: React.FC = () => {
                                                             <td className="px-6 py-4 text-center font-bold text-white">{row.Pontos_Total}</td>
                                                             <td className="px-6 py-4 text-[#A1A1AA]">{row.Data}</td>
                                                         </tr>
-                                                        {expandedRound === `${row.Data}|${row.Mapa}` && (
+                                                        {expandedRound === `${row.Campeonato}|${row.Rodada}` && (
                                                             <tr className="bg-white/5 animate-fade-in">
                                                                 <td colSpan={6} className="px-8 py-4">
                                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4">
