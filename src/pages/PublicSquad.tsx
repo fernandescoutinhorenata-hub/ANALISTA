@@ -90,19 +90,64 @@ export const PublicSquad: React.FC = () => {
                     return;
                 }
                 setCoachProfile(profile);
+            } catch (err) {
+                setError('Ocorreu um erro ao validar o token.');
+            }
+        };
 
-                // 2. Buscar dados diretamente pelo coach ID
-                const [generalRes, playersRes] = await Promise.all([
-                    supabase
-                        .from('partidas_geral')
-                        .select('*')
-                        .eq('user_id', profile.id)
-                        .order('data', { ascending: false }),
-                    supabase
-                        .from('performance_jogadores')
-                        .select('*')
-                        .eq('user_id', profile.id)
-                ]);
+        fetchData();
+    }, [token]);
+
+    // ─── BUSCA DE OPÇÕES DE FILTROS (1 ÚNICA VEZ) ───────────────────────
+    const [availableOptions, setAvailableOptions] = useState({ dates: [] as string[], championships: [] as string[] });
+
+    useEffect(() => {
+        if (!coachProfile?.id) return;
+        
+        supabase
+            .from('partidas_geral')
+            .select('data, campeonato')
+            .eq('user_id', coachProfile.id)
+            .then(({ data }) => {
+                if (data) {
+                    const dates = new Set(data.map((r: any) => r.data).filter(Boolean));
+                    const champs = new Set(data.map((r: any) => r.campeonato).filter(Boolean));
+                    setAvailableOptions({
+                        dates: Array.from(dates).sort() as string[],
+                        championships: Array.from(champs).sort() as string[]
+                    });
+                }
+            });
+    }, [coachProfile?.id]);
+
+    // ─── BUSCA DE DADOS COM FILTROS NA QUERY ─────────────────────────────────────
+    useEffect(() => {
+        if (!coachProfile?.id) return;
+
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                let genQuery = supabase.from('partidas_geral').select('*').eq('user_id', coachProfile.id).order('data', { ascending: false });
+                let playQuery = supabase.from('performance_jogadores').select('*').eq('user_id', coachProfile.id);
+
+                // Aplica filtros direto na query para reexecutar com os novos parâmetros
+                if (filters.championship !== 'Todos') {
+                    genQuery = genQuery.eq('campeonato', filters.championship);
+                    playQuery = playQuery.eq('campeonato', filters.championship);
+                }
+                
+                if (filters.date !== 'Todos') {
+                    genQuery = genQuery.eq('data', filters.date);
+                    playQuery = playQuery.eq('data', filters.date);
+                } else if (filters.timeFilter !== 'all') {
+                    const days = filters.timeFilter === '7d' ? 7 : 30;
+                    const cutoff = new Date();
+                    cutoff.setDate(cutoff.getDate() - days);
+                    genQuery = genQuery.gte('created_at', cutoff.toISOString());
+                    playQuery = playQuery.gte('created_at', cutoff.toISOString());
+                }
+
+                const [generalRes, playersRes] = await Promise.all([genQuery, playQuery]);
 
                 if (generalRes.error) throw new Error('Erro ao carregar partidas.');
 
@@ -121,6 +166,8 @@ export const PublicSquad: React.FC = () => {
 
                 const mappedPlay = (playersRes.data || []).map((r: any) => ({
                     Data: r.data,
+                    Campeonato: r.campeonato,
+                    Rodada: r.rodada,
                     Equipe: r.equipe,
                     Modo: r.modo,
                     Mapa: r.mapa,
@@ -146,49 +193,19 @@ export const PublicSquad: React.FC = () => {
         };
 
         fetchData();
-    }, [token]);
+    }, [coachProfile?.id, filters]);
 
-    // ─── PROCESSAMENTO ─────────────────────────────────────────────────────
-    const fGenFilteredMain = useMemo(() => {
-        let fGen = [...allGeneralRows];
-        if (filters.championship !== 'Todos') fGen = fGen.filter(r => r.Campeonato === filters.championship);
-        if (filters.date !== 'Todos') {
-            fGen = fGen.filter(r => r.Data === filters.date);
-        } else if (filters.timeFilter !== 'all') {
-            const now = new Date();
-            const days = filters.timeFilter === '7d' ? 7 : 30;
-            const cutoff = new Date(now.setDate(now.getDate() - days));
-            fGen = fGen.filter(r => {
-                if (!r.Data) return false;
-                const [d, m, y] = r.Data.split('/').map(Number);
-                const matchDate = new Date(y, m - 1, d);
-                return matchDate >= cutoff;
-            });
-        }
-        return fGen;
-    }, [filters, allGeneralRows]);
+    // ─── PROCESSAMENTO EM MEMÓRIA ──────────────────────────────────────────
+    // Observação: Como agora as queries puxam direto do banco com base nos filtros, 
+    // allGeneralRows e allPlayerRows já são as listas perfeitamente recortadas!
 
     useEffect(() => {
         if (allGeneralRows.length > 0) {
-            const fGen = fGenFilteredMain;
-            // Normalizar chaves para garantir o cruzamento correto ignorando Rodada/Queda divergente
-            const activeMatchKeys = new Set(fGen.map(r => 
-                `${String(r.Data).trim()}|${String(r.Mapa).trim().toUpperCase()}|${String(r.Equipe).trim().toUpperCase()}`
-            ));
-
-            const fPlay = allPlayerRows.filter(r => 
-                activeMatchKeys.has(`${String(r.Data).trim()}|${String(r.Mapa).trim().toUpperCase()}|${String(r.Equipe).trim().toUpperCase()}`)
-            );
-            
-            setData(processData(fGen, fPlay));
+            setData(processData(allGeneralRows, allPlayerRows));
+        } else {
+            setData(null);
         }
-    }, [filters, allGeneralRows, allPlayerRows, fGenFilteredMain]);
-
-    const filterOptions = useMemo(() => {
-        const dates = new Set(allGeneralRows.map(r => r.Data).filter(Boolean));
-        const champs = new Set(allGeneralRows.map(r => r.Campeonato).filter(Boolean));
-        return { dates: Array.from(dates).sort(), championships: Array.from(champs).sort() };
-    }, [allGeneralRows]);
+    }, [allGeneralRows, allPlayerRows]);
 
     const playerTableData = useMemo(() => {
         if (allPlayerRows.length === 0) return [];
@@ -208,12 +225,13 @@ export const PublicSquad: React.FC = () => {
             agg[playerName].knocks += p.Derrubados || 0;
             
             // Chave única para identificar a partida do jogador
-            playerMatches[playerName].add(`${p.Data}|${p.Mapa}|${p.Queda}|${p.Posicao}`);
+            playerMatches[playerName].add(`${p.Data}|${p.Mapa}|${p.Campeonato}|${p.Rodada}`);
         });
 
         return Object.values(agg).map((a: any) => ({
             ...a,
-            kd: parseFloat((a.kills / (playerMatches[a.name]?.size || 1)).toFixed(2))
+             kd: parseFloat((a.kills / Math.max(1, a.deaths)).toFixed(2)),
+             quedas: playerMatches[a.name]?.size || 0
         })).sort((a: any, b: any) => b.kills - a.kills);
     }, [allPlayerRows]);
 
@@ -319,12 +337,12 @@ export const PublicSquad: React.FC = () => {
                             <select className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-3 border-r border-[#2D2D30]" 
                                     value={filters.date} onChange={e => setFilters(prev => ({...prev, date: e.target.value}))}>
                                 <option value="Todos">Todas as Datas</option>
-                                {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
+                                {availableOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
                             </select>
                             <select className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-3"
                                     value={filters.championship} onChange={e => setFilters(prev => ({...prev, championship: e.target.value}))}>
                                 <option value="Todos">Todos Eventos</option>
-                                {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
+                                {availableOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
                         <button onClick={() => navigate('/register')} className="bg-white text-black px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-zinc-200 transition-colors shadow-lg shadow-white/5">
@@ -367,7 +385,7 @@ export const PublicSquad: React.FC = () => {
                             <select className="bg-[#0B0B0C] border border-[#2D2D30] text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-4 py-2.5 rounded-xl min-w-[180px]"
                                 value={filters.date} onChange={e => setFilters(prev => ({ ...prev, date: e.target.value, timeFilter: 'all' }))}>
                                 <option value="Todos">Todas as Datas</option>
-                                {filterOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
+                                {availableOptions.dates.map(d => <option key={d} value={d}>{d}</option>)}
                             </select>
                         </div>
                         <div className="h-10 w-px bg-[#2D2D30] hidden md:block" />
@@ -376,7 +394,7 @@ export const PublicSquad: React.FC = () => {
                             <select className="bg-[#0B0B0C] border border-[#2D2D30] text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] outline-none px-4 py-2.5 rounded-xl min-w-[200px]"
                                 value={filters.championship} onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}>
                                 <option value="Todos">Todos os Campeonatos</option>
-                                {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
+                                {availableOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
                     </div>
@@ -395,7 +413,7 @@ export const PublicSquad: React.FC = () => {
                                     <Card className="lg:col-span-2 min-h-[400px]">
                                         <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-10">Evolução Diária (Kills)</h4>
                                         <ResponsiveContainer width="100%" height={300}>
-                                            <AreaChart data={[...fGenFilteredMain].reverse().map(r => ({ data: r.Data, kill: r.Kill }))}>
+                                            <AreaChart data={[...allGeneralRows].reverse().map(r => ({ data: r.Data, kill: r.Kill }))}>
                                                 <defs>
                                                     <linearGradient id="gradPublic" x1="0" y1="0" x2="0" y2="1">
                                                         <stop offset="0%" stopColor="#A855F7" stopOpacity={0.3} />
