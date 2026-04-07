@@ -503,7 +503,7 @@ export const Dashboard: React.FC = () => {
                     agg[playerName].assists += Number(p.assistencia) || 0;
                     agg[playerName].deaths += Number(p.morte) || 0;
                     agg[playerName].derrubados += Number(p.derrubados) || 0;
-                    playerMatches[playerName].add(`${p.data}|${p.mapa}|${p.queda}|${p.posicao}`);
+                    playerMatches[playerName].add(`${p.data}|${p.mapa}|${p.campeonato}|${p.rodada}`);
                 });
 
                 let arr = Object.values(agg).map((p: any) => ({
