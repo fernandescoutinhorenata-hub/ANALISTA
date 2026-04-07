@@ -442,12 +442,14 @@ export const Dashboard: React.FC = () => {
     // ─── Busca e Processamento Independente para Aba Jogadores ────────────────
     useEffect(() => {
         if (!user || activeTab !== 'players') return;
-
+        
+        let isCancelled = false; // Flag de cancelamento
+        
         const fetchPlayerTabData = async () => {
             setPlayerStatsLoading(true);
-            setPlayerTableData([]); // BUG 4: Limpar estado antes da nova query
+            setPlayerTableData([]);
+            
             try {
-                // Fallback: Duas queries separadas para evitar problemas de Join/RLS direto
                 const [perfRes, genRes] = await Promise.all([
                     supabase
                         .from('performance_jogadores')
@@ -459,37 +461,31 @@ export const Dashboard: React.FC = () => {
                         .eq('user_id', user.id)
                 ]);
 
+                // Se o componente desmontou ou filtro mudou, ignora o resultado
+                if (isCancelled) return;
+
                 if (perfRes.error) throw perfRes.error;
                 if (genRes.error) throw genRes.error;
 
                 const allPerfRows = perfRes.data || [];
-                const allGenData = genRes.data || [];
-
-                // BUG 3: Log dos campeonatos disponíveis no banco para debug
-                const distinctChamps = Array.from(new Set(allGenData.map((g: any) => g.campeonato))).sort();
-                console.log('DEBUG - Campeonatos no Banco:', distinctChamps);
-
-                // Filtragem em memória
                 const rows = allPerfRows.filter((p: any) => {
                     const normPlayer = String(p.player).trim().toUpperCase();
                     const matchDate = playerDateFilter === 'Todos' || p.data === playerDateFilter;
                     const matchPlayer = playerSelectedPlayer === 'Todos' || normPlayer === playerSelectedPlayer.trim().toUpperCase();
-                    
                     const champ = p.campeonato ? String(p.campeonato).trim().toUpperCase() : 'SEM EVENTO';
                     const matchChamp = playerChampFilter === 'Todos' || champ === playerChampFilter.trim().toUpperCase();
-                    
                     const roundText = p.rodada ? String(p.rodada).trim() : '';
                     const matchRound = playerRoundFilter === 'Todos' || roundText === playerRoundFilter;
-
                     return matchDate && matchPlayer && matchChamp && matchRound;
                 });
+
+                if (isCancelled) return; // Checa novamente após filtro
 
                 if (!rows || rows.length === 0) {
                     setPlayerTableData([]);
                     return;
                 }
 
-                // Agregação em memória para a tabela
                 const agg: Record<string, any> = {};
                 const playerMatches: Record<string, Set<string>> = {};
 
@@ -497,7 +493,6 @@ export const Dashboard: React.FC = () => {
                     const playerName = p.player;
                     if (!agg[playerName]) agg[playerName] = { name: playerName, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0 };
                     if (!playerMatches[playerName]) playerMatches[playerName] = new Set();
-
                     agg[playerName].kills += Number(p.kill) || 0;
                     agg[playerName].damage += Number(p.dano_causado) || 0;
                     agg[playerName].assists += Number(p.assistencia) || 0;
@@ -506,19 +501,19 @@ export const Dashboard: React.FC = () => {
                     playerMatches[playerName].add(`${p.data}|${p.mapa}|${p.campeonato}|${p.rodada}`);
                 });
 
+                if (isCancelled) return; // Checa antes de setar estado
+
                 let arr = Object.values(agg).map((p: any) => ({
                     name: p.name,
                     abates: p.kills,
                     mortes: p.deaths,
                     assistencias: p.assists,
                     dano: p.damage,
-                    // BUG 1: KD real = Kills / Mortes (usar 1 se mortes for 0 para evitar Infinity/Kills puro)
                     kd: parseFloat((p.kills / Math.max(1, p.deaths)).toFixed(2)),
                     derrubados: p.derrubados,
                     quedas: playerMatches[p.name]?.size || 0,
                 }));
 
-                // Aplicar Ordenação
                 arr.sort((a: any, b: any) => {
                     let valA = a[sortConfig.key];
                     let valB = b[sortConfig.key];
@@ -528,15 +523,25 @@ export const Dashboard: React.FC = () => {
                 });
 
                 setPlayerTableData(arr);
+
             } catch (err: any) {
-                console.error('DEBUG - Erro detalhado aba Jogadores:', err);
-                showToast(`Erro: ${err.message || 'Erro ao carregar estatísticas'}`, 'error');
+                if (!isCancelled) {
+                    showToast(`Erro: ${err.message || 'Erro ao carregar estatísticas'}`, 'error');
+                }
             } finally {
-                setPlayerStatsLoading(false);
+                if (!isCancelled) {
+                    setPlayerStatsLoading(false);
+                }
             }
         };
 
         fetchPlayerTabData();
+
+        // Cleanup: cancela fetch anterior quando filtro mudar
+        return () => {
+            isCancelled = true;
+        };
+
     }, [user, activeTab, playerDateFilter, playerChampFilter, playerRoundFilter, playerSelectedPlayer, sortConfig]);
 
     // Dados para os gráficos baseados na busca independente
