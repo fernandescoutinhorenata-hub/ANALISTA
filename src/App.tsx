@@ -26,6 +26,7 @@ function App() {
           
           {/* Acesso Público via Share Token */}
           <Route path="/squad/:token" element={<PublicSquad />} />
+          <Route path="/share/:token" element={<PublicSquad />} />
           
           {/* Dashboard e Input Principal */}
           <Route 
