@@ -5,7 +5,12 @@ import { useAdminAuth } from '../hooks/useAdminAuth';
 export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdmin, loading } = useAdminAuth();
 
-  // Enquanto a Edge Function verifica o status, mostramos um estado de carregamento
+  // Admin confirmado (cache ou banco) — renderiza imediatamente sem aguardar loading
+  if (isAdmin) {
+    return <>{children}</>;
+  }
+
+  // Ainda verificando credenciais
   if (loading) {
     return (
       <div style={{
@@ -27,12 +32,6 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Se não for admin, o hook useAdminAuth já terá efetuado o redirecionamento.
-  // Renderizamos os componentes filhos apenas se for admin confirmado.
-  if (isAdmin) {
-    return <>{children}</>;
-  }
-
-  // Fallback opcional caso o redirecionamento demore a acontecer
+  // Não é admin e não está carregando — o hook já redirecionou
   return null;
 };
