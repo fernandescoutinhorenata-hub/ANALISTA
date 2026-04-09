@@ -277,11 +277,11 @@ export const InputData: React.FC = () => {
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', user.id)
                 .eq('data', matchData.data)
-                .eq('mapa', matchData.mapa)
-                .eq('rodada', matchData.rodada);
+                .eq('rodada', matchData.rodada)
+                .eq('campeonato', matchData.campeonato.toUpperCase());
 
             if (!dupCheckError && count && count > 0) {
-                const proceed = window.confirm("Já existe uma partida registrada nessa data, mapa e rodada.\nTem certeza que deseja continuar?");
+                const proceed = window.confirm("Já existe uma partida registrada nessa data, rodada e campeonato.\nTem certeza que deseja salvar novamente?");
                 if (!proceed) {
                     setLoading(false);
                     return;
