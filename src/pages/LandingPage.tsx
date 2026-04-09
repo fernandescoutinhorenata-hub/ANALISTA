@@ -13,7 +13,7 @@ export const LandingPage: React.FC = () => {
             // Se não estiver logado, redireciona o navegador para a página estática
             // Consideramos que o servidor serve a pasta 'landing/' estaticamente
             // Usamos location.replace para não sujar o histórico com o componente ponte
-            window.location.replace('/landing/index.html');
+            window.location.replace('/landing');
         }
     }, [session, loading, navigate]);
 
