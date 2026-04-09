@@ -1,209 +1,196 @@
 import React from 'react';
-import { MessageCircle, Zap, X, Star, TrendingUp, Target, ShieldCheck, Activity } from 'lucide-react';
+import { MessageCircle, ShieldCheck } from 'lucide-react';
 
 interface PlanosWhatsAppProps {
   className?: string;
 }
 
+const WppIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const FeatureItem = ({ text }: { text: string }) => (
+  <li style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', fontSize: '0.86rem', color: '#9ca3af', padding: '0.35rem 0' }}>
+    <CheckIcon />
+    {text}
+  </li>
+);
+
 export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }) => {
   const WHATSAPP_NUMBER = '5513981630304';
-  
-  const handlePlanClick = (plano: string, preco: string) => {
-    const text = encodeURIComponent(`Olá! Quero adquirir o plano ${plano} (${preco}) do Celo Tracker!`);
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
+
+  const handlePlanClick = (text: string) => {
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  const FeatureItem = ({ text, available = true, badge = '' }: { text: string, available?: boolean, badge?: string }) => (
-    <li className={`flex items-start gap-3 text-[13px] transition-all duration-300 ${available ? 'text-white group-hover:text-white' : 'text-white/30'}`}>
-      <div className="mt-1 flex-shrink-0">
-        {available ? (
-          <div className="w-1.5 h-1.5 bg-[var(--accent-amber)] rotate-45 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
-        ) : (
-          <X size={12} className="opacity-30" strokeWidth={3} />
-        )}
-      </div>
-      <div className="flex flex-col">
-        <span className={`${!available ? 'line-through decoration-white/10' : ''}`}>{text}</span>
-        {badge && (
-          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--accent-amber)] mt-1 opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-             <Activity size={8} /> {badge}
-          </span>
-        )}
-      </div>
-    </li>
-  );
-
   return (
-    <div className={`w-full max-w-7xl mx-auto px-6 py-12 select-none ${className}`}>
-      
-      <div className="relative mb-24 text-center pt-12">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[400px] bg-[radial-gradient(circle,rgba(245,158,11,0.08)_0%,transparent_70%)] pointer-events-none" />
-        
-        <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 border border-white/5 bg-white/[0.02] rounded-full backdrop-blur-sm animate-fade">
-          <Target size={12} className="text-[var(--accent-amber)]" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">SQUAD PERFORMANCE HUB</span>
-        </div>
+    <div className={`w-full max-w-5xl mx-auto px-6 py-12 ${className}`}>
 
-        <h2 className="text-5xl md:text-7xl font-[1000] tracking-[-0.04em] text-white leading-[1.1] mb-6">
-          PARE DE JOGAR NO <br />
-          <span className="inline-block text-transparent bg-clip-text bg-gradient-to-b from-[var(--accent-amber)] to-[#B48A00] py-2">ACHISMO.</span>
-        </h2>
-        
-        <p className="text-white/70 text-lg md:text-xl max-w-2xl mx-auto font-medium tracking-tight">
-          Transforme seus resultados com análise de dados profissional utilizada por Pro Players.
-        </p>
-        
-        <div className="mt-8 flex justify-center gap-1">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-1 w-8 bg-[var(--accent-amber)] opacity-20 rounded-full" />
-          ))}
-          <div className="h-1 w-16 bg-[var(--accent-amber)] rounded-full shadow-[0_0_10px_rgba(245,158,11,0.4)]" />
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-1 w-8 bg-[var(--accent-amber)] opacity-20 rounded-full" />
-          ))}
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+          background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)',
+          padding: '0.28rem 0.9rem', borderRadius: '100px',
+          fontSize: '0.72rem', fontWeight: 700, color: '#a78bfa',
+          letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '1rem'
+        }}>
+          PLANOS
         </div>
+        <h2 style={{
+          fontFamily: "'Space Grotesk', sans-serif",
+          fontSize: 'clamp(1.8rem, 3vw, 2.8rem)',
+          fontWeight: 800, lineHeight: 1.1, letterSpacing: '-1px',
+          color: '#f1f0ff', marginBottom: '0.8rem'
+        }}>
+          Simples. <span style={{ color: '#a78bfa' }}>Sem enrolação.</span>
+        </h2>
+        <p style={{ color: '#9ca3af', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '420px', margin: '0 auto' }}>
+          Começa de graça e cresce conforme sua squad evolui. Ativação via WhatsApp na hora.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 items-stretch perspective-1000">
-        
-        {/* CARD 1: Gratuito - Industrial Minimalist */}
-        <div className="group relative flex flex-col p-10 bg-[#0C0C10] border border-white/5 hover:border-white/10 rounded-sm transition-all duration-500 animate-reveal [animation-delay:100ms] hover:z-20">
-          <div className="mb-12">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--accent-green)] mb-6 flex items-center gap-2">
-              <div className="w-1 h-1 bg-[var(--accent-green)] animate-pulse" />
-              GRATUITO
-            </h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black text-white tracking-tighter">R$0</span>
-              <span className="text-white/60 text-[10px] font-black uppercase tracking-widest">/ para sempre</span>
-            </div>
-          </div>
+      {/* Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.4rem' }}>
 
-          <ul className="space-y-6 mb-12 flex-1 border-t border-white/5 pt-8">
-            <FeatureItem text="4 leituras automáticas" badge="limite de uso" />
+        {/* CARD 1 — GRATUITO */}
+        <div style={{
+          background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)',
+          borderRadius: '20px', padding: '2.5rem 2rem', textAlign: 'left', transition: 'transform .3s',
+          display: 'flex', flexDirection: 'column'
+        }}>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>
+            GRATUITO
+          </div>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '3rem', fontWeight: 800, lineHeight: 1, marginBottom: '.3rem', color: '#f1f0ff' }}>
+            R$0 <span style={{ fontSize: '.82rem', color: '#6b7280', fontWeight: 400 }}>/ para sempre</span>
+          </div>
+          <div style={{ minHeight: '1.4rem', marginBottom: '1.8rem' }} />
+          <ul style={{ listStyle: 'none', marginBottom: '2rem', flex: 1 }}>
+            <FeatureItem text="4 leituras automáticas via OCR" />
             <FeatureItem text="Acesso limitado às métricas" />
-            <FeatureItem text="Preenchimento manual" available={false} />
-            <FeatureItem text="Sem radar de habilidades" available={false} />
-            <FeatureItem text="Sem suporte prioritário" available={false} />
+            <FeatureItem text="Dashboard básico da squad" />
+            <FeatureItem text="Link público da squad" />
           </ul>
-
-          <button className="relative w-full py-4 bg-transparent border border-white/10 hover:border-white text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all overflow-hidden group">
-            <div className="absolute inset-0 bg-white/5 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
-            <span className="relative">Testar agora</span>
-          </button>
-        </div>
-
-        {/* CARD 2: Modo Competitivo - Blue Ops */}
-        <div className="group relative flex flex-col p-10 bg-[#0E0E14] border border-white/5 hover:border-blue-500/20 rounded-sm transition-all duration-500 animate-reveal [animation-delay:200ms] lg:translate-y-[-10px] hover:z-20">
-          <div className="mb-12">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400 mb-6 flex items-center gap-2">
-               <div className="w-1 h-1 bg-blue-400 animate-pulse" />
-               MODO COMPETITIVO
-            </h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black text-white tracking-tighter">R$10</span>
-              <span className="text-white/60 text-[10px] font-black uppercase tracking-widest">/ semana</span>
-            </div>
-          </div>
-
-          <ul className="space-y-6 mb-12 flex-1 border-t border-white/5 pt-8">
-            <FeatureItem text="Preenchimento automático" />
-            <FeatureItem text="Dashboard completo" />
-            <FeatureItem text="Radar de habilidades" />
-            <FeatureItem text="Agilidade e facilidade" />
-            <FeatureItem text="Suporte prioritário via WhatsApp" />
-          </ul>
-
-          <button 
-            onClick={() => handlePlanClick('Modo Competitivo', 'R$10/semana')}
-            className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_30px_rgba(37,99,235,0.2)] hover:shadow-[0_0_40px_rgba(37,99,235,0.4)]"
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Quero testar o Celo Tracker gratuitamente!')}`}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '100%', padding: '.9rem', borderRadius: '10px',
+              border: '1px solid rgba(255,255,255,0.15)', background: 'transparent',
+              color: '#f1f0ff', fontFamily: "'Inter', sans-serif", fontSize: '.9rem',
+              fontWeight: 700, textDecoration: 'none', transition: 'all .2s'
+            }}
           >
-            Quero subir de nível
+            Testar Agora
+          </a>
+        </div>
+
+        {/* CARD 2 — MODO COMPETITIVO */}
+        <div style={{
+          background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)',
+          borderRadius: '20px', padding: '2.5rem 2rem', textAlign: 'left', transition: 'transform .3s',
+          display: 'flex', flexDirection: 'column'
+        }}>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>
+            MODO COMPETITIVO
+          </div>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '3rem', fontWeight: 800, lineHeight: 1, marginBottom: '.3rem', color: '#f1f0ff' }}>
+            R$10 <span style={{ fontSize: '.82rem', color: '#6b7280', fontWeight: 400 }}>/ semana</span>
+          </div>
+          <div style={{ minHeight: '1.4rem', marginBottom: '1.8rem' }} />
+          <ul style={{ listStyle: 'none', marginBottom: '2rem', flex: 1 }}>
+            <FeatureItem text="OCR até 20 screenshots/hora" />
+            <FeatureItem text="Dashboard completo da squad" />
+            <FeatureItem text="Filtros por liga e data" />
+            <FeatureItem text="Link público da squad" />
+            <FeatureItem text="Suporte via WhatsApp" />
+          </ul>
+          <button
+            onClick={() => handlePlanClick('Olá! Quero o plano Semanal do Celo Tracker!')}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.55rem',
+              width: '100%', padding: '.9rem', borderRadius: '10px', border: 'none',
+              background: '#25d366', color: '#fff',
+              fontFamily: "'Inter', sans-serif", fontSize: '.9rem', fontWeight: 700,
+              cursor: 'pointer', transition: 'all .2s'
+            }}
+          >
+            <WppIcon />
+            Quero o plano
           </button>
         </div>
 
-        {/* CARD 3: Elite Squad - GOLDEN MASTER (HIGH TENSION) */}
-        <div className="group relative flex flex-col p-10 bg-[#121218] border-2 border-[var(--accent-amber)]/30 scale-105 z-10 transition-all duration-700 animate-reveal [animation-delay:300ms] shadow-[0_0_60px_-15px_rgba(245,158,11,0.25)] lg:translate-y-[-20px] rounded-sm overflow-hidden">
-          
-          {/* Efeito Visual Interno */}
-          <div className="absolute -right-20 -top-20 w-40 h-40 bg-[var(--accent-amber)] opacity-[0.03] blur-[60px] pointer-events-none group-hover:opacity-[0.08] transition-opacity duration-700" />
-          
-          {/* TOP BADGE - ELITE HUD */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 px-6 py-1 bg-[var(--accent-amber)] text-black text-[9px] font-black uppercase tracking-[0.5em] shadow-lg flex items-center gap-2">
-            <Star size={10} fill="black" />
+        {/* CARD 3 — ELITE SQUAD */}
+        <div style={{
+          background: 'rgba(255,255,255,0.025)', border: '1px solid #7c3aed',
+          borderRadius: '20px', padding: '2.5rem 2rem', textAlign: 'left',
+          position: 'relative', boxShadow: '0 0 50px rgba(124,58,237,0.12)',
+          transition: 'transform .3s', display: 'flex', flexDirection: 'column'
+        }}>
+          <div style={{
+            position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
+            background: 'linear-gradient(90deg,#7c3aed,#9333ea)', color: '#fff',
+            fontSize: '.68rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
+            padding: '.28rem 1.1rem', borderRadius: '100px', whiteSpace: 'nowrap'
+          }}>
             MAIS POPULAR
           </div>
-
-          <div className="mb-12 mt-4">
-             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--accent-amber)] mb-6 flex items-center gap-2">
-               <div className="w-1 h-1 bg-[var(--accent-amber)] animate-pulse" />
-               ELITE SQUAD
-            </h3>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-4">
-                <span className="text-6xl font-[1000] text-white tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">R$25</span>
-                <span className="text-white/50 text-xl line-through font-bold italic leading-none">R$40</span>
-              </div>
-              <span className="text-white/60 text-[10px] font-black uppercase tracking-widest mt-1">/ mês de acesso pleno</span>
-            </div>
-            
-            <div className="mt-8 inline-flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-[var(--accent-amber)]/10 to-transparent border-l-2 border-[var(--accent-amber)] animate-pulse">
-              <TrendingUp size={14} className="text-[var(--accent-amber)]" />
-              <span className="text-[10px] font-black text-white uppercase tracking-wider">Economize R$15 TODO MÊS</span>
-            </div>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>
+            ELITE SQUAD
           </div>
-
-          <ul className="space-y-6 mb-12 flex-1 border-t border-[var(--accent-amber)]/10 pt-8 relative">
-             {/* Decoração Estilo HUD */}
-            <div className="absolute top-4 -right-2 w-1 h-16 bg-gradient-to-b from-[var(--accent-amber)]/20 to-transparent flex flex-col gap-1 items-center">
-                <div className="w-full h-1 bg-[var(--accent-amber)]/40" />
-            </div>
-
-            <FeatureItem text="Preenchimento automático" />
-            <FeatureItem text="Prioridade na fila de leituras" />
-            <FeatureItem text="Dashboard completo" />
-            <FeatureItem text="Radar de habilidades" />
-            <FeatureItem text="Agilidade e facilidade" />
-            <FeatureItem text="Suporte prioritário via WhatsApp" />
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '3rem', fontWeight: 800, lineHeight: 1, marginBottom: '.3rem', color: '#f1f0ff' }}>
+            R$25 <span style={{ fontSize: '.82rem', color: '#6b7280', fontWeight: 400 }}>/ mês</span>
+          </div>
+          <div style={{ fontSize: '.78rem', fontWeight: 600, color: '#22c55e', marginBottom: '1.8rem' }}>
+            Economize R$15 vs semanal
+          </div>
+          <ul style={{ listStyle: 'none', marginBottom: '2rem', flex: 1 }}>
+            <FeatureItem text="Tudo do Modo Competitivo" />
+            <FeatureItem text="Histórico completo de campeonatos" />
+            <FeatureItem text="Relatório de rodadas detalhado" />
+            <FeatureItem text="Suporte prioritário" />
+            <FeatureItem text="Cupom de afiliado exclusivo (20%)" />
           </ul>
-
-          <button 
-            onClick={() => handlePlanClick('Elite Squad', 'R$25/mês')}
-            className="w-full py-5 bg-[var(--accent-amber)] hover:bg-[#FFD700] text-black text-[12px] font-black uppercase tracking-[0.3em] transition-all shadow-[0_10px_40px_rgba(245,158,11,0.2)] hover:shadow-[0_15px_50px_rgba(245,158,11,0.4)] flex items-center justify-center gap-3 relative group"
+          <button
+            onClick={() => handlePlanClick('Olá! Quero o plano Elite Squad do Celo Tracker!')}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.55rem',
+              width: '100%', padding: '.9rem', borderRadius: '10px', border: 'none',
+              background: 'linear-gradient(135deg,#7c3aed,#9333ea)', color: '#fff',
+              fontFamily: "'Inter', sans-serif", fontSize: '.9rem', fontWeight: 700,
+              cursor: 'pointer', transition: 'all .2s'
+            }}
           >
-            <Zap size={16} fill="black" />
-            <span>Entrar para o Elite</span>
-            <div className="absolute bottom-0 left-0 w-full h-[2px] bg-black/20" />
+            <WppIcon />
+            Quero o plano
           </button>
         </div>
 
       </div>
 
-      {/* FOOTER HUD */}
-      <div className="mt-32 pt-12 border-t border-white/5 flex flex-col items-center gap-10">
-        <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-20">
-          <div className="flex items-center gap-3 grayscale invert">
-            <img src="https://logopng.com.br/logos/pix-106.png" alt="PIX" className="h-5" />
-            <span className="text-[10px] font-black uppercase tracking-widest">SISTEMA PIX</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <ShieldCheck size={20} className="text-white" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-white">PROTOCOLO SEGURO</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <MessageCircle size={20} className="text-white" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-white">WHATSAPP SYNC</span>
-          </div>
+      {/* Footer */}
+      <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap', opacity: 0.4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <ShieldCheck size={16} color="#fff" />
+          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#fff' }}>Protocolo Seguro</span>
         </div>
-        
-        <div className="relative group cursor-help">
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/70 text-center max-w-lg leading-loose group-hover:text-white transition-colors">
-            PAGAMENTO VIA PIX OU TRANSFERÊNCIA DIRETO NO WHATSAPP. <br />
-            SUA ASSINATURA É LIBERADA INSTANTANEAMENTE PELA CENTRAL CELO.
-          </p>
-          <div className="absolute -bottom-2 left-0 w-full h-[1px] bg-[var(--accent-amber)] scale-x-0 group-hover:scale-x-50 transition-transform duration-700 mx-auto" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <MessageCircle size={16} color="#fff" />
+          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#fff' }}>WhatsApp Sync</span>
         </div>
       </div>
+
     </div>
   );
 };
