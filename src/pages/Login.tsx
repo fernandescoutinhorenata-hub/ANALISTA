@@ -17,7 +17,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const { session, loading: authLoading } = useAuth();
+    const { session } = useAuth();
 
     React.useEffect(() => {
         setActiveTab(mode);
