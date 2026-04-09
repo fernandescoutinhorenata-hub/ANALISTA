@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Celo Tracker — Analytics para Free Fire Competitivo</title>
+  <meta name="description" content="O Celo Tracker transforma screenshots em dados. Analytics automático via OCR para jogadores e coaches competitivos de Free Fire no Brasil. Filtros por liga, histórico de campeonatos e link público da squad." />
+  <meta name="keywords" content="Free Fire analytics, tracker Free Fire, coach Free Fire, estatísticas Free Fire, LBFF, Liga DN, OCR Free Fire" />
+  <meta property="og:title" content="Celo Tracker — Analytics para Free Fire Competitivo" />
+  <meta property="og:description" content="Suba a screenshot e em segundos já sabe onde cada jogador precisa melhorar." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ========== RESET & BASE ========== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:         #0a0a0f;
+      --bg-2:       #0f0f1a;
+      --bg-card:    #12121e;
+      --purple:     #7c3aed;
+      --purple-l:   #a855f7;
+      --purple-d:   #5b21b6;
+      --green:      #22c55e;
+      --green-d:    #16a34a;
+      --white:      #ffffff;
+      --gray-1:     #f4f4f8;
+      --gray-2:     #a1a1b5;
+      --gray-3:     #52526a;
+      --border:     rgba(124,58,237,0.18);
+      --ff-display: 'Barlow Condensed', sans-serif;
+      --ff-body:    'Barlow', sans-serif;
+      --radius:     6px;
+      --radius-l:   12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--ff-body);
+      background: var(--bg);
+      color: var(--gray-1);
+      overflow-x: hidden;
+      /* Noise texture */
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* ========== SCROLLBAR ========== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-2); }
+    ::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 3px; }
+
+    /* ========== ANIMATIONS ========== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0px); }
+      50%      { transform: translateY(-10px); }
+    }
+    @keyframes floatB {
+      0%,100% { transform: translateY(0px) rotate(-2deg); }
+      50%      { transform: translateY(-8px) rotate(2deg); }
+    }
+    @keyframes pulse-glow {
+      0%,100% { box-shadow: 0 0 24px 4px rgba(124,58,237,0.35); }
+      50%      { box-shadow: 0 0 48px 12px rgba(168,85,247,0.55); }
+    }
+    @keyframes badgePulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+      50%      { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-16px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ========== BUTTONS ========== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-family: var(--ff-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      letter-spacing: 0.01em;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-purple {
+      background: var(--purple);
+      color: #fff;
+    }
+    .btn-purple:hover {
+      background: var(--purple-l);
+      box-shadow: 0 0 20px rgba(124,58,237,0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #fff;
+    }
+    .btn-green:hover {
+      background: var(--green-d);
+      box-shadow: 0 0 20px rgba(34,197,94,0.45);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--gray-1);
+      border: 1px solid var(--gray-3);
+    }
+    .btn-ghost:hover {
+      border-color: var(--purple-l);
+      color: var(--purple-l);
+      transform: translateY(-2px);
+    }
+
+    .btn-lg {
+      padding: 16px 32px;
+      font-size: 17px;
+    }
+
+    /* ========== NAVBAR ========== */
+    #navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 68px;
+      background: rgba(10,10,15,0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      animation: slideIn 0.5s ease both;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--ff-display);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--white);
+    }
+    .nav-logo span.icon { font-size: 24px; }
+    .nav-logo span.highlight { color: var(--purple-l); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--gray-2);
+      transition: color 0.18s;
+    }
+    .nav-links a:hover { color: var(--white); }
+
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
+
+    /* ========== HERO ========== */
+    #hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 40px;
+      padding: 120px 48px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Purple glow top-right */
+    #hero::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -80px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.22) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      animation: fadeInUp 0.7s ease both;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green);
+      margin-bottom: 28px;
+      animation: badgePulse 2.4s ease infinite;
+    }
+    .hero-badge .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: badgePulse 2.4s ease infinite;
+    }
+
+    .hero-title {
+      font-family: var(--ff-display);
+      font-size: clamp(42px, 5vw, 68px);
+      font-weight: 800;
+      line-height: 1.05;
+      color: var(--white);
+      letter-spacing: -0.01em;
+      margin-bottom: 20px;
+    }
+    .hero-title .line-accent {
+      display: block;
+      background: linear-gradient(90deg, var(--purple-l), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: var(--gray-2);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      max-width: 480px;
+    }
+    .hero-sub strong { color: var(--gray-1); }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .hero-link {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-2);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.18s;
+    }
+    .hero-link:hover { color: var(--purple-l); }
+
+    /* ========== HERO DASHBOARD CARD ========== */
+    .hero-visual {
+      position: relative;
+      animation: fadeInUp 0.9s ease 0.2s both;
+    }
+
+    .dashboard-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-l);
+      padding: 24px;
+      animation: pulse-glow 4s ease infinite;
+      position: relative;
+    }
+
+    .dash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .dash-title {
+      font-family: var(--ff-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--gray-2);
+      text-transform: uppercase;
+    }
+    .dash-badge {
+      background: rgba(124,58,237,0.18);
+      border: 1px solid rgba(124,58,237,0.35);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--purple-l);
+      letter-spacing: 0.06em;
+    }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.18s;
+      cursor: default;
+    }
+    .player-row:last-child { border-bottom: none; }
+    .player-row:hover { background: rgba(124,58,237,0.06); border-radius: 6px; padding-left: 8px; }
+
+    .player-info { display: flex; align-items: center; gap: 12px; }
+    .player-rank {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .rank-1 { background: rgba(234,179,8,0.2); color: #eab308; }
+    .rank-2 { background: rgba(148,163,184,0.2); color: #94a3b8; }
+    .rank-3 { background: rgba(217,119,6,0.2); color: #d97706; }
+    .rank-4 { background: rgba(100,116,139,0.12); color: var(--gray-3); }
+
+    .player-name {
+      font-family: var(--ff-display);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--white);
+    }
+
+    .player-stats { display: flex; align-items: center; gap: 20px; }
+    .stat-kill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--purple-l);
+    }
+    .stat-kill .num { font-family: var(--ff-display); font-size: 20px; }
+
+    .kill-bar-wrap { width: 80px; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+    .kill-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--purple-d), var(--purple-l)); }
+
+    /* Floating mini-cards */
+    .mini-card {
+      position: absolute;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      min-width: 140px;
+    }
+    .mini-card-1 {
+      bottom: -28px;
+      left: -36px;
+      animation: float 3.6s ease infinite;
+    }
+    .mini-card-2 {
+      top: -24px;
+      right: -30px;
+      animation: floatB 4.2s ease infinite;
+    }
+
+    .mini-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-3);
+      margin-bottom: 4px;
+    }
+    .mini-value {
+      font-family: var(--ff-display);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--white);
+    }
+    .mini-value .unit { font-size: 14px; color: var(--gray-2); }
+    .mini-change {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green);
+      margin-top: 2px;
+    }
+
+    /* ========== TRUST BAR ========== */
+    #trust {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 48px;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      overflow-x: auto;
+    }
+    .trust-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-3);
+      white-space: nowrap;
+    }
+    .trust-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    .trust-logos {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      flex-wrap: nowrap;
+    }
+    .trust-logo {
+      font-family: var(--ff-display);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--gray-3);
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+    .trust-logo:hover { color: var(--gray-2); }
+
+    /* ========== SECTION GENERIC ========== */
+    .section {
+      padding: 100px 48px;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--purple-l);
+      margin-bottom: 16px;
+    }
+    .section-tag::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: var(--purple-l);
+    }
+
+    .section-title {
+      font-family: var(--ff-display);
+      font-size: clamp(32px, 4vw, 50px);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+    }
+
+    .section-sub {
+      font-size: 16px;
+      color: var(--gray-2);
+      line-height: 1.65;
+      max-width: 560px;
+    }
+
+    .section-header {
+      margin-bottom: 60px;
+    }
+
+    /* ========== FEATURES ========== */
+    #features { background: var(--bg-2); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    .feat-card {
+      background: var(--bg-card);
+      padding: 36px 32px;
+      border: 1px solid transparent;
+      transition: border-color 0.22s, background 0.22s, transform 0.22s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--purple), var(--purple-l));
+      opacity: 0;
+      transition: opacity 0.22s;
+    }
+    .feat-card:hover {
+      border-color: var(--border);
+      background: rgba(124,58,237,0.06);
+      transform: translateY(-4px);
+    }
+    .feat-card:hover::before { opacity: 1; }
+
+    .feat-icon {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    .feat-title {
+      font-family: var(--ff-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 10px;
+      letter-spacing: 0.02em;
+    }
+
+    .feat-desc {
+      font-size: 14px;
+      color: var(--gray-2);
+      line-height: 1.65;
+    }
+
+    /* ========== PLANOS ========== */
+    #pricing {
+      position: relative;
+    }
+    #pricing::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 300px;
+      background: radial-gradient(ellipse at center, rgba(124,58,237,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .plan-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-l);
+      padding: 40px 36px;
+      position: relative;
+      transition: transform 0.22s, box-shadow 0.22s;
+    }
+    .plan-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+    }
+
+    .plan-card.featured {
+      border-color: var(--purple);
+      background: linear-gradient(160deg, rgba(124,58,237,0.15), var(--bg-card) 60%);
+      box-shadow: 0 0 40px rgba(124,58,237,0.2);
+    }
+
+    .plan-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--purple);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .plan-name {
+      font-family: var(--ff-display);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--gray-2);
+      margin-bottom: 8px;
+    }
+
+    .plan-price {
+      font-family: var(--ff-display);
+      font-size: clamp(42px, 5vw, 56px);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .plan-price sup {
+      font-size: 22px;
+      font-weight: 600;
+      vertical-align: super;
+      margin-right: 2px;
+    }
+
+    .plan-period {
+      font-size: 14px;
+      color: var(--gray-3);
+      margin-bottom: 8px;
+    }
+
+    .plan-economy {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 28px;
+    }
+
+    .plan-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+
+    .plan-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .plan-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--gray-2);
+      line-height: 1.5;
+    }
+    .plan-features li .check {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(124,58,237,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--purple-l);
+      margin-top: 1px;
+    }
+    .plan-card.featured .plan-features li .check {
+      background: rgba(124,58,237,0.35);
+    }
+
+    .plan-btn { width: 100%; justify-content: center; }
+
+    /* ========== DEPOIMENTO ========== */
+    #testimonial {
+      background: var(--bg-2);
+    }
+
+    .testimonial-inner {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .testimonial-card {
+      background: linear-gradient(135deg, rgba(124,58,237,0.25) 0%, rgba(91,33,182,0.15) 100%);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: var(--radius-l);
+      padding: 56px 48px;
+      position: relative;
+      text-align: center;
+    }
+
+    .testimonial-quote {
+      position: absolute;
+      top: -20px;
+      left: 48px;
+      font-size: 96px;
+      font-family: Georgia, serif;
+      line-height: 1;
+      color: var(--purple);
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .testimonial-text {
+      font-size: 19px;
+      color: var(--gray-1);
+      line-height: 1.72;
+      margin-bottom: 32px;
+      font-style: italic;
+      position: relative;
+      z-index: 1;
+    }
+
+    .testimonial-author {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .author-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--purple-l));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--ff-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .author-name {
+      font-family: var(--ff-display);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--white);
+    }
+    .author-role {
+      font-size: 13px;
+      color: var(--gray-2);
+    }
+    .stars { color: #eab308; font-size: 16px; margin-top: 4px; }
+
+    /* ========== CTA FINAL ========== */
+    #cta {
+      text-align: center;
+      padding: 100px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    #cta::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-family: var(--ff-display);
+      font-size: clamp(34px, 4.5vw, 58px);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.08;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .cta-sub {
+      font-size: 17px;
+      color: var(--gray-2);
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .cta-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    /* ========== FOOTER ========== */
+    footer {
+      background: var(--bg-2);
+      border-top: 1px solid var(--border);
+      padding: 32px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-logo {
+      font-family: var(--ff-display);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 13px;
+      color: var(--gray-3);
+      transition: color 0.18s;
+    }
+    .footer-links a:hover { color: var(--gray-1); }
+
+    .footer-copy {
+      font-size: 13px;
+      color: var(--gray-3);
+    }
+
+    /* ========== WA ICON ========== */
+    .wa-icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    /* ========== SCROLL REVEAL ========== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 900px) {
+      #navbar {
+        padding: 0 20px;
+        height: 60px;
+      }
+      .nav-links { display: none; }
+
+      #hero {
+        grid-template-columns: 1fr;
+        padding: 100px 20px 60px;
+        gap: 50px;
+        text-align: center;
+      }
+      #hero::before { width: 300px; height: 300px; top: -60px; right: -60px; }
+
+      .hero-sub { max-width: 100%; }
+      .hero-actions { justify-content: center; }
+
+      .mini-card-1 { left: 0; bottom: -20px; }
+      .mini-card-2 { right: 0; top: -16px; }
+      .mini-card { min-width: 120px; padding: 10px 12px; }
+      .mini-value { font-size: 20px; }
+
+      #trust {
+        padding: 20px;
+        gap: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .section { padding: 70px 20px; }
+      .section-header { margin-bottom: 36px; }
+
+      .features-grid { grid-template-columns: 1fr; gap: 2px; }
+
+      .pricing-grid { grid-template-columns: 1fr; }
+
+      .testimonial-card { padding: 40px 24px; }
+      .testimonial-text { font-size: 16px; }
+
+      #cta { padding: 70px 20px; }
+
+      footer {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 24px 20px;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .hero-actions .btn { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <header id="navbar" role="banner">
+    <a href="#" class="nav-logo" aria-label="Celo Tracker - Página inicial">
+      <span class="icon" aria-hidden="true">🎯</span>
+      <span>CELO <span class="highlight">TRACKER</span></span>
+    </a>
+
+    <nav aria-label="Navegação principal">
+      <ul class="nav-links">
+        <li><a href="#features">Funcionalidades</a></li>
+        <li><a href="#pricing">Planos</a></li>
+        <li><a href="#testimonial">Depoimentos</a></li>
+      </ul>
+    </nav>
+
+    <div class="nav-actions">
+      <a
+        href="https://wa.me/5513981630304?text=Ol%C3%A1!%20Quero%20entrar%20na%20minha%20conta%20do%20Celo%20Tracker!"
+        class="btn btn-ghost"
+        id="btn-entrar"
+        aria-label="Entrar na conta"
+        target="_blank" rel="noopener noreferrer"
+      >Entrar</a>
+      <a
+        href="https://wa.me/5513981630304?text=Ol%C3%A1!%20Quero%20adquirir%20um%20plano%20do%20Celo%20Tracker!"
+        class="btn btn-purple"
+        id="btn-cta-nav"
+        aria-label="Começar agora"
+        target="_blank" rel="noopener noreferrer"
+      >Começar agora</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== HERO ===== -->
+    <section id="hero" aria-label="Seção principal">
+
+      <div class="hero-content">
+
+        <div class="hero-badge" aria-label="Analytics para Free Fire">
+          <span class="dot" aria-hidden="true"></span>
+          Analytics para Free Fire
+        </div>
+
+        <h1 class="hero-title">
+          Veja sua squad
+          <span class="line-accent">evoluir rodada</span>
+          a rodada
+        </h1>
+
+        <p class="hero-sub">
+          Suba a screenshot do resultado e nossa <strong>IA com OCR</strong> extrai
+          os dados automaticamente. Filtre por <strong>liga, data e campeonato</strong>
+          e acesse estatísticas reais da sua squad sem digitar nada.
+        </p>
+
+        <div class="hero-actions">
+          <a
+            href="https://wa.me/5513981630304?text=Ol%C3%A1!%20Quero%20adquirir%20um%20plano%20do%20Celo%20Tracker!"
+            class="btn btn-green btn-lg"
+            id="btn-hero-whatsapp"
+            target="_blank" rel="noopener noreferrer"
+            aria-label="Quero adquirir um plano via WhatsApp"
+          >
+            <svg class="wa-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            Quero adquirir um plano
+          </a>
+          <a href="#features" class="hero-link" id="link-ver-funcionalidades">
+            Ver funcionalidades →
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Dashboard preview -->
+      <div class="hero-visual">
+
+        <!-- Mini card 1: kills total -->
+        <div class="mini-card mini-card-1" aria-hidden="true">
+          <div class="mini-label">Kills na rodada</div>
+          <div class="mini-value">90 <span class="unit">kills</span></div>
+          <div class="mini-change">↑ Top 1 da liga</div>
+        </div>
+
+        <div class="dashboard-card" role="img" aria-label="Preview do dashboard: ranking de kills dos jogadores">
+          <div class="dash-header">
+            <span class="dash-title">Ranking da Squad</span>
+            <span class="dash-badge">AO VIVO</span>
+          </div>
+
+          <!-- Player rows -->
+          <div class="player-row">
+            <div class="player-info">
+              <div class="player-rank rank-1" aria-label="1º lugar">1</div>
+              <span class="player-name">BOKA</span>
+            </div>
+            <div class="player-stats">
+              <div class="stat-kill"><span class="num">36</span> kills</div>
+              <div class="kill-bar-wrap"><div class="kill-bar" style="width:100%"></div></div>
+            </div>
+          </div>
+
+          <div class="player-row">
+            <div class="player-info">
+              <div class="player-rank rank-2" aria-label="2º lugar">2</div>
+              <span class="player-name">FEIJAO</span>
+            </div>
+            <div class="player-stats">
+              <div class="stat-kill"><span class="num">19</span> kills</div>
+              <div class="kill-bar-wrap"><div class="kill-bar" style="width:52%"></div></div>
+            </div>
+          </div>
+
+          <div class="player-row">
+            <div class="player-info">
+              <div class="player-rank rank-3" aria-label="3º lugar">3</div>
+              <span class="player-name">TWO</span>
+            </div>
+            <div class="player-stats">
+              <div class="stat-kill"><span class="num">18</span> kills</div>
+              <div class="kill-bar-wrap"><div class="kill-bar" style="width:50%"></div></div>
+            </div>
+          </div>
+
+          <div class="player-row">
+            <div class="player-info">
+              <div class="player-rank rank-4" aria-label="4º lugar">4</div>
+              <span class="player-name">M9</span>
+            </div>
+            <div class="player-stats">
+              <div class="stat-kill"><span class="num">17</span> kills</div>
+              <div class="kill-bar-wrap"><div class="kill-bar" style="width:47%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini card 2: média de kills -->
+        <div class="mini-card mini-card-2" aria-hidden="true">
+          <div class="mini-label">Média de kills</div>
+          <div class="mini-value">22,5</div>
+          <div class="mini-change">↑ +3.2 vs última rodada</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== TRUST BAR ===== -->
+    <div id="trust" aria-label="Times que usam o Celo Tracker">
+      <span class="trust-label">Usado por times de</span>
+      <div class="trust-divider" aria-hidden="true"></div>
+      <div class="trust-logos">
+        <span class="trust-logo">LIGA DN</span>
+        <span class="trust-logo">FREE FIRE BR</span>
+        <span class="trust-logo">ESL FF</span>
+        <span class="trust-logo">LBFF</span>
+        <span class="trust-logo">COPA FF</span>
+      </div>
+    </div>
+
+    <!-- ===== FUNCIONALIDADES ===== -->
+    <section id="features" class="section" aria-labelledby="features-title">
+      <div class="section-header reveal">
+        <p class="section-tag">Funcionalidades</p>
+        <h2 class="section-title" id="features-title">Tudo que um coach<br>competitivo precisa</h2>
+        <p class="section-sub">
+          Do upload da screenshot ao relatório completo — sem planilha, sem digitação, sem complicação.
+        </p>
+      </div>
+
+      <div class="features-grid">
+
+        <div class="feat-card reveal" id="feat-ocr">
+          <div class="feat-icon" aria-hidden="true">🤖</div>
+          <h3 class="feat-title">OCR Automático</h3>
+          <p class="feat-desc">Suba a screenshot do resultado e nossa IA extrai todos os dados: kills, dano, sobrevivência e posição — em segundos, sem digitar nada.</p>
+        </div>
+
+        <div class="feat-card reveal" id="feat-analytics">
+          <div class="feat-icon" aria-hidden="true">📊</div>
+          <h3 class="feat-title">Analytics em Tempo Real</h3>
+          <p class="feat-desc">Filtre por liga, data e campeonato e veja métricas atualizadas da squad. Identifica o melhor e pior desempenho de cada jogador em cada contexto.</p>
+        </div>
+
+        <div class="feat-card reveal" id="feat-link">
+          <div class="feat-icon" aria-hidden="true">🔗</div>
+          <h3 class="feat-title">Link Público da Squad</h3>
+          <p class="feat-desc">Compartilhe o dashboard da sua squad com qualquer pessoa sem precisar de login. Ideal para transmissões, patrocinadores e scouting.</p>
+        </div>
+
+        <div class="feat-card reveal" id="feat-historico">
+          <div class="feat-icon" aria-hidden="true">🏆</div>
+          <h3 class="feat-title">Histórico por Campeonato</h3>
+          <p class="feat-desc">Compare a performance da squad entre diferentes torneios. Veja a evolução ao longo do tempo e identifique tendências de melhora.</p>
+        </div>
+
+        <div class="feat-card reveal" id="feat-rodadas">
+          <div class="feat-icon" aria-hidden="true">🔄</div>
+          <h3 class="feat-title">Rodadas</h3>
+          <p class="feat-desc">Acompanhe a evolução rodada a rodada dentro de um campeonato. Gráficos de barras e tabelas detalhadas por jogador para análise tática precisa.</p>
+        </div>
+
+        <div class="feat-card reveal" id="feat-afiliados">
+          <div class="feat-icon" aria-hidden="true">💰</div>
+          <h3 class="feat-title">Sistema de Afiliados</h3>
+          <p class="feat-desc">Indique o Celo Tracker e ganhe <strong>20% de comissão</strong> por cada plano vendido com seu cupom exclusivo. Renda passiva para quem está na cena.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== PLANOS ===== -->
+    <section id="pricing" class="section" aria-labelledby="pricing-title">
+      <div class="section-header reveal" style="text-align:center; align-items:center; display:flex; flex-direction:column;">
+        <p class="section-tag">Planos</p>
+        <h2 class="section-title" id="pricing-title">Invista no seu nível</h2>
+        <p class="section-sub" style="text-align:center;">Sem contrato de fidelidade. Cancele quando quiser. Ative via WhatsApp em minutos.</p>
+      </div>
+
+      <div class="pricing-grid">
+
+        <!-- Plano Semanal -->
+        <div class="plan-card reveal" id="plano-semanal" aria-label="Plano Semanal">
+          <div class="plan-name">Semanal</div>
+          <div class="plan-price"><sup>R$</sup>10</div>
+          <div class="plan-period">por semana</div>
+
+          <div class="plan-divider"></div>
+
+          <ul class="plan-features" aria-label="O que inclui o plano semanal">
+            <li><span class="check" aria-hidden="true">✓</span>OCR até 20 screenshots/hora</li>
+            <li><span class="check" aria-hidden="true">✓</span>Dashboard completo da squad</li>
+            <li><span class="check" aria-hidden="true">✓</span>Filtros por liga e data</li>
+            <li><span class="check" aria-hidden="true">✓</span>Link público da squad</li>
+          </ul>
+
+          <a
+            href="https://wa.me/5513981630304?text=Ol%C3%A1!%20Quero%20o%20plano%20Semanal%20(R%2410%2Fsemana)%20do%20Celo%20Tracker!"
+            class="btn btn-green btn-lg plan-btn"
+            id="btn-plano-semanal"
+            target="_blank" rel="noopener noreferrer"
+            aria-label="Assinar plano semanal via WhatsApp"
+          >
+            <svg class="wa-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            Assinar Semanal
+          </a>
+        </div>
+
+        <!-- Plano Mensal (destaque) -->
+        <div class="plan-card featured reveal" id="plano-mensal" aria-label="Plano Mensal — Mais popular">
+          <div class="plan-badge" aria-label="Plano mais popular">🔥 MAIS POPULAR</div>
+
+          <div class="plan-name">Mensal</div>
+          <div class="plan-price"><sup>R$</sup>25</div>
+          <div class="plan-period">por mês</div>
+          <div class="plan-economy">🎉 Economize R$15</div>
+
+          <div class="plan-divider"></div>
+
+          <ul class="plan-features" aria-label="O que inclui o plano mensal">
+            <li><span class="check" aria-hidden="true">✓</span>Tudo do plano Semanal</li>
+            <li><span class="check" aria-hidden="true">✓</span>Histórico completo de campeonatos</li>
+            <li><span class="check" aria-hidden="true">✓</span>Relatório de rodadas detalhado</li>
+            <li><span class="check" aria-hidden="true">✓</span>Suporte prioritário</li>
+            <li><span class="check" aria-hidden="true">✓</span>Cupom de afiliado exclusivo</li>
+          </ul>
+
+          <a
+            href="https://wa.me/5513981630304?text=Ol%C3%A1!%20Quero%20o%20plano%20Mensal%20(R%2425%2Fm%C3%AAs)%20do%20Celo%20Tracker!"
+            class="btn btn-purple btn-lg plan-btn"
+            id="btn-plano-mensal"
+            target="_blank" rel="noopener noreferrer"
+            aria-label="Assinar plano mensal via WhatsApp"
+          >
+            <svg class="wa-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            Assinar Mensal
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== DEPOIMENTO ===== -->
+    <section id="testimonial" class="section" aria-labelledby="testimonial-title">
+      <div class="section-header reveal" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+        <p class="section-tag">Depoimentos</p>
+        <h2 class="section-title" id="testimonial-title">O que os coaches dizem</h2>
+      </div>
+
+      <div class="testimonial-inner">
+        <blockquote class="testimonial-card reveal">
+          <div class="testimonial-quote" aria-hidden="true">"</div>
+          <p class="testimonial-text">
+            "O Celo Tracker mudou como eu preparo minha equipe.
+            Antes eu ficava copiando dado na mão. Agora subo a screenshot
+            e em segundos já sei onde cada jogador precisa melhorar."
+          </p>
+          <footer class="testimonial-author">
+            <div class="author-avatar" aria-hidden="true">CR</div>
+            <cite class="author-name">COACH RAFINHA</cite>
+            <span class="author-role">Liga DN</span>
+            <div class="stars" aria-label="5 estrelas">★★★★★</div>
+          </footer>
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- ===== CTA FINAL ===== -->
+    <section id="cta" aria-labelledby="cta-title">
+      <h2 class="cta-title reveal" id="cta-title">
+        Pronto para elevar o nível<br>da sua squad?
+      </h2>
+      <p class="cta-sub reveal">Fale com a gente no WhatsApp e ative seu plano agora.</p>
+
+      <div class="cta-actions reveal">
+        <a
+          href="https://wa.me/5513981630304?text=Ol%C3%A1!%20Quero%20adquirir%20um%20plano%20do%20Celo%20Tracker!"
+          class="btn btn-green btn-lg"
+          id="btn-cta-final"
+          target="_blank" rel="noopener noreferrer"
+          aria-label="Quero adquirir um plano via WhatsApp"
+        >
+          <svg class="wa-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          Quero adquirir um plano
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer role="contentinfo">
+    <div class="footer-logo" aria-label="Celo Tracker">
+      <span aria-hidden="true">🎯</span>
+      CELO TRACKER
+    </div>
+
+    <ul class="footer-links" aria-label="Links do rodapé">
+      <li><a href="#" id="link-privacidade">Política de privacidade</a></li>
+      <li><a href="#" id="link-termos">Termos de uso</a></li>
+    </ul>
+
+    <p class="footer-copy">© 2025 Celo Tracker. Todos os direitos reservados.</p>
+  </footer>
+
+  <!-- ===== JS: Scroll Reveal ===== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // Scroll reveal
+      const revealEls = document.querySelectorAll('.reveal');
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+      );
+
+      revealEls.forEach((el) => observer.observe(el));
+
+      // Stagger feature cards
+      const featCards = document.querySelectorAll('.feat-card');
+      featCards.forEach((card, i) => {
+        card.style.transitionDelay = `${i * 80}ms`;
+      });
+
+      // Navbar scroll shadow
+      const navbar = document.getElementById('navbar');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 30) {
+          navbar.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4)';
+        } else {
+          navbar.style.boxShadow = 'none';
+        }
+      }, { passive: true });
+
+      // Active nav link highlight
+      const sections = document.querySelectorAll('section[id]');
+      const navLinks = document.querySelectorAll('.nav-links a');
+
+      const linkObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              navLinks.forEach((link) => {
+                link.style.color = '';
+                if (link.getAttribute('href') === '#' + entry.target.id) {
+                  link.style.color = 'var(--purple-l)';
+                }
+              });
+            }
+          });
+        },
+        { threshold: 0.4 }
+      );
+
+      sections.forEach((s) => linkObserver.observe(s));
+    })();
+  </script>
+
+</body>
+</html>
