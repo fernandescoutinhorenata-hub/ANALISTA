@@ -5,7 +5,7 @@
             "destination": "/landing.html"
         },
         {
-            "source": "/(.*)",
+            "source": "/((?!.*\\.).*)",
             "destination": "/index.html"
         }
     ]
