@@ -164,6 +164,62 @@ export const InputData: React.FC = () => {
         setPlayers(newPlayers);
     };
 
+    // ─── Auxiliares de Experiência do Usuário ────────────────────────────────
+    const resetForm = () => {
+        setMatchData({
+            data: new Date().toISOString().split('T')[0],
+            campeonato: '',
+            mapa: '',
+            rodada: '',
+            colocacao: '',
+            equipe: 'SQUAD PRINCIPAL',
+            totalKillsManual: '0'
+        });
+        setPlayers([
+            { nome: '', kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' },
+            { nome: '', kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' },
+            { nome: '', kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' },
+            { nome: '', kills: '0', assistencias: '0', derrubados: '0', dano: '0', morte: '0', revividos: '0' },
+        ]);
+        setCallDetail({ quebraCall: null, resultadoCall: null, qualCall: '' });
+        setCurrentMatchId(null);
+    };
+
+    const compressImage = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const MAX_SIZE = 1200;
+
+                if (width > height) {
+                    if (width > MAX_SIZE) {
+                        height *= MAX_SIZE / width;
+                        width = MAX_SIZE;
+                    }
+                } else {
+                    if (height > MAX_SIZE) {
+                        width *= MAX_SIZE / height;
+                        height = MAX_SIZE;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                
+                const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+                resolve(base64);
+                URL.revokeObjectURL(img.src);
+            };
+            img.onerror = reject;
+        });
+    };
+
     // ─── OCR via Claude Vision (Anthropic) ─────────────────────────────────────
     const handleScreenshot = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -181,16 +237,7 @@ export const InputData: React.FC = () => {
 
         setOcrLoading(true);
         try {
-            // Converter para base64
-            const base64 = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const result = reader.result as string;
-                    resolve(result.split(',')[1]);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
+            const base64 = await compressImage(file);
 
             const mediaType = file.type || 'image/jpeg';
             const rawJson = await readScreenshot(base64, mediaType);
@@ -364,7 +411,7 @@ export const InputData: React.FC = () => {
 
             if (error) throw error;
             setIsMatchDetailModalOpen(false);
-            window.location.reload();
+            resetForm();
         } catch (err: any) {
             showToast(err.message || 'Erro ao salvar detalhes', 'error');
             setLoading(false);
@@ -384,7 +431,7 @@ export const InputData: React.FC = () => {
 
             if (error) throw error;
             setIsMatchDetailModalOpen(false);
-            window.location.reload();
+            resetForm();
         } catch (err: any) {
             showToast(err.message || 'Erro', 'error');
             setLoading(false);
@@ -393,7 +440,7 @@ export const InputData: React.FC = () => {
 
     const handleCloseDetailModal = () => {
         setIsMatchDetailModalOpen(false);
-        window.location.reload();
+        resetForm();
     };
     const handleResetData = async () => {
         if (!user || resetLoading) return;
