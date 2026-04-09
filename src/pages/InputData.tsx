@@ -240,7 +240,11 @@ export const InputData: React.FC = () => {
             const base64 = await compressImage(file);
 
             const mediaType = file.type || 'image/jpeg';
-            const rawJson = await readScreenshot(base64, mediaType);
+            
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log('[OCR DEBUG] session detectada:', !!session, '| token existe:', !!session?.access_token);
+            
+            const rawJson = await readScreenshot(base64, mediaType, session?.access_token);
 
             if (!rawJson || rawJson === '{}') {
                 showToast('Não foi possível extrair dados da imagem.', 'error');
