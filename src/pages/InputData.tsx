@@ -313,6 +313,7 @@ export const InputData: React.FC = () => {
                 const nomeSeguro = matchNomeOficial(p.nome, squadJogadores.map(s => s.nome_oficial));
                 return {
                     user_id: user.id,
+                    partida_id: inserted?.id, // Vínculo direto com a partida geral
                     data: matchData.data,
                     equipe: matchData.equipe,
                     modo: 'Campeonato',
