@@ -17,10 +17,19 @@ Return ONLY the nickname (middle or last Latin word).
 Ignore any Japanese, Chinese, or special unicode characters.
 Return names in UPPERCASE Latin characters only.`;
 
-    const { data, error } = await supabase.functions.invoke('ocr', {
-        body: { base64Image, mediaType, prompt }
-    })
+    const response = await fetch('/api/ocr', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ base64Image, mediaType, prompt })
+    });
 
-    if (error) throw new Error(error.message)
-    return data?.result || '{}'
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: 'Erro desconhecido no OCR' }));
+        throw new Error(err.error || `Erro HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.result || '{}';
 }
