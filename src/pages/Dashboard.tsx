@@ -191,6 +191,16 @@ export const Dashboard: React.FC = () => {
     const [expandedRound, setExpandedRound] = useState<string | null>(null); // data|mapa|rodada
     const [roundPlayerData, setRoundPlayerData] = useState<any[]>([]);
 
+    // ─── Sincronização de Filtros Globais (Navbar) com Abas Locais ────────────
+    useEffect(() => {
+        setPlayerDateFilter(filters.date);
+        setPlayerChampFilter(filters.championship);
+        setPlayerRoundFilter(filters.round);
+        
+        setRoundChampFilter(filters.championship);
+        setRoundDateFilter(filters.date); // aba rodadas não tem filtro de rodada em cima
+    }, [filters.date, filters.championship, filters.round]);
+
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
