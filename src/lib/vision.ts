@@ -14,9 +14,9 @@ export async function readScreenshot(base64Image: string, _mediaType: string, ac
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    // Edge Function espera o campo "image" com base64 puro (sem prefixo data URI)
+    // A API original da Edge Function espera base64Image e mediaType explícitos.
     const { data, error } = await supabase.functions.invoke('ocr', {
-        body: { image: base64Image },
+        body: { base64Image, mediaType: _mediaType },
         headers: Object.keys(headers).length > 0 ? headers : undefined
     })
 
