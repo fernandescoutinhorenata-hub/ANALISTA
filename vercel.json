@@ -1,15 +1,16 @@
 {
-  "redirects": [
-    {
-      "source": "/landing/index.html",
-      "destination": "/landing",
-      "permanent": true
-    }
-  ],
   "rewrites": [
-    { "source": "/landing", "destination": "/landing/index.html" },
-    { "source": "/landing/", "destination": "/landing/index.html" },
-    { "source": "/((?!landing|api|_next|dashboard1|dashboard2|dashboard3).*)", 
-      "destination": "/index.html" }
+    { 
+      "source": "/landing", 
+      "destination": "/landing/index.html" 
+    },
+    { 
+      "source": "/landing/", 
+      "destination": "/landing/index.html" 
+    },
+    { 
+      "source": "/((?!landing|api|dashboard1|dashboard2|dashboard3).*)", 
+      "destination": "/index.html" 
+    }
   ]
 }
