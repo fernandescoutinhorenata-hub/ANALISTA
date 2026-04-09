@@ -512,24 +512,34 @@ export const Dashboard: React.FC = () => {
                     return;
                 }
 
-                const agg: Record<string, any> = {};
-                const playerMatches: Record<string, Set<string>> = {};
+                const jogadoresMap: Record<string, any> = {};
 
                 rows.forEach((p: any) => {
-                    const playerName = p.player;
-                    if (!agg[playerName]) agg[playerName] = { name: playerName, kills: 0, damage: 0, assists: 0, deaths: 0, derrubados: 0 };
-                    if (!playerMatches[playerName]) playerMatches[playerName] = new Set();
-                    agg[playerName].kills += Number(p.kill) || 0;
-                    agg[playerName].damage += Number(p.dano_causado) || 0;
-                    agg[playerName].assists += Number(p.assistencia) || 0;
-                    agg[playerName].deaths += Number(p.morte) || 0;
-                    agg[playerName].derrubados += Number(p.derrubados) || 0;
-                    playerMatches[playerName].add(`${p.data}|${p.mapa}|${p.rodada}`);
+                    const nome = p.player;
+                    if (!jogadoresMap[nome]) {
+                        jogadoresMap[nome] = {
+                            name: nome,
+                            kills: 0,
+                            damage: 0,
+                            assists: 0,
+                            deaths: 0,
+                            derrubados: 0,
+                            partidas: new Set<string>()
+                        };
+                    }
+                    // Usa os nomes reais das colunas da view (herdados de performance_jogadores)
+                    jogadoresMap[nome].kills += Number(p.kill) || 0;
+                    jogadoresMap[nome].damage += Number(p.dano_causado) || 0;
+                    jogadoresMap[nome].assists += Number(p.assistencia) || 0;
+                    jogadoresMap[nome].deaths += Number(p.morte) || 0;
+                    jogadoresMap[nome].derrubados += Number(p.derrubados) || 0;
+                    // Cada linha é uma partida única — data+mapa+rodada identifica a sala
+                    jogadoresMap[nome].partidas.add(`${p.data}|${p.mapa}|${p.rodada}`);
                 });
 
                 if (isCancelled) return; // Checa antes de setar estado
 
-                let arr = Object.values(agg).map((p: any) => ({
+                let arr = Object.values(jogadoresMap).map((p: any) => ({
                     name: p.name,
                     abates: p.kills,
                     mortes: p.deaths,
@@ -537,7 +547,7 @@ export const Dashboard: React.FC = () => {
                     dano: p.damage,
                     kd: parseFloat((p.kills / Math.max(1, p.deaths)).toFixed(2)),
                     derrubados: p.derrubados,
-                    quedas: playerMatches[p.name]?.size || 0,
+                    quedas: p.partidas.size,
                 }));
 
                 arr.sort((a: any, b: any) => {
