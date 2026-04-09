@@ -184,6 +184,7 @@ export const Dashboard: React.FC = () => {
     const [playerSelectedPlayer, setPlayerSelectedPlayer] = useState<string>('Todos');
     const [playerTableData, setPlayerTableData] = useState<any[]>([]);
     const [playerStatsLoading, setPlayerStatsLoading] = useState(false);
+    const [playerChampOptions, setPlayerChampOptions] = useState<string[]>([]); // opções vindas direto da view
 
     // ─── Estados para Aba Rodadas ──────────────────────────────────────────
     const [roundChampFilter, setRoundChampFilter] = useState<string>('Todos');
@@ -460,25 +461,45 @@ export const Dashboard: React.FC = () => {
             setPlayerTableData([]);
             
             try {
-                const perfRes = await supabase
-                    .from('vw_jogadores_com_campeonato')
-                    .select('*')
-                    .eq('user_id', user.id);
+                // Busca dados e opções do dropdown em paralelo, ambos da view
+                const [perfRes, champsRes] = await Promise.all([
+                    supabase
+                        .from('vw_jogadores_com_campeonato')
+                        .select('*')
+                        .eq('user_id', user.id),
+                    supabase
+                        .from('vw_jogadores_com_campeonato')
+                        .select('campeonato_correto')
+                        .eq('user_id', user.id)
+                        .not('campeonato_correto', 'is', null)
+                ]);
 
                 // Se o componente desmontou ou filtro mudou, ignora o resultado
                 if (isCancelled) return;
                 if (perfRes.error) throw perfRes.error;
 
+                // Popula dropdown de campeonato direto da view (fonte única de verdade)
+                if (!champsRes.error && champsRes.data) {
+                    const uniqueChamps = Array.from(
+                        new Set(champsRes.data.map((r: any) => String(r.campeonato_correto).trim().toUpperCase()))
+                    ).sort() as string[];
+                    setPlayerChampOptions(uniqueChamps);
+                }
+
                 const allPerfRows = perfRes.data || [];
                 
                 const rows = allPerfRows.filter((p: any) => {
-                    const campReal = p.campeonato_correto || p.campeonato; // Usa a view, faz fallback caso ocorra distanciamento na join
-                    
+                    // Normaliza campeonato usando sempre campeonato_correto da view como fonte primária
+                    const campReal = p.campeonato_correto
+                        ? String(p.campeonato_correto).trim().toUpperCase()
+                        : p.campeonato
+                            ? String(p.campeonato).trim().toUpperCase()
+                            : 'SEM EVENTO';
+
                     const normPlayer = String(p.player).trim().toUpperCase();
                     const matchDate = playerDateFilter === 'Todos' || p.data === playerDateFilter;
                     const matchPlayer = playerSelectedPlayer === 'Todos' || normPlayer === playerSelectedPlayer.trim().toUpperCase();
-                    const champ = campReal ? String(campReal).trim().toUpperCase() : 'SEM EVENTO';
-                    const matchChamp = playerChampFilter === 'Todos' || champ === playerChampFilter.trim().toUpperCase();
+                    const matchChamp = playerChampFilter === 'Todos' || campReal === playerChampFilter.trim().toUpperCase();
                     const roundText = p.rodada ? String(p.rodada).trim() : '';
                     const matchRound = playerRoundFilter === 'Todos' || roundText === playerRoundFilter;
                     return matchDate && matchPlayer && matchChamp && matchRound;
@@ -1497,7 +1518,8 @@ export const Dashboard: React.FC = () => {
                                                 className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
                                             >
                                                 <option value="Todos" className="bg-[#141416]">Todos os Eventos</option>
-                                                {filterOptions.championships.map(c => (
+                                                {/* Usa playerChampOptions populado direto da view para evitar mismatch */}
+                                                {playerChampOptions.map(c => (
                                                     <option key={c} value={c} className="bg-[#141416]">{c}</option>
                                                 ))}
                                             </select>
