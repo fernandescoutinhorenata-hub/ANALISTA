@@ -6,6 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// LÓGICA DE EXTRAÇÃO (v17 ESTÁVEL):
+// - O K/D/A no Free Fire aparece como um campo composto (ex: 10/1/3) logo ABAIXO do nickname do jogador.
+// - As colunas da tabela à direita começam diretamente com o Dano (DMG), que deve ser mapeado separadamente.
+// - Regras de extração documentadas em: supabase/functions/ocr/PARSING_RULES.md
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -16,7 +21,7 @@ serve(async (req) => {
     
     // Config Supabase to verify user
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')! // Or SERVICE_ROLE for query
     
     // Service role pra burlar RLS e ler a tabela limits
     const sRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -30,11 +35,10 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
     
     if (authError || !user) {
-      console.error('[OCR] Auth Error or user missing')
       return new Response('Unauthorized', { status: 401, headers: corsHeaders })
     }
 
-    // Rate Limiting: Máx 50 tentativas por usuário por hora
+    // Rate Limiting: Máx 20 tentativas por usuário por hora
     const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     const { count, error: rlError } = await supabaseAdmin
       .from('api_rate_limits')
@@ -45,8 +49,7 @@ serve(async (req) => {
 
     if (rlError) {
       console.error('[OCR] RL Error', rlError)
-    } else if (count !== null && count >= 50) {
-      console.warn(`[OCR] Rate limit hit for user ${user.id}: ${count}`)
+    } else if (count !== null && count >= 20) {
       return new Response(JSON.stringify({ error: 'Limite OCR atingido. Tente novamente em 1 hora.' }), {
         status: 429,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -65,7 +68,7 @@ serve(async (req) => {
     }
 
     const { base64Image, mediaType } = await req.json()
-    console.log(`[OCR] Chamando Anthropic — user: ${user.id}, model: claude-3-haiku-20240307`)
+    console.log(`[OCR] Iniciando análise — user: ${user.id}, mediaType: ${mediaType}, tamanho base64: ${base64Image?.length ?? 0}`)
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -86,31 +89,94 @@ serve(async (req) => {
             },
             {
               type: 'text',
-              text: 'Extraia os dados da partida do Free Fire em JSON conforme as regras padrão.'
+              text: `Analise esta imagem de resultado de partida do Free Fire e retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem blocos de código.
+
+ESTRUTURA VISUAL DA LINHA DO JOGADOR:
+[CLÃ + NICK] -> Abaixo dele tem o [K/D/A] (ex: 9/1/3) -> Ao lado começam as colunas numéricas:
+[DMG] | [DANO REAL] | [DERRUBADOS] | [CURA] | [LEVANTADOS] | [RESSURGIMENTO] | [% CABEÇA]
+
+REGRAS DE EXTRAÇÃO — CRÍTICO:
+
+1. NICKNAME: Extraia apenas o Nick, removendo tags de clã (ex: "7RS Mgking" -> "Mgking").
+2. K/D/A (Kills/Deaths/Assists): Localizado LOGO ABAIXO do nick. Formato numérico X/Y/Z. 
+   - Kills = primeiro número (X)
+   - Mortes = segundo número (Y) 
+   - Assists = terceiro número (Z)
+   IMPORTANTE: Não confunda o K/D/A com as colunas à direita.
+
+3. ESTATÍSTICAS (Colunas à direita do Nick/KDA):
+   - dano (DMG): Primeira coluna numérica após o bloco do nick. Valores altos (ex: 4126).
+   - derrubados: Terceira coluna numérica da tabela. NUNCA use o valor da coluna CURA ou Kills para este campo.
+   - ressurgimentos: Sexta coluna numérica (geralmente 0 ou 1).
+
+4. GERAL:
+   - mapa: Nome do mapa no topo (ex: BERMUDA, PURGATÓRIO).
+   - colocacao: Número em destaque no topo (ex: #1, #3). "BOOYAH" = 1.
+
+Formato de retorno obrigatório:
+{
+  "mapa": "NOME_DO_MAPA",
+  "colocacao": 1,
+  "jogadores": [
+    { 
+      "nome": "NickDoJogador", 
+      "kills": 10, 
+      "mortes": 1, 
+      "assists": 3, 
+      "dano": 4126, 
+      "derrubados": 8, 
+      "ressurgimentos": 0 
+    }
+  ]
+}
+
+IMPORTANTE: Retorne SOMENTE o JSON puro.`
             }
           ]
         }]
       })
     })
 
+    console.log(`[OCR] Status da resposta Anthropic: ${response.status}`)
+
     if (!response.ok) {
       const errorBody = await response.text()
-      console.error(`[OCR] Erro API Anthropic: ${response.status} - ${errorBody}`)
-      return new Response(JSON.stringify({ error: `Erro na API: ${response.status}` }), {
+      console.error(`[OCR] Erro na API Anthropic (${response.status}):`, errorBody)
+      return new Response(JSON.stringify({ error: `Erro Anthropic ${response.status}: ${errorBody}` }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
     const data = await response.json()
-    const text = data.content?.[0]?.text || '{}'
-    
+    let text = data.content?.[0]?.text || '{}'
+    console.log('[OCR] Resposta bruta do Claude:', text)
+
+    // Limpar possível markdown ao redor do JSON (```json ... ``` ou ``` ... ```)
+    text = text
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*$/i, '')
+      .trim()
+    text = text.replace(/```$/i, '').trim();
+
+    // Validar que é um JSON antes de retornar
+    try {
+      JSON.parse(text)
+    } catch {
+      console.error('[OCR] Claude não retornou JSON válido:', text)
+      return new Response(JSON.stringify({ error: `Claude retornou texto inválido: ${text.substring(0, 300)}` }), {
+        status: 422,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    console.log('[OCR] JSON limpo e válido, retornando ao cliente')
     return new Response(JSON.stringify({ result: text }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
   } catch (error) {
-    console.error('[OCR] Erro Geral:', (error as Error).message)
+    console.error('[OCR] Erro inesperado:', (error as Error).message)
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
