@@ -470,6 +470,10 @@ export const Dashboard: React.FC = () => {
                 const allPerfRows = perfRes.data || [];
                 const genRows = genRes.data || [];
                 
+                console.log('Filtro selecionado:', playerChampFilter);
+                console.log('Dados antes do filtro:', allPerfRows.length);
+                console.log('Exemplo campeonato no banco:', allPerfRows[0]?.campeonato);
+                
                 const rows = allPerfRows.filter((p: any) => {
                     // Manual join para pegar o campeonato correto de partidas_geral (Opção A via JS local para evitar crash de FK)
                     const matchGeneral = genRows.find(g => 
@@ -488,6 +492,8 @@ export const Dashboard: React.FC = () => {
                     const matchRound = playerRoundFilter === 'Todos' || roundText === playerRoundFilter;
                     return matchDate && matchPlayer && matchChamp && matchRound;
                 });
+                
+                console.log('Dados após filtro:', rows.length);
 
                 if (isCancelled) return; // Checa novamente após filtro
 
