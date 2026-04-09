@@ -477,7 +477,7 @@ export const InputData: React.FC = () => {
                     </div>
                     <div className="card p-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                         <InputField label="Data" type="date" value={matchData.data} onChange={(v: string) => setMatchData(p => ({ ...p, data: v }))} className="rounded-lg" />
-                        <InputField label="Campeonato" value={matchData.campeonato} onChange={(v: string) => setMatchData(p => ({ ...p, campeonato: v }))} placeholder="Ex: LBFF" className="rounded-lg" />
+                        <InputField label="Campeonato" value={matchData.campeonato} onChange={(v: string) => setMatchData(p => ({ ...p, campeonato: v.trim().toUpperCase() }))} placeholder="Ex: LBFF" className="rounded-lg" />
                         <SelectField label="Mapa" value={matchData.mapa} onChange={(v: string) => setMatchData(p => ({ ...p, mapa: v }))} options={MAPAS} className="rounded-lg" />
                         <InputField label="Rodada" type="number" value={matchData.rodada} onChange={(v: string) => setMatchData(p => ({ ...p, rodada: v }))} placeholder="No." className="rounded-lg" />
                         <SelectField label="Colocação" value={matchData.colocacao} onChange={(v: string) => setMatchData(p => ({ ...p, colocacao: v }))} options={COLOCACOES} className="rounded-lg" />

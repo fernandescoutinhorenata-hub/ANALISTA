@@ -111,7 +111,7 @@ export const PublicSquad: React.FC = () => {
             .then(({ data }) => {
                 if (data) {
                     const dates = new Set(data.map((r: any) => r.data).filter(Boolean));
-                    const champs = new Set(data.map((r: any) => r.campeonato).filter(Boolean));
+                    const champs = new Set(data.map((r: any) => r.campeonato?.trim()).filter(Boolean));
                     setAvailableOptions({
                         dates: Array.from(dates).sort() as string[],
                         championships: Array.from(champs).sort() as string[]
@@ -132,8 +132,9 @@ export const PublicSquad: React.FC = () => {
 
                 // Aplica filtros direto na query para reexecutar com os novos parâmetros
                 if (filters.championship !== 'Todos') {
-                    genQuery = genQuery.eq('campeonato', filters.championship);
-                    playQuery = playQuery.eq('campeonato', filters.championship);
+                    const champVal = filters.championship.trim();
+                    genQuery = genQuery.ilike('campeonato', champVal);
+                    playQuery = playQuery.ilike('campeonato', champVal);
                 }
                 
                 if (filters.date !== 'Todos') {

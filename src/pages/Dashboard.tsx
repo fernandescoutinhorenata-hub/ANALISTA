@@ -212,7 +212,7 @@ export const Dashboard: React.FC = () => {
         const championships = new Set<string>();
         allGeneralRows.forEach(row => {
             if (row.Data) dates.add(String(row.Data));
-            if (row.Campeonato) championships.add(String(row.Campeonato));
+            if (row.Campeonato) championships.add(String(row.Campeonato).trim());
         });
 
         // Rodadas dinâmicas baseadas no campeonato ativo
@@ -690,7 +690,7 @@ export const Dashboard: React.FC = () => {
                 .from('performance_jogadores')
                 .select('*')
                 .eq('user_id', user.id)
-                .eq('campeonato', campeonato)
+                .ilike('campeonato', campeonato.trim())
                 .eq('rodada', rodada);
             setRoundPlayerData(data || []);
         };
