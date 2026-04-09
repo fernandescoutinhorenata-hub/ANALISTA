@@ -147,6 +147,13 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
 @keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 @keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+.carousel-wrap{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(124,58,237,0.25);box-shadow:0 24px 60px rgba(0,0,0,0.5);animation:fadeRight .7s ease .2s both}
+.carousel-track{display:flex;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1)}
+.carousel-img{min-width:100%;width:100%;height:auto;display:block}
+.carousel-overlay{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(to top,rgba(8,8,15,0.8) 0%,transparent 100%);pointer-events:none}
+.carousel-dots{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.3);cursor:pointer;transition:all 0.3s}
+.dot.active{background:#a78bfa;width:20px;border-radius:3px}
 @media(max-width:900px){
   .hero-inner{grid-template-columns:1fr}
   .hero-visual{display:none}
@@ -193,32 +200,18 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
       </div>
     </div>
     <div class="hero-visual">
-      <div class="mini mini-1">
-        <div class="mini-lbl">Média de abates</div>
-        <div class="mini-val mv-p">8.4</div>
-        <div class="mini-sub up">↑ +1.2 essa semana</div>
-      </div>
-      <div class="dash-wrap">
-        <div class="dash-top">
-          <span class="dash-label">Squad Analytics</span>
-          <span class="live-badge"><span class="live-dot"></span>AO VIVO</span>
+      <div class="carousel-wrap">
+        <div class="carousel-track" id="carouselTrack">
+          <img src="/dashboard1.png" alt="Dashboard Celo Tracker" class="carousel-img"/>
+          <img src="/dashboard2.png" alt="Jogadores Celo Tracker" class="carousel-img"/>
+          <img src="/dashboard3.png" alt="Analytics Celo Tracker" class="carousel-img"/>
         </div>
-        <div class="stats-row">
-          <div class="stat-box"><div class="stat-lbl">Kills</div><div class="stat-val sv-p">90</div></div>
-          <div class="stat-box"><div class="stat-lbl">Colocação</div><div class="stat-val sv-g">#1</div></div>
-          <div class="stat-box"><div class="stat-lbl">Dano méd.</div><div class="stat-val sv-w">2.8k</div></div>
+        <div class="carousel-dots">
+          <span class="dot active" onclick="goTo(0)"></span>
+          <span class="dot" onclick="goTo(1)"></span>
+          <span class="dot" onclick="goTo(2)"></span>
         </div>
-        <div class="players">
-          <div class="p-row"><span class="p-num">1</span><span class="p-name">BOKA</span><div class="p-bar-wrap"><div class="p-bar" style="width:100%"></div></div><span class="p-kills">36 kills</span></div>
-          <div class="p-row"><span class="p-num">2</span><span class="p-name">FEIJAO</span><div class="p-bar-wrap"><div class="p-bar" style="width:53%"></div></div><span class="p-kills">19 kills</span></div>
-          <div class="p-row"><span class="p-num">3</span><span class="p-name">TWO</span><div class="p-bar-wrap"><div class="p-bar" style="width:50%"></div></div><span class="p-kills">18 kills</span></div>
-          <div class="p-row"><span class="p-num">4</span><span class="p-name">M9</span><div class="p-bar-wrap"><div class="p-bar" style="width:47%"></div></div><span class="p-kills">17 kills</span></div>
-        </div>
-      </div>
-      <div class="mini mini-2">
-        <div class="mini-lbl">OCR Processado</div>
-        <div class="mini-val mv-g">247</div>
-        <div class="mini-sub">screenshots esse mês</div>
+        <div class="carousel-overlay"></div>
       </div>
     </div>
   </div>
@@ -356,5 +349,16 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
   <span class="footer-copy">© 2025 Celo Tracker. Todos os direitos reservados.</span>
 </footer>
 
+<script>
+  let current = 0;
+  function goTo(n) {
+    current = n;
+    document.getElementById('carouselTrack').style.transform =
+      'translateX(-' + (current * 100) + '%)';
+    document.querySelectorAll('.dot').forEach((d, i) =>
+      d.classList.toggle('active', i === current));
+  }
+  setInterval(() => goTo((current + 1) % 3), 3500);
+</script>
 </body>
 </html>
