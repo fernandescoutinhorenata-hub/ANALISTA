@@ -468,11 +468,21 @@ export const Dashboard: React.FC = () => {
                 if (genRes.error) throw genRes.error;
 
                 const allPerfRows = perfRes.data || [];
+                const genRows = genRes.data || [];
+                
                 const rows = allPerfRows.filter((p: any) => {
+                    // Manual join para pegar o campeonato correto de partidas_geral (Opção A via JS local para evitar crash de FK)
+                    const matchGeneral = genRows.find(g => 
+                        g.data === p.data && 
+                        g.mapa === p.mapa && 
+                        String(g.rodada) === String(p.rodada)
+                    );
+                    const campReal = matchGeneral ? matchGeneral.campeonato : p.campeonato;
+                    
                     const normPlayer = String(p.player).trim().toUpperCase();
                     const matchDate = playerDateFilter === 'Todos' || p.data === playerDateFilter;
                     const matchPlayer = playerSelectedPlayer === 'Todos' || normPlayer === playerSelectedPlayer.trim().toUpperCase();
-                    const champ = p.campeonato ? String(p.campeonato).trim().toUpperCase() : 'SEM EVENTO';
+                    const champ = campReal ? String(campReal).trim().toUpperCase() : 'SEM EVENTO';
                     const matchChamp = playerChampFilter === 'Todos' || champ === playerChampFilter.trim().toUpperCase();
                     const roundText = p.rodada ? String(p.rodada).trim() : '';
                     const matchRound = playerRoundFilter === 'Todos' || roundText === playerRoundFilter;
