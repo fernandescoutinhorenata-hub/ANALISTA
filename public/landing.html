@@ -36,8 +36,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:cen
 .glow-1{position:absolute;top:-180px;right:-120px;width:650px;height:650px;background:radial-gradient(circle,rgba(124,58,237,.14) 0%,transparent 65%);pointer-events:none}
 .glow-2{position:absolute;bottom:-80px;left:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(34,197,94,.07) 0%,transparent 65%);pointer-events:none}
 .hero-inner{max-width:1260px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;position:relative;z-index:1}
-.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.25);padding:.35rem 1rem;border-radius:100px;font-size:.75rem;font-weight:600;color:var(--purple-light);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1.4rem;animation:fadeUp .5s ease both}
-.badge-dot{width:6px;height:6px;background:#22c55e;border-radius:50%;animation:pulse 2s ease infinite}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.25);padding:.35rem 1rem;border-radius:100px;font-size:.75rem;font-weight:600;color:var(--purple-light);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1.4rem;animation:fadeUp .5s ease both;border-left:2px solid #a78bfa;padding-left:0.6rem}
 .hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(2.4rem,4.5vw,3.8rem);font-weight:800;line-height:1.06;letter-spacing:-1.5px;margin-bottom:1.4rem;animation:fadeUp .5s ease .1s both}
 .hero h1 span{color:var(--purple-light)}
 .hero-desc{color:var(--muted2);font-size:1rem;line-height:1.75;max-width:440px;margin-bottom:2.2rem;animation:fadeUp .5s ease .2s both}
@@ -117,7 +116,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:cen
 .plano-eco{font-size:.78rem;font-weight:600;color:#22c55e;margin-bottom:1.8rem;min-height:1.1rem}
 .plano-list{list-style:none;margin-bottom:2rem}
 .plano-list li{display:flex;align-items:flex-start;gap:.55rem;font-size:.86rem;color:var(--muted2);padding:.35rem 0;line-height:1.5}
-.plano-list li::before{content:'✓';color:#22c55e;font-weight:700;flex-shrink:0;margin-top:.05rem}
+.plano-list li::before{content:'';display:inline-block;flex-shrink:0;margin-top:.05rem}
 .btn-plano{display:flex;align-items:center;justify-content:center;gap:.55rem;width:100%;padding:.9rem 1.5rem;border-radius:10px;font-family:'Inter',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;border:none}
 .btn-plano.green-btn{background:var(--green-wpp);color:#fff;box-shadow:0 4px 20px rgba(37,211,102,.2)}
 .btn-plano.green-btn:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(37,211,102,.3)}
@@ -125,8 +124,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:cen
 .btn-plano.purple-btn:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(124,58,237,.35)}
 .depo{padding:4rem 6%}
 .depo-card{max-width:860px;margin:0 auto;background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(124,58,237,.04));border:1px solid rgba(124,58,237,.25);border-radius:24px;padding:3.5rem;position:relative;overflow:hidden}
-.depo-quote{position:absolute;top:-30px;left:2rem;font-family:'Space Grotesk',sans-serif;font-size:12rem;font-weight:800;color:rgba(124,58,237,.08);line-height:1;pointer-events:none;user-select:none}
-.depo-text{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.1rem,2.2vw,1.6rem);font-weight:700;line-height:1.45;margin-bottom:2rem;position:relative;z-index:1}
+.depo-text{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.1rem,2.2vw,1.4rem);font-weight:600;line-height:1.45;margin-bottom:2rem;position:relative;z-index:1;border-left:4px solid #7c3aed;padding-left:1.5rem;color:var(--text)}
 .depo-author{display:flex;align-items:center;gap:1rem;position:relative;z-index:1}
 .depo-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#9333ea);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:.9rem;font-weight:800;color:#fff;flex-shrink:0}
 .depo-name{font-family:'Space Grotesk',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:.2rem}
@@ -188,7 +186,7 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
   <div class="glow-2"></div>
   <div class="hero-inner">
     <div>
-      <div class="hero-badge"><span class="badge-dot"></span>Analytics para Free Fire</div>
+      <div class="hero-badge">Analytics para Free Fire</div>
       <h1>Transforme screenshots em<br><span>dados que vencem.</span></h1>
       <p class="hero-desc">Coaches competitivos usam o Celo Tracker para extrair <strong>kills, dano e posição</strong> automaticamente de qualquer screenshot. Sem planilha. Sem trabalho manual.</p>
       <div class="hero-ctas">
@@ -219,7 +217,7 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
 
 <div class="trust">
   <div class="trust-inner">
-    <span class="trust-lbl">Usado por times de</span>
+    <span class="trust-lbl">CONFIADO POR TIMES DA</span>
     <div class="trust-logos">
       <span class="tlogo">Liga DN</span>
       <span class="tlogo">Free Fire BR</span>
@@ -234,18 +232,18 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
   <div class="sec-wrap">
     <div class="sec-header">
       <div>
-        <div class="sec-tag">⚡ Funcionalidades</div>
-        <h2 class="sec-h2">Tudo que um coach<br>precisa <span>em um lugar</span></h2>
+        <div class="sec-tag">Funcionalidades</div>
+        <h2 class="sec-h2">Análise profissional para<br><span>coaches competitivos</span></h2>
       </div>
       <p class="sec-sub">Do upload da screenshot ao relatório completo da rodada. Sem planilhas manuais, sem perder nenhum dado da partida.</p>
     </div>
     <div class="feat-grid">
-      <div class="feat-card"><div class="feat-icon fi-p">📸</div><h3>OCR Automático</h3><p>Sobe a screenshot da partida e a IA extrai kills, mortes, dano e posição em segundos. Sem digitar nada.</p></div>
-      <div class="feat-card"><div class="feat-icon fi-g">📊</div><h3>Analytics em tempo real</h3><p>Dashboard com filtros por liga, data e campeonato. Veja a evolução de cada jogador rodada a rodada.</p></div>
-      <div class="feat-card"><div class="feat-icon fi-b">🔗</div><h3>Link público</h3><p>Compartilha o analytics da sua squad com qualquer pessoa via link único. Sem precisar criar conta.</p></div>
-      <div class="feat-card"><div class="feat-icon fi-p">🏆</div><h3>Histórico por campeonato</h3><p>Separa os dados por torneio e liga. Compara performance entre fases e descobre onde sua equipe evolui.</p></div>
-      <div class="feat-card"><div class="feat-icon fi-g">📈</div><h3>Rodadas</h3><p>Acompanha a evolução da squad ao longo de um campeonato inteiro. Vê quais rodadas foram decisivas.</p></div>
-      <div class="feat-card"><div class="feat-icon fi-b">🤝</div><h3>Sistema de afiliados</h3><p>Indica o Celo Tracker e ganha 20% de comissão em cada assinatura feita com seu cupom exclusivo.</p></div>
+      <div class="feat-card"><div class="feat-icon fi-p"><svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" stroke-width="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></div><h3>OCR Automático</h3><p>Sobe a screenshot da partida e a IA extrai kills, mortes, dano e posição em segundos. Sem digitar nada.</p></div>
+      <div class="feat-card"><div class="feat-icon fi-g"><svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" stroke-width="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></div><h3>Analytics em tempo real</h3><p>Dashboard com filtros por liga, data e campeonato. Veja a evolução de cada jogador rodada a rodada.</p></div>
+      <div class="feat-card"><div class="feat-icon fi-b"><svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" stroke-width="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div><h3>Link público</h3><p>Compartilha o analytics da sua squad com qualquer pessoa via link único. Sem precisar criar conta.</p></div>
+      <div class="feat-card"><div class="feat-icon fi-p"><svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" stroke-width="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></div><h3>Histórico por campeonato</h3><p>Separa os dados por torneio e liga. Compara performance entre fases e descobre onde sua equipe evolui.</p></div>
+      <div class="feat-card"><div class="feat-icon fi-g"><svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" stroke-width="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><h3>Rodadas</h3><p>Acompanha a evolução da squad ao longo de um campeonato inteiro. Vê quais rodadas foram decisivas.</p></div>
+      <div class="feat-card"><div class="feat-icon fi-b"><svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" stroke-width="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><h3>Sistema de afiliados</h3><p>Indica o Celo Tracker e ganha 20% de comissão em cada assinatura feita com seu cupom exclusivo.</p></div>
     </div>
   </div>
 </section>
@@ -254,7 +252,7 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
 
 <section class="planos" id="planos">
   <div class="sec-wrap">
-    <div class="sec-tag" style="margin:0 auto 1rem">💰 Planos</div>
+    <div class="sec-tag" style="margin:0 auto 1rem">Planos</div>
     <h2 class="sec-h2" style="margin-bottom:.8rem">Simples. <span>Sem enrolação.</span></h2>
     <p class="sec-sub" style="max-width:420px;margin:0 auto 3rem">Começa de graça e cresce conforme sua squad evolui. Ativação via WhatsApp na hora.</p>
     <div class="planos-grid">
@@ -265,10 +263,10 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
         <div class="plano-preco">R$0 <span class="plano-periodo">/ para sempre</span></div>
         <div class="plano-eco">&nbsp;</div>
         <ul class="plano-list">
-          <li>4 leituras automáticas via OCR</li>
-          <li>Acesso limitado às métricas</li>
-          <li>Dashboard básico da squad</li>
-          <li>Link público da squad</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>4 leituras automáticas via OCR</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Acesso limitado às métricas</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dashboard básico da squad</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Link público da squad</li>
         </ul>
         <a href="https://wa.me/5513981630304?text=Ol%C3%A1!%20Quero%20testar%20o%20Celo%20Tracker%20gratuitamente!" class="btn-plano ghost-btn" target="_blank">Testar Agora</a>
       </div>
@@ -279,11 +277,11 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
         <div class="plano-preco">R$10 <span class="plano-periodo">/semana</span></div>
         <div class="plano-eco">&nbsp;</div>
         <ul class="plano-list">
-          <li>OCR até 20 screenshots/hora</li>
-          <li>Dashboard completo da squad</li>
-          <li>Filtros por liga e data</li>
-          <li>Link público da squad</li>
-          <li>Suporte via WhatsApp</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>OCR até 20 screenshots/hora</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dashboard completo da squad</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Filtros por liga e data</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Link público da squad</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Suporte via WhatsApp</li>
         </ul>
         <a href="https://wa.me/5513981630304?text=Ol%C3%A1!%20Quero%20o%20plano%20Modo%20Competitivo%20(R%2410%2Fsemana)%20do%20Celo%20Tracker!" class="btn-plano green-btn" target="_blank">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -298,11 +296,11 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
         <div class="plano-preco">R$25 <span class="plano-periodo">/mês</span></div>
         <div class="plano-eco">Economize R$15 vs semanal</div>
         <ul class="plano-list">
-          <li>Tudo do Modo Competitivo</li>
-          <li>Histórico completo de campeonatos</li>
-          <li>Relatório de rodadas detalhado</li>
-          <li>Suporte prioritário</li>
-          <li>Cupom de afiliado exclusivo (20%)</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Tudo do Modo Competitivo</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Histórico completo de campeonatos</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Relatório de rodadas detalhado</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Suporte prioritário</li>
+          <li><svg xmlns="http://www.w3.org/2000/svg" stroke="#22c55e" stroke-width="2" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cupom de afiliado exclusivo (20%)</li>
         </ul>
         <a href="https://wa.me/5513981630304?text=Ol%C3%A1!%20Quero%20o%20plano%20Elite%20Squad%20(R%2425%2Fm%C3%AAs)%20do%20Celo%20Tracker!" class="btn-plano purple-btn" target="_blank">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -331,7 +329,7 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
 
 <section class="cta-sec">
   <div class="cta-inner">
-    <h2>Pronto para elevar o nível<br><span>da sua squad?</span></h2>
+    <h2>Eleve o nível analítico<br><span>da sua squad.</span></h2>
     <p>Fale com a gente no WhatsApp e ative seu plano agora. Sem complicação, sem formulário.</p>
     <a href="https://wa.me/5513981630304?text=Olá!%20Quero%20adquirir%20um%20plano%20do%20Celo%20Tracker!" class="btn-wpp" style="display:inline-flex;font-size:1rem;padding:1rem 2.2rem" target="_blank">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
