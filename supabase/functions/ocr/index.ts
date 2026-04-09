@@ -38,7 +38,7 @@ serve(async (req) => {
       return new Response('Unauthorized', { status: 401, headers: corsHeaders })
     }
 
-    // Rate Limiting: Máx 20 tentativas por usuário por hora
+    // Rate Limiting: Máx 50 tentativas por usuário por hora (Aumentado para testes)
     const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     const { count, error: rlError } = await supabaseAdmin
       .from('api_rate_limits')
@@ -49,7 +49,7 @@ serve(async (req) => {
 
     if (rlError) {
       console.error('[OCR] RL Error', rlError)
-    } else if (count !== null && count >= 20) {
+    } else if (count !== null && count >= 50) {
       return new Response(JSON.stringify({ error: 'Limite OCR atingido. Tente novamente em 1 hora.' }), {
         status: 429,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
