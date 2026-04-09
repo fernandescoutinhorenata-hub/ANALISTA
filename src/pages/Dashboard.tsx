@@ -450,38 +450,19 @@ export const Dashboard: React.FC = () => {
             setPlayerTableData([]);
             
             try {
-                const [perfRes, genRes] = await Promise.all([
-                    supabase
-                        .from('performance_jogadores')
-                        .select('*')
-                        .eq('user_id', user.id),
-                    supabase
-                        .from('partidas_geral')
-                        .select('data, mapa, campeonato, rodada')
-                        .eq('user_id', user.id)
-                ]);
+                const perfRes = await supabase
+                    .from('vw_jogadores_com_campeonato')
+                    .select('*')
+                    .eq('user_id', user.id);
 
                 // Se o componente desmontou ou filtro mudou, ignora o resultado
                 if (isCancelled) return;
-
                 if (perfRes.error) throw perfRes.error;
-                if (genRes.error) throw genRes.error;
 
                 const allPerfRows = perfRes.data || [];
-                const genRows = genRes.data || [];
-                
-                console.log('Filtro selecionado:', playerChampFilter);
-                console.log('Dados antes do filtro:', allPerfRows.length);
-                console.log('Exemplo campeonato no banco:', allPerfRows[0]?.campeonato);
                 
                 const rows = allPerfRows.filter((p: any) => {
-                    // Manual join para pegar o campeonato correto de partidas_geral (Opção A via JS local para evitar crash de FK)
-                    const matchGeneral = genRows.find(g => 
-                        g.data === p.data && 
-                        g.mapa === p.mapa && 
-                        String(g.rodada) === String(p.rodada)
-                    );
-                    const campReal = matchGeneral ? matchGeneral.campeonato : p.campeonato;
+                    const campReal = p.campeonato_correto || p.campeonato; // Usa a view, faz fallback caso ocorra distanciamento na join
                     
                     const normPlayer = String(p.player).trim().toUpperCase();
                     const matchDate = playerDateFilter === 'Todos' || p.data === playerDateFilter;
@@ -492,8 +473,6 @@ export const Dashboard: React.FC = () => {
                     const matchRound = playerRoundFilter === 'Todos' || roundText === playerRoundFilter;
                     return matchDate && matchPlayer && matchChamp && matchRound;
                 });
-                
-                console.log('Dados após filtro:', rows.length);
 
                 if (isCancelled) return; // Checa novamente após filtro
 
@@ -703,10 +682,10 @@ export const Dashboard: React.FC = () => {
         const [campeonato, rodada] = expandedRound.split('|');
         const fetchRoundPlayers = async () => {
             const { data } = await supabase
-                .from('performance_jogadores')
+                .from('vw_jogadores_com_campeonato')
                 .select('*')
                 .eq('user_id', user.id)
-                .ilike('campeonato', campeonato.trim())
+                .ilike('campeonato_correto', campeonato.trim())
                 .eq('rodada', rodada);
             setRoundPlayerData(data || []);
         };
