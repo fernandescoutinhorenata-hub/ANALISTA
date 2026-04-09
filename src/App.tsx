@@ -9,6 +9,7 @@ import { AdminPanel } from './pages/AdminPanel';
 import { PublicSquad } from './pages/PublicSquad';
 import Quebras from './pages/Quebras';
 import Afiliado from './pages/Afiliado';
+import { LandingPage } from './pages/LandingPage';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
@@ -22,6 +23,7 @@ function App() {
           {/* Rotas Públicas */}
           <Route path="/login" element={<Login mode="login" />} />
           <Route path="/register" element={<Login mode="register" />} />
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/planos" element={<Planos />} />
           
           {/* Acesso Público via Share Token */}

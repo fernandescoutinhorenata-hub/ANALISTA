@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { AlertCircle } from 'lucide-react';
 
 interface LoginProps {
@@ -16,9 +17,14 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    const { session, loading: authLoading } = useAuth();
+
     React.useEffect(() => {
         setActiveTab(mode);
-    }, [mode]);
+        if (session) {
+            navigate('/', { replace: true });
+        }
+    }, [mode, session, navigate]);
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();

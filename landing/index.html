@@ -176,8 +176,8 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
     <li><a href="#depoimento">Depoimentos</a></li>
   </ul>
   <div class="nav-ctas">
-    <a href="#" class="btn-ghost">Entrar</a>
-    <a href="https://wa.me/5513981630304?text=Olá!%20Quero%20conhecer%20o%20Celo%20Tracker!" class="btn-nav" target="_blank">Começar agora</a>
+    <a href="/login" class="btn-ghost">Entrar</a>
+    <a href="/login" class="btn-nav">Começar agora</a>
   </div>
 </nav>
 
@@ -404,6 +404,15 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;align-ite
       d.classList.toggle('active', i === current));
   }
   setInterval(() => goTo((current + 1) % 3), 3500);
+
+  // Redireciona se já estiver logado (Injeção de JS na Landing Estática)
+  try {
+    const storageKeys = Object.keys(localStorage);
+    const authKey = storageKeys.find(k => k.includes('-auth-token'));
+    if (authKey && localStorage.getItem(authKey)) {
+      window.location.href = '/';
+    }
+  } catch (e) {}
 </script>
 </body>
 </html>
