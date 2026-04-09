@@ -271,6 +271,23 @@ export const InputData: React.FC = () => {
 
         setLoading(true);
         try {
+            // Verifica duplicidade de Data, Mapa e Rodada para evitar conflitos na consulta do painel
+            const { count, error: dupCheckError } = await supabase
+                .from('partidas_geral')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', user.id)
+                .eq('data', matchData.data)
+                .eq('mapa', matchData.mapa)
+                .eq('rodada', matchData.rodada);
+
+            if (!dupCheckError && count && count > 0) {
+                const proceed = window.confirm("Já existe uma partida registrada nessa data, mapa e rodada.\nTem certeza que deseja continuar?");
+                if (!proceed) {
+                    setLoading(false);
+                    return;
+                }
+            }
+
             const totalKills = totalKillsSquad;
             const pontosTotal = totalPontosPartida;
 
