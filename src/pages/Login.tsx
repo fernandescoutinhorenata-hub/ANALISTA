@@ -90,9 +90,9 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
 
                 <div className="relative z-10 flex flex-col items-center text-center animate-reveal">
                     <img
-                        src="/image_10.png"
-                        alt="Celo Logo"
-                        className="w-56 h-auto mb-10 transition-all duration-700 hover:scale-105"
+                        src="/ctracker_logo_square_nobg.png"
+                        alt="Celo Tracker"
+                        className="max-w-[180px] w-full h-auto mb-10 transition-all duration-700 hover:scale-105"
                     />
                     <div className="space-y-4">
                         <h2 className="text-5xl font-extrabold text-[var(--text-primary)] leading-tight tracking-tight">
@@ -111,7 +111,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
 
                     <header className="mb-10 text-center md:text-left">
                         <div className="md:hidden flex justify-center mb-10">
-                            <img src="/image_10.png" alt="Logo" className="h-16 w-auto" />
+                            <img src="/ctracker_logo_square_nobg.png" alt="Celo Tracker" className="h-16 w-auto" />
                         </div>
                         <h3 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
                             {activeTab === 'login' ? 'Entrar' : 'Criar conta'}
