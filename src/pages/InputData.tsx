@@ -268,7 +268,7 @@ export const InputData: React.FC = () => {
             setMatchData(prev => ({
                 ...prev,
                 mapa: result.mapa,
-                colocacao: String(result.colocacao),
+                colocacao: String(result.posicao_squad ?? result.colocacao ?? ''),
             }));
 
             setPlayers(prev => prev.map((p, i) => {
@@ -281,8 +281,8 @@ export const InputData: React.FC = () => {
                     assistencias: String(j.assists),
                     derrubados:  String(j.derrubados),
                     dano:        String(j.dano),
-                    morte:       String(j.mortes),
-                    revividos:   String(j.ressurgimentos),
+                    morte:       String(j.mortes ?? 0),
+                    revividos:   String(j.reviv ?? j.ressurgimentos ?? 0),
                 };
             }));
 
