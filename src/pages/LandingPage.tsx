@@ -82,7 +82,7 @@ export const LandingPage: React.FC = () => {
                 <div className="glow-2"></div>
                 <div className="hero-inner">
                     <div>
-                        <div className="hero-badge">Analytics para Free Fire</div>
+
                         <h1>Transforme screenshots em<br /><span>dados que vencem.</span></h1>
                         <p className="hero-desc">Coaches competitivos usam o Celo Tracker para extrair <strong>kills, dano e posição</strong> automaticamente de qualquer screenshot. Sem planilha. Sem trabalho manual.</p>
                         <div className="hero-ctas">
