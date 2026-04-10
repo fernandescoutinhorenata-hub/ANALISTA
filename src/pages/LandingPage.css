@@ -26,7 +26,7 @@
 
 .landing-page nav {
   position: fixed;
-  top: 0;
+  top: 36px;
   left: 0;
   right: 0;
   z-index: 999;
@@ -714,4 +714,44 @@
 @media(max-width: 1100px) and (min-width: 901px) {
   .landing-page .planos-grid { grid-template-columns: 1fr 1fr; max-width: 680px; }
   .landing-page .planos-grid .plano-box:first-child { grid-column: 1/-1; }
+}
+
+.landing-page .urgency-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 36px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  gap: 8px;
+}
+
+.landing-page .urgency-dot {
+  animation: pulseDot 2s infinite;
+  display: inline-block;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.landing-page .urgency-sep {
+  margin: 0 4px;
+  opacity: 0.6;
+}
+
+@media(max-width: 600px) {
+  .landing-page .urgency-bar {
+    font-size: 11px;
+    gap: 4px;
+  }
 }

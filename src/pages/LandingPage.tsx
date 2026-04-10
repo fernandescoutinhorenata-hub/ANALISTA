@@ -7,6 +7,30 @@ export const LandingPage: React.FC = () => {
     const { session, loading } = useAuth();
     const navigate = useNavigate();
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [squads, setSquads] = useState(47);
+    const [partidas, setPartidas] = useState(1243);
+    const [prints, setPrints] = useState(3891);
+
+    // Animating counters
+    useEffect(() => {
+        const intervalSquads = setInterval(() => {
+            setSquads(prev => prev < 99 ? prev + 1 : prev);
+        }, 8000);
+
+        const intervalPartidas = setInterval(() => {
+            setPartidas(prev => prev + 1);
+        }, 5000);
+
+        const intervalPrints = setInterval(() => {
+            setPrints(prev => prev + 1);
+        }, 3000);
+
+        return () => {
+            clearInterval(intervalSquads);
+            clearInterval(intervalPartidas);
+            clearInterval(intervalPrints);
+        };
+    }, []);
 
     // Carousel logic
     useEffect(() => {
@@ -37,6 +61,9 @@ export const LandingPage: React.FC = () => {
 
     return (
         <div className="landing-page">
+            <div className="urgency-bar">
+                <span className="urgency-dot">🔴</span> {squads} squads ativos <span className="urgency-sep">•</span> {partidas.toLocaleString('pt-BR')} partidas analisadas <span className="urgency-sep">•</span> {prints.toLocaleString('pt-BR')} prints lidos hoje
+            </div>
             <nav>
                 <a href="#" className="logo"><span>CELO</span> TRACKER</a>
                 <ul className="nav-links">
