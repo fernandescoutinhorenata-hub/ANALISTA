@@ -60,7 +60,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                 </div>
 
                 {/* Nav Items */}
-                <nav className="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
+                <nav className="flex-1 px-4 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
                     {navItems.map((item) => {
                         const isActive = activeTab === item.id;
                         const isLocked = item.premium && !isSubscriber;
@@ -105,10 +105,10 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                         Planos
                     </button>
 
-                    <div className="pt-4 mt-4 border-t border-[var(--border-subtle)]">
+                    <div className="pt-4 mt-2 border-t border-white/5">
                         <button
                             onClick={() => navigate('/input')}
-                            className="btn-primary w-full flex items-center justify-center gap-2"
+                            className="btn-primary w-full flex items-center justify-center gap-2 hover:brightness-110 transition-all duration-150"
                         >
                             <PlusCircle size={18} />
                             Inserir Dados
@@ -117,7 +117,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                 </nav>
 
                 {/* Sidebar Footer */}
-                <div className="p-4 space-y-2 border-t border-[var(--border-subtle)]">
+                <div className="p-4 space-y-2 border-t border-white/10">
                     <a
                         href="https://wa.me/13981630304"
                         target="_blank"
