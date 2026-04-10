@@ -1,67 +1,47 @@
-# Regras de Parsing OCR — Free Fire Screenshot
+# OCR Free Fire — Regras de Parsing
 
-Este documento define as regras de extração de dados para a Edge Function de OCR (**v17+**). Estas regras existem para evitar o mapeamento incorreto de estatísticas da partida.
+## Modelo fixado
+claude-haiku-4-5-20251001
 
-## Hierarquia Visual da Imagem
-A screenshot de resultados do Free Fire apresenta os dados do jogador em duas camadas principais na mesma linha:
+## Campos extraídos e mapeamento
+| Campo OCR JSON        | Campo Frontend        | Campo Banco           |
+|-----------------------|-----------------------|-----------------------|
+| posicao_squad         | matchData.colocacao   | colocacao             |
+| mapa                  | matchData.mapa        | mapa                  |
+| kills_squad           | matchData.kills       | kills_squad           |
+| jogadores[].nome      | player.nome           | player                |
+| jogadores[].kills     | player.kills          | kill                  |
+| jogadores[].mortes    | player.morte          | morte                 |
+| jogadores[].assists   | player.assistencias   | assistencia           |
+| jogadores[].dano      | player.dano           | dano_causado          |
+| jogadores[].derrubados| player.derrubados     | derrubados            |
+| jogadores[].reviv     | player.revividos      | (campo a adicionar)   |
 
-1. **Camada de Identificação (Esquerda)**:
-   - **Nickname**: Texto em destaque (ex: `7RS Mgking`). 
-   - **K/D/A**: Texto menor localizado **LOGO ABAIXO** do nickname no formato `Abates/Mortes/Assistências` (ex: `10/1/3`).
-   
-2. **Camada de Estatísticas (Tabela à Direita)**:
-   - Uma sequência de colunas numéricas independentes.
+## Formato K/D/A no Free Fire
+KILLS/MORTES/ASSISTS — exemplo: "4/1/2" = kills=4, mortes=1, assists=2
+O número do MEIO é sempre MORTES — nunca usar como kills ou assists.
 
-## Mapeamento de Campos (Prompts)
+## Few-shot examples validados em 10/04/2026
+| K/D/A   | kills | mortes | assists |
+|---------|-------|--------|---------|
+| 4/1/2   | 4     | 1      | 2       |
+| 3/2/3   | 3     | 2      | 3       |
+| 2/2/4   | 2     | 2      | 4       |
+| 1/3/4   | 1     | 3      | 4       |
 
-| Campo | Fonte na Imagem | Observação |
-| :--- | :--- | :--- |
-| **Nome** | Nickname (Remover Clã) | "RST.pepeu10" → "pepeu10" |
-| **Kills** | 1º número do K/D/A | **NUNCA** usar a primeira coluna da tabela. |
-| **Mortes** | 2º número do K/D/A | Representado pela letra 'D' (Deaths). |
-| **Assists** | 3º número do K/D/A | Representado pela letra 'A' (Assists). |
-| **Dano (DMG)** | 1ª Coluna da Tabela | Valores altos, geralmente > 1500. |
-| **Dano Real** | 2ª Coluna da Tabela | Estatística secundária de dano. |
-| **Derrubados** | 3ª Coluna da Tabela | **NÃO** confundir com Kills ou Cura. |
-| **Cura** | 4ª Coluna da Tabela | Ignorada no JSON final (estatística irrelevante). |
-| **Ressurgimento** | 6ª Coluna da Tabela | Geralmente valores 0, 1 ou 2. |
+## Histórico de modelos
+| Data       | Modelo                     | Status              |
+|------------|----------------------------|---------------------|
+| 10/04/2026 | claude-haiku-4-5-20251001  | ✅ ATIVO            |
+| 09/04/2026 | claude-3-5-sonnet-20241022 | ❌ 404              |
+| 09/04/2026 | claude-3-5-haiku-20241022  | ❌ deprecated       |
+| 09/04/2026 | claude-3-haiku-20240307    | ❌ deprecated       |
 
----
+## Fallback aprovado
+claude-sonnet-4-6 — usar APENAS se receber erro 404 not_found_error no modelo ativo.
 
-## Dados de Referência (Test Case)
-Se o parser estiver correto, os dados abaixo devem ser extraídos exatamente assim:
-
-### Caso 1 (PterBot)
-- **Visual**: Nick `PterBot` com `10/1/3` abaixo. Colunas: `4126 | 2510 | 9 | 1200 | 0 | 3`
-- **Output**:
-  ```json
-  {
-    "nome": "PterBot",
-    "kills": 10,
-    "mortes": 1,
-    "assists": 3,
-    "dano": 4126,
-    "derrubados": 9,
-    "ressurgimentos": 3
-  }
-  ```
-
-### Caso 2 (Japa)
-- **Visual**: Nick `Japa` com `3/1/8` abaixo. Colunas: `1811 | 910 | 4 | 500 | 0 | 0`
-- **Output**:
-  ```json
-  {
-    "nome": "Japa",
-    "kills": 3,
-    "mortes": 1,
-    "assists": 8,
-    "dano": 1811,
-    "derrubados": 4,
-    "ressurgimentos": 0
-  }
-  ```
-
----
-
-## Prevenção de Regressão
-Ao atualizar o prompt no arquivo `supabase/functions/ocr/index.ts`, mantenha sempre a instrução de que o **K/D/A é um campo composto** e que a primeira coluna da tabela é o **Dano (DMG)**, não o número de abates.
+## Deploy
+- SEMPRE via MCP do Supabase (ferramenta `deploy_edge_function`)
+- NUNCA via CLI (causa 403 e reseta verify_jwt inadvertidamente)
+- project_ref: idegcrfymkgkjphluuda
+- verify_jwt: **true** (obrigatório desde v54)
