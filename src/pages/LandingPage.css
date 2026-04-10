@@ -149,8 +149,8 @@
   margin: 0 auto;
   width: 100%;
   display: grid;
-  grid-template-columns: 55fr 45fr;
-  gap: 3rem;
+  grid-template-columns: 45fr 55fr;
+  gap: 4rem;
   align-items: center;
   position: relative;
   z-index: 1;
@@ -646,13 +646,19 @@
 
 .landing-page .carousel-wrap {
   position: relative;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(124, 58, 237, 0.25);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(124, 58, 237, 0.4);
+  box-shadow: 0 25px 60px rgba(139, 92, 246, 0.3);
   animation: fadeRight .7s ease .2s both;
-  width: 100%;
-  margin-left: 0;
+  width: 120%;
+  transform: perspective(1000px) rotateY(-5deg);
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+
+.landing-page .carousel-wrap:hover {
+  transform: perspective(1000px) rotateY(-2deg) translateY(-5px);
 }
 
 .landing-page .carousel-track {
@@ -708,6 +714,7 @@
   .landing-page .hero-desc { margin-left: auto; margin-right: auto; }
   .landing-page .hero-ctas { justify-content: center; }
   .landing-page .hero-visual { display: block; margin-top: 3rem; }
+  .landing-page .carousel-wrap { width: 100%; transform: none; }
   .landing-page .sec-header { grid-template-columns: 1fr; }
   .landing-page .feat-grid { grid-template-columns: 1fr; }
   .landing-page .planos-grid { grid-template-columns: 1fr; max-width: 420px; }
