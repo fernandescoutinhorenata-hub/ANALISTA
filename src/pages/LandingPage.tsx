@@ -360,7 +360,7 @@ export const LandingPage: React.FC = () => {
                     <img 
                         src="/ctracker_banner_dark_nobg.png" 
                         alt="Celo Tracker" 
-                        style={{ width: '180px', height: 'auto', display: 'block' }} 
+                        style={{ width: '360px', height: 'auto', display: 'block' }} 
                     />
                 </a>
                 <ul className="footer-links">
