@@ -452,6 +452,7 @@ export const Dashboard: React.FC = () => {
 
     // ─── Novos Dados da Aba Jogadores (Tabela, Funil, Donut, Linha) ───
     const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'}>({ key: 'abates', direction: 'desc' });
+    const [playerRawData, setPlayerRawData] = useState<any[]>([]);
 
     // ─── Busca e Processamento Independente para Aba Jogadores ────────────────
     useEffect(() => {
@@ -462,6 +463,7 @@ export const Dashboard: React.FC = () => {
         const fetchPlayerTabData = async () => {
             setPlayerStatsLoading(true);
             setPlayerTableData([]);
+            setPlayerRawData([]);
             
             try {
                 // Busca dados e opções do dropdown em paralelo, ambos da view
@@ -512,6 +514,7 @@ export const Dashboard: React.FC = () => {
 
                 if (!rows || rows.length === 0) {
                     setPlayerTableData([]);
+                    setPlayerRawData([]);
                     return;
                 }
 
@@ -563,6 +566,8 @@ export const Dashboard: React.FC = () => {
                 });
 
                 setPlayerTableData(arr);
+                // Salvar as linhas brutas (cada rodada) para renderização do gráfico de evolução na Timeline
+                setPlayerRawData(rows);
 
             } catch (err: any) {
                 if (!isCancelled) {
@@ -608,13 +613,14 @@ export const Dashboard: React.FC = () => {
     }, [playerTableData]);
 
     const lineChartData = useMemo(() => {
-        // Para o gráfico de linha, precisamos dos dados brutos processados na useEffect anterior
-        // Como o gráfico de linha mostra evolução por partida, e agora a consulta é independente,
-        // o ideal seria processar isso dentro do useEffect de busca também ou derivar do playerTableData (se fosse agregado por partida).
-        // Para simplificar e manter a lógica, o playerTableData agora contém o agregado.
-        // Vamos manter o gráfico de linha desativado ou adaptá-lo se necessário.
-        return []; 
-    }, [playerTableData]);
+        // Mapeia os dados brutos de cada queda (da view vw_jogadores_com_campeonato)
+        return playerRawData.map((row: any) => ({
+            name: row.player, // O XAxis e o Tooltip usam 'name' por padrão nos gráficos da aplicação
+            player: row.player,
+            kill: Number(row.kill) || 0,
+            assistencia: Number(row.assistencia) || 0
+        }));
+    }, [playerRawData]);
 
     // Total de Kills somado de todos os jogadores (performance_jogadores)
 
@@ -1791,11 +1797,11 @@ export const Dashboard: React.FC = () => {
                                         <ResponsiveContainer width="100%" height="100%">
                                             <LineChart data={lineChartData} margin={{ left: -20, bottom: 5, right: 20 }}>
                                                 <CartesianGrid stroke="#27272A" vertical={false} strokeDasharray="3 3" />
-                                                <XAxis dataKey="name" hide />
+                                                <XAxis dataKey="player" hide />
                                                 <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#A1A1AA' }} />
                                                 <Tooltip contentStyle={{ backgroundColor: '#18181B', border: 'none', borderRadius: '8px' }} />
-                                                <Line type="monotone" dataKey="abates" stroke="#EF4444" strokeWidth={2} dot={{ r: 3, fill: '#EF4444', strokeWidth: 0 }} />
-                                                <Line type="monotone" dataKey="assistencias" stroke="#22C55E" strokeWidth={2} dot={{ r: 3, fill: '#22C55E', strokeWidth: 0 }} />
+                                                <Line type="monotone" dataKey="kill" name="Abates" stroke="#EF4444" strokeWidth={2} dot={{ r: 3, fill: '#EF4444', strokeWidth: 0 }} />
+                                                <Line type="monotone" dataKey="assistencia" name="Assistências" stroke="#22C55E" strokeWidth={2} dot={{ r: 3, fill: '#22C55E', strokeWidth: 0 }} />
                                             </LineChart>
                                         </ResponsiveContainer>
                                     </div>
