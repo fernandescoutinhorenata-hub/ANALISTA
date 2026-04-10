@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import {
     Trophy, Target, Map as MapIcon, FileSpreadsheet, RefreshCcw,
@@ -175,8 +175,17 @@ export const Dashboard: React.FC = () => {
     const [isDashboardLoading, setIsDashboardLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [searchParams] = useSearchParams();
+    const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos', round: 'Todos' });
+
+    // Sincronizar aba ativa com a URL
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && tab !== activeTab) {
+            setActiveTab(tab);
+        }
+    }, [searchParams, activeTab]);
     const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
     const [specificDate, setSpecificDate] = useState<string>(''); // Novo filtro de data Dashboard
     
