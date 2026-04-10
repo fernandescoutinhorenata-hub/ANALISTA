@@ -165,6 +165,9 @@ const ImportModal: React.FC<{
 export const Dashboard: React.FC = () => {
     const [nomeUsuario, setNomeUsuario] = useState<string>('');
     const [shareToken, setShareToken] = useState<string | null>(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [shareUniqueCamps, setShareUniqueCamps] = useState<string[]>([]);
+    const [selectedShareCamps, setSelectedShareCamps] = useState<Record<string, boolean>>({});
     const [allGeneralRows, setAllGeneralRows] = useState<any[]>([]);
     const [allPlayerRows, setAllPlayerRows] = useState<any[]>([]);
     const [data, setData] = useState<DashboardData | null>(null);
@@ -843,14 +846,37 @@ export const Dashboard: React.FC = () => {
         reader.readAsBinaryString(file);
     };
 
-    const handleShareDashboard = () => {
-        if (!shareToken) {
+    const handleShareDashboard = async () => {
+        if (!shareToken || !user) {
             showToast('Erro ao gerar link de compartilhamento. Tente recarregar.', 'error');
             return;
         }
-        const shareUrl = `${window.location.origin}/squad/${shareToken}`;
+        
+        setIsShareModalOpen(true);
+        const { data: camps } = await supabase
+            .from('partidas_geral')
+            .select('campeonato')
+            .eq('user_id', user.id)
+            .order('campeonato');
+            
+        if (camps) {
+            const unique = Array.from(new Set(camps.map(c => c.campeonato).filter(Boolean)));
+            setShareUniqueCamps(unique);
+            const initialSelected: Record<string, boolean> = {};
+            unique.forEach(c => initialSelected[c] = true);
+            setSelectedShareCamps(initialSelected);
+        }
+    };
+
+    const confirmShareDashboard = () => {
+        const selected = shareUniqueCamps.filter(c => selectedShareCamps[c]);
+        const campsParam = selected.map(c => encodeURIComponent(c)).join(',');
+        const params = campsParam ? `?camps=${campsParam}` : '';
+        const shareUrl = `${window.location.origin}/squad/${shareToken}${params}`;
+        
         navigator.clipboard.writeText(shareUrl).then(() => {
             showToast('✅ Link copiado! Envie para o seu squad.', 'success');
+            setIsShareModalOpen(false);
         }).catch(() => {
             showToast('Erro ao copiar link.', 'error');
         });
@@ -908,6 +934,41 @@ export const Dashboard: React.FC = () => {
 
             {/* Toast Feedback */}
             {toast && <Toast message={toast.message} type={toast.type} />}
+
+            {/* Modal de Compartilhamento Específico */}
+            {isShareModalOpen && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="card w-full max-w-sm p-8 animate-reveal border-[var(--accent)]/30">
+                        <div className="flex flex-col items-center text-center">
+                            <div className="p-4 rounded-full bg-[var(--accent-muted)] text-[var(--accent)] mb-6">
+                                <Users size={32} />
+                            </div>
+                            <h3 className="text-heading text-lg">Compartilhar Squad</h3>
+                            <p className="text-label mt-2 px-4 mb-6">Selecione quais campeonatos exibir na página pública:</p>
+                        </div>
+                        <div className="max-h-60 overflow-y-auto space-y-2 mb-6 pr-2">
+                            {shareUniqueCamps.map(camp => (
+                                <label key={camp} className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-default)] cursor-pointer hover:border-[var(--accent)] transition-colors">
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4 accent-purple-500 rounded"
+                                        checked={!!selectedShareCamps[camp]}
+                                        onChange={(e) => setSelectedShareCamps(prev => ({ ...prev, [camp]: e.target.checked }))}
+                                    />
+                                    <span className="text-xs font-bold text-zinc-300 uppercase">{camp}</span>
+                                </label>
+                            ))}
+                            {shareUniqueCamps.length === 0 && (
+                                <p className="text-zinc-500 text-xs text-center">Nenhum evento encontrado.</p>
+                            )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button onClick={() => setIsShareModalOpen(false)} className="btn-ghost">Cancelar</button>
+                            <button onClick={confirmShareDashboard} className="btn-primary flex items-center justify-center gap-2">Copiar Link</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal de Confirmação de Deleção */}
             {isDeleteModalOpen && (

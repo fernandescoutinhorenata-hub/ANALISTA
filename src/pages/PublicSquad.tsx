@@ -69,6 +69,10 @@ export const PublicSquad: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'overview' | 'players' | 'coletivo'>('overview');
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos', timeFilter: 'all' as '7d' | '30d' | 'all' });
 
+    const searchParams = new URLSearchParams(window.location.search);
+    const campsParam = searchParams.get('camps');
+    const allowedCamps = useMemo(() => campsParam ? campsParam.split(',').map(c => decodeURIComponent(c)) : null, [campsParam]);
+
     const exportRef = useRef<HTMLDivElement>(null);
 
     // ─── BUSCA DE DADOS ───────────────────────────────────────────────────
@@ -129,6 +133,11 @@ export const PublicSquad: React.FC = () => {
             try {
                 let genQuery = supabase.from('partidas_geral').select('*').eq('user_id', coachProfile.id).order('data', { ascending: false });
                 let playQuery = supabase.from('performance_jogadores').select('*').eq('user_id', coachProfile.id);
+
+                if (allowedCamps && allowedCamps.length > 0) {
+                    genQuery = genQuery.in('campeonato', allowedCamps);
+                    playQuery = playQuery.in('campeonato', allowedCamps);
+                }
 
                 // Aplica filtros direto na query para reexecutar com os novos parâmetros
                 if (filters.championship !== 'Todos') {
@@ -194,7 +203,7 @@ export const PublicSquad: React.FC = () => {
         };
 
         fetchData();
-    }, [coachProfile?.id, filters]);
+    }, [coachProfile?.id, filters, allowedCamps]);
 
     // ─── PROCESSAMENTO EM MEMÓRIA ──────────────────────────────────────────
     // Observação: Como agora as queries puxam direto do banco com base nos filtros, 
@@ -330,6 +339,11 @@ export const PublicSquad: React.FC = () => {
                         <div>
                             <span className="block text-[9px] font-black text-[#A855F7] uppercase tracking-[0.2em] mb-0.5">Analytics Público</span>
                             <span className="block text-xs font-black uppercase">Coach: {coachProfile?.nome || 'Analista'}</span>
+                            {allowedCamps && (
+                                <span className="block text-[10px] font-bold text-zinc-500 mt-1 uppercase">
+                                    Exibindo: <span className="text-zinc-300">{allowedCamps.join(', ')}</span>
+                                </span>
+                            )}
                         </div>
                     </div>
 
