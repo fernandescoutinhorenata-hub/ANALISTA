@@ -533,8 +533,9 @@ export const Dashboard: React.FC = () => {
                     jogadoresMap[nome].assists += Number(p.assistencia) || 0;
                     jogadoresMap[nome].deaths += Number(p.morte) || 0;
                     jogadoresMap[nome].derrubados += Number(p.derrubados) || 0;
-                    // Cada linha é uma partida única — data+mapa+rodada identifica a sala
-                    jogadoresMap[nome].partidas.add(`${p.data}|${p.mapa}|${p.rodada}`);
+                    // Cada linha é uma partida única — usa partida_id (quando disponível) para não perder mapas repetidos
+                    const uniqueMatchId = p.partida_id ? String(p.partida_id) : `${p.data}|${p.campeonato}|${p.rodada}|${p.mapa}`;
+                    jogadoresMap[nome].partidas.add(uniqueMatchId);
                 });
 
                 if (isCancelled) return; // Checa antes de setar estado
