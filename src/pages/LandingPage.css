@@ -149,7 +149,7 @@
   margin: 0 auto;
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 55fr 45fr;
   gap: 3rem;
   align-items: center;
   position: relative;
@@ -177,11 +177,11 @@
 
 .landing-page .hero h1 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(3.7rem, 6.9vw, 5.9rem);
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
   font-weight: 800;
-  line-height: 1.06;
+  line-height: 1.1;
   letter-spacing: -1.5px;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.5rem;
   animation: fadeUp .5s ease .1s both;
 }
 
@@ -191,9 +191,9 @@
 
 .landing-page .hero-desc {
   color: var(--muted2);
-  font-size: 1rem;
-  line-height: 1.75;
-  max-width: 440px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 500px;
   margin-bottom: 2.2rem;
   animation: fadeUp .5s ease .2s both;
 }
@@ -207,6 +207,7 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  margin-top: 2rem;
   animation: fadeUp .5s ease .3s both;
 }
 
@@ -650,8 +651,8 @@
   border: 1px solid rgba(124, 58, 237, 0.25);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
   animation: fadeRight .7s ease .2s both;
-  width: 120%;
-  margin-left: -10%;
+  width: 100%;
+  margin-left: 0;
 }
 
 .landing-page .carousel-track {
@@ -702,8 +703,11 @@
 }
 
 @media(max-width: 900px) {
-  .landing-page .hero-inner { grid-template-columns: 1fr; }
-  .landing-page .hero-visual { display: none; }
+  .landing-page .hero { padding-top: 140px; }
+  .landing-page .hero-inner { grid-template-columns: 1fr; text-align: center; }
+  .landing-page .hero-desc { margin-left: auto; margin-right: auto; }
+  .landing-page .hero-ctas { justify-content: center; }
+  .landing-page .hero-visual { display: block; margin-top: 3rem; }
   .landing-page .sec-header { grid-template-columns: 1fr; }
   .landing-page .feat-grid { grid-template-columns: 1fr; }
   .landing-page .planos-grid { grid-template-columns: 1fr; max-width: 420px; }
