@@ -489,9 +489,15 @@
   padding: 4rem 6%;
 }
 
-.landing-page .depo-card {
-  max-width: 860px;
+.landing-page .depo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  max-width: 1260px;
   margin: 0 auto;
+}
+
+.landing-page .depo-card {
   background: linear-gradient(135deg, rgba(124, 58, 237, .1), rgba(124, 58, 237, .04));
   border: 1px solid rgba(124, 58, 237, .25);
   border-radius: 24px;
@@ -701,6 +707,7 @@
   .landing-page .sec-header { grid-template-columns: 1fr; }
   .landing-page .feat-grid { grid-template-columns: 1fr; }
   .landing-page .planos-grid { grid-template-columns: 1fr; max-width: 420px; }
+  .landing-page .depo-grid { grid-template-columns: 1fr; }
   .landing-page .nav-links { display: none; }
 }
 

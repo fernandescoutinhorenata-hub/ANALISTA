@@ -267,16 +267,57 @@ export const LandingPage: React.FC = () => {
             </section>
 
             <section className="depo" id="depoimento">
-                <div className="depo-card">
-                    <div className="depo-quote" style={{ fontSize: '4rem', opacity: 0.2, position: 'absolute', top: '1rem', left: '1.5rem', fontFamily: 'serif' }}>"</div>
-                    <p className="depo-text">"O Celo Tracker mudou como eu preparo minha equipe. Antes eu ficava copiando dado na mão. Agora subo a screenshot e em segundos já sei onde cada jogador precisa melhorar."</p>
-                    <div className="depo-author">
-                        <div className="depo-avatar">CR</div>
-                        <div>
-                            <div className="depo-name">Coach Rafinha</div>
-                            <div className="depo-role">Head Coach — Liga DN</div>
+                <div className="depo-grid">
+                    <div className="depo-card">
+                        <div className="depo-quote" style={{ fontSize: '4rem', opacity: 0.2, position: 'absolute', top: '1rem', left: '1.5rem', fontFamily: 'serif' }}>"</div>
+                        <p className="depo-text">"O Celo Tracker mudou como eu preparo minha equipe. Antes eu ficava copiando dado na mão. Agora subo a screenshot e em segundos já sei onde cada jogador precisa melhorar."</p>
+                        <div className="depo-author">
+                            <div className="depo-avatar">CR</div>
+                            <div>
+                                <div className="depo-name">Coach Rafinha</div>
+                                <div className="depo-role">Head Coach — Liga DN</div>
+                            </div>
+                            <div className="stars">★★★★★</div>
                         </div>
-                        <div className="stars">★★★★★</div>
+                    </div>
+                    
+                    <div className="depo-card">
+                        <div className="depo-quote" style={{ fontSize: '4rem', opacity: 0.2, position: 'absolute', top: '1rem', left: '1.5rem', fontFamily: 'serif' }}>"</div>
+                        <p className="depo-text">"Antes do Celo Tracker eu passava horas no Excel tentando montar relatório de campeonato. Agora em 5 minutos tenho tudo pronto pra passar pro meu squad antes da próxima rodada."</p>
+                        <div className="depo-author">
+                            <div className="depo-avatar" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>CT</div>
+                            <div>
+                                <div className="depo-name">Coach Thiaguinho</div>
+                                <div className="depo-role">Coach</div>
+                            </div>
+                            <div className="stars">★★★★★</div>
+                        </div>
+                    </div>
+
+                    <div className="depo-card">
+                        <div className="depo-quote" style={{ fontSize: '4rem', opacity: 0.2, position: 'absolute', top: '1rem', left: '1.5rem', fontFamily: 'serif' }}>"</div>
+                        <p className="depo-text">"Eu jogava sem saber meus números reais. Depois que meu coach começou a usar o sistema, percebi que meu dano tava alto mas eu tava derrubando pouco. Isso mudou meu jogo."</p>
+                        <div className="depo-author">
+                            <div className="depo-avatar" style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}>DK</div>
+                            <div>
+                                <div className="depo-name">Dark</div>
+                                <div className="depo-role">Jogador</div>
+                            </div>
+                            <div className="stars">★★★★★</div>
+                        </div>
+                    </div>
+
+                    <div className="depo-card">
+                        <div className="depo-quote" style={{ fontSize: '4rem', opacity: 0.2, position: 'absolute', top: '1rem', left: '1.5rem', fontFamily: 'serif' }}>"</div>
+                        <p className="depo-text">"Ferramenta séria para coach sério. Consigo ver a evolução de cada jogador rodada a rodada e tomar decisão de lineup com dado real, não com achismo."</p>
+                        <div className="depo-author">
+                            <div className="depo-avatar" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>CM</div>
+                            <div>
+                                <div className="depo-name">Coach Matheuzin</div>
+                                <div className="depo-role">Coach</div>
+                            </div>
+                            <div className="stars">★★★★★</div>
+                        </div>
                     </div>
                 </div>
             </section>
