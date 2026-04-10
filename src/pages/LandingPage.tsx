@@ -69,7 +69,7 @@ export const LandingPage: React.FC = () => {
                     <img 
                         src="/ctracker_banner_dark_nobg.png" 
                         alt="Celo Tracker" 
-                        style={{ width: '320px', height: 'auto', display: 'block' }} 
+                        style={{ width: '160px', height: 'auto', display: 'block' }} 
                     />
                 </a>
                 <ul className="nav-links">
