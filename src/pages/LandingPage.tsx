@@ -62,7 +62,7 @@ export const LandingPage: React.FC = () => {
     return (
         <div className="landing-page">
             <div className="urgency-bar">
-                <span className="urgency-dot">🔴</span> {squads} squads ativos <span className="urgency-sep">•</span> {partidas.toLocaleString('pt-BR')} partidas analisadas <span className="urgency-sep">•</span> {prints.toLocaleString('pt-BR')} prints lidos hoje
+                {squads} squads ativos <span className="urgency-sep">•</span> {partidas.toLocaleString('pt-BR')} partidas analisadas <span className="urgency-sep">•</span> {prints.toLocaleString('pt-BR')} prints lidos hoje
             </div>
             <nav>
                 <a href="#" className="logo"><span>CELO</span> TRACKER</a>
