@@ -1033,16 +1033,14 @@ export const Dashboard: React.FC = () => {
                 className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 bg-[var(--bg-surface)] border-r border-[var(--border-default)]`}
             >
                 <div
-                    className="flex justify-center cursor-pointer transition-all duration-300 group px-6 py-10"
+                    className="flex justify-center cursor-pointer transition-all duration-300 group px-6 py-6"
                     onClick={() => navigate('/')}
                 >
-                    <div className="relative">
-                        <img
-                            src="/image_10.png"
-                            alt="Logo Celo Tracker"
-                            className="w-auto object-contain h-24 md:h-32 relative z-10 transition-all duration-500 group-hover:scale-105"
-                        />
-                    </div>
+                    <img
+                        src="/ctracker_logo_square_nobg.png"
+                        alt="Celo Tracker"
+                        className="w-40 h-auto object-contain relative z-10 transition-all duration-500 group-hover:scale-105"
+                    />
                 </div>
 
                 {/* Nav */}
