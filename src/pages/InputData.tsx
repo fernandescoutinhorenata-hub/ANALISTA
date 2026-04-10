@@ -264,6 +264,12 @@ export const InputData: React.FC = () => {
                 return;
             }
 
+            // ── Debug OCR (remover após validação) ──────────────────
+            console.log('[OCR RESULT]', JSON.stringify(result));
+            console.log('[OCR posicao_squad]', result.posicao_squad);
+            console.log('[OCR jogador[0].reviv]', result.jogadores?.[0]?.reviv);
+            // ────────────────────────────────────────────────────────
+
             // Preencher campos automaticamente
             setMatchData(prev => ({
                 ...prev,
