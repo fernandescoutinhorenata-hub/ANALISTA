@@ -65,7 +65,13 @@ export const LandingPage: React.FC = () => {
                 {squads} squads ativos <span className="urgency-sep">•</span> {partidas.toLocaleString('pt-BR')} partidas analisadas <span className="urgency-sep">•</span> {prints.toLocaleString('pt-BR')} prints lidos hoje
             </div>
             <nav>
-                <a href="#" className="logo"><span>CELO</span> TRACKER</a>
+                <a href="#" className="logo">
+                    <img 
+                        src="/ctracker_banner_dark_nobg.png" 
+                        alt="Celo Tracker" 
+                        style={{ width: '320px', height: 'auto', display: 'block' }} 
+                    />
+                </a>
                 <ul className="nav-links">
                     <li><a href="#features">Funcionalidades</a></li>
                     <li><a href="#planos">Planos</a></li>
@@ -350,7 +356,13 @@ export const LandingPage: React.FC = () => {
             </section>
 
             <footer>
-                <a href="#" className="logo" style={{ fontSize: '.9rem' }}><span>CELO</span> TRACKER</a>
+                <a href="#" className="logo">
+                    <img 
+                        src="/ctracker_banner_dark_nobg.png" 
+                        alt="Celo Tracker" 
+                        style={{ width: '180px', height: 'auto', display: 'block' }} 
+                    />
+                </a>
                 <ul className="footer-links">
                     <li><a href="#">Política de privacidade</a></li>
                     <li><a href="#">Termos de uso</a></li>
