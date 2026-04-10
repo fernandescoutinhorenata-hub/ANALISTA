@@ -88,18 +88,7 @@ export const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            <div className="trust">
-                <div className="trust-inner">
-                    <span className="trust-lbl">CONFIADO POR TIMES DA</span>
-                    <div className="trust-logos">
-                        <span className="tlogo">Liga DN</span>
-                        <span className="tlogo">Free Fire BR</span>
-                        <span className="tlogo">ESL FF</span>
-                        <span className="tlogo">LBFF</span>
-                        <span className="tlogo">Copa FF</span>
-                    </div>
-                </div>
-            </div>
+
 
             <section className="features" id="features">
                 <div className="sec-wrap">
