@@ -92,7 +92,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                     <img
                         src="/ctracker_logo_square_nobg.png"
                         alt="Celo Tracker"
-                        className="max-w-[180px] w-full h-auto mb-10 transition-all duration-700 hover:scale-105"
+                        className="w-[220px] h-auto mb-10 transition-all duration-700 hover:scale-105"
                     />
                     <div className="space-y-4">
                         <h2 className="text-5xl font-extrabold text-[var(--text-primary)] leading-tight tracking-tight">
