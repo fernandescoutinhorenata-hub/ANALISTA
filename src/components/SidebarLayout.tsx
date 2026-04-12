@@ -33,7 +33,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     ];
 
     return (
-        <div className="min-h-screen flex bg-[var(--bg-main)]">
+        <div className="min-h-screen w-full flex bg-[var(--bg-main)]">
             {/* Overlay para mobile */}
             {isSidebarOpen && (
                 <div 
@@ -188,7 +188,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
             </aside>
 
             {/* Content Wrapper */}
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+            <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
                 {/* Mobile Header */}
                 <header className="md:hidden h-20 flex items-center justify-between px-6 bg-[var(--bg-main)]/80 backdrop-blur-md border-b border-[var(--border-default)] sticky top-0 z-30">
                     <button onClick={() => setIsSidebarOpen(true)} className="btn-ghost p-2">
