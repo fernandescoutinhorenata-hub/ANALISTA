@@ -59,8 +59,10 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                         className="w-8 h-8 object-contain transition-all duration-500 group-hover:scale-110" 
                     />
                     <div className="flex flex-col">
-                        <span className="font-bold text-[16px] text-white tracking-wide">CTRACKER</span>
-                        <span className="text-[10px] text-[var(--text-tertiary)] uppercase mt-0.5">Performance Area</span>
+                        <span className="text-[15px] font-black tracking-tighter text-white group-hover:text-[var(--accent)] transition-colors">
+                            CELO TRACKER
+                        </span>
+                        <span className="text-[9px] font-bold text-[var(--accent)] tracking-[0.2em]">ANALYTICS</span>
                     </div>
                 </div>
 
