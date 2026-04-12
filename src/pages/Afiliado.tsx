@@ -48,14 +48,19 @@ export default function Afiliado() {
         if (!user || !user.id) return;
         setLoading(true);
         try {
-            // Verifica status de assinante
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('is_subscriber')
-                .eq('id', user.id)
+            // Verifica status de assinante via tabela subscriptions
+            const { data: subscription, error: subError } = await supabase
+                .from('subscriptions')
+                .select('status, data_fim')
+                .eq('user_id', user.id)
+                .eq('status', 'ativo')
                 .maybeSingle();
-            
-            setIsSubscriber(!!profile?.is_subscriber);
+            console.log('[DEBUG] user.id:', user?.id);
+            console.log('[DEBUG] subscription:', subscription);
+            console.log('[DEBUG] subError:', subError);
+            const isActive = !!subscription && new Date(subscription.data_fim) > new Date();
+            console.log('[DEBUG] isActive:', isActive);
+            setIsSubscriber(isActive);
 
             // 1. Tenta buscar registro existente
             const { data: existing } = await supabase

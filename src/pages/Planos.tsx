@@ -38,14 +38,9 @@ export const Planos: React.FC = () => {
                 if (error) throw error;
                 setSubscription(data);
 
-                // Busca status geral de assinante no perfil
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('is_subscriber')
-                    .eq('id', user.id)
-                    .maybeSingle();
-                
-                setIsSubscriber(!!profile?.is_subscriber);
+                // Determina status de assinante: subscription ativa e dentro do prazo
+                const isActive = !!data && new Date(data.data_fim) > new Date();
+                setIsSubscriber(isActive);
             } catch (err) {
                 console.error('Erro ao buscar assinatura:', err);
             } finally {
