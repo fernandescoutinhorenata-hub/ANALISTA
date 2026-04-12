@@ -24,7 +24,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const navItems = [
-        { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, path: '/', premium: false },
+        { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, path: '/?tab=overview', premium: false },
         { id: 'rounds', label: 'Rodadas', icon: PlusCircle, path: '/?tab=rounds', premium: false },
         { id: 'players', label: 'Jogadores', icon: Users, path: '/?tab=players', premium: false },
         { id: 'coletivo', label: 'Coletivo', icon: Activity, path: '/coletivo', premium: false },

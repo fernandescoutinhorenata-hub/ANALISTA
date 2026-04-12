@@ -184,6 +184,8 @@ export const Dashboard: React.FC = () => {
         const tab = searchParams.get('tab');
         if (tab && tab !== activeTab) {
             setActiveTab(tab);
+        } else if (!tab) {
+            setActiveTab('overview');
         }
     }, [searchParams, activeTab]);
     const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('all');
