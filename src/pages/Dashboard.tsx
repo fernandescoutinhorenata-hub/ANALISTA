@@ -1033,7 +1033,7 @@ export const Dashboard: React.FC = () => {
 
             <SidebarLayout activeTab={activeTab} isSubscriber={isSubscriber}>
                 {/* ── Content ── */}
-                <div className="flex-1 min-w-0 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 flex flex-col h-screen overflow-hidden">
 
                     {/* Header / Top Bar */}
                     <header
