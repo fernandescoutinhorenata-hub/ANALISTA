@@ -346,7 +346,7 @@ export const AdminPanel: React.FC = () => {
                     </button>
                 </header>
 
-                <div className="p-8 max-w-[1600px] mx-auto space-y-8 pb-20">
+                <div className="p-8 w-full space-y-8 pb-20">
 
                     {/* ══ LINHA 1: 4 CARDS GLOBAIS ══ */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">

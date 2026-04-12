@@ -366,7 +366,7 @@ export const PublicSquad: React.FC = () => {
                     </div>
                 </header>
 
-                <main className="max-w-7xl mx-auto p-6 lg:p-10 space-y-8">
+                <main className="w-full p-6 lg:p-10 space-y-8">
                     {/* ─── TABS ─── */}
                     <div className="flex gap-2 p-1 bg-[#161618] border border-[#2D2D30] rounded-2xl w-fit">
                         {[

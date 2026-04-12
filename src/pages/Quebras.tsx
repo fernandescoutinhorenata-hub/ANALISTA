@@ -185,7 +185,7 @@ export default function Quebras() {
         <SidebarLayout activeTab="quebras" isSubscriber={isSubscriber}>
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <header className="flex flex-col gap-4 sticky top-0 z-50 bg-[var(--bg-surface)] backdrop-blur-md border-b border-[var(--border-subtle)] px-6 py-5">
-                    <div className="max-w-[1600px] w-full mx-auto flex items-center justify-between">
+                    <div className="w-full flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="hidden md:flex items-center text-[12px] uppercase tracking-widest text-[#6B7280] font-bold">
                                 <span>CONTROLE</span>
@@ -203,7 +203,7 @@ export default function Quebras() {
                     </div>
 
                     {/* Linha 2: Filtros */}
-                    <div className="max-w-[1600px] w-full mx-auto flex items-center justify-start gap-4">
+                    <div className="w-full flex items-center justify-start gap-4">
                         <div className="flex items-center gap-[8px]">
                             {([{ id: '7d', label: '7 DIAS' }, { id: '30d', label: 'ESTE MÊS' }, { id: 'all', label: 'TODOS' }] as const).map(opt => (
                                 <button
@@ -218,7 +218,7 @@ export default function Quebras() {
                     </div>
                 </header>
 
-                <main className="max-w-[1600px] mx-auto px-6 py-10 space-y-10">
+                <main className="w-full px-6 py-10 space-y-10">
                     
                     {/* Filtros Secundários */}
                     <div className="flex flex-wrap items-center gap-4">

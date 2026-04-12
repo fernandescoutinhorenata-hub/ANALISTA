@@ -143,7 +143,7 @@ export default function Afiliado() {
         <SidebarLayout activeTab="afiliados" isSubscriber={isSubscriber}>
             <div className="flex-1 overflow-y-auto p-6 md:p-12 font-['Inter',sans-serif] animate-reveal custom-scrollbar">
                 {/* Header */}
-                <header className="max-w-6xl mx-auto mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <header className="w-full mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <button
                             onClick={() => navigate('/')}
@@ -182,7 +182,7 @@ export default function Afiliado() {
                     )}
                 </header>
 
-                <main className="max-w-6xl mx-auto space-y-10 pb-12">
+                <main className="w-full space-y-10 pb-12">
                     {/* 4 Cards de Métricas */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <MetricCard

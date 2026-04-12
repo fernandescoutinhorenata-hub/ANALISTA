@@ -480,7 +480,7 @@ export const InputData: React.FC = () => {
 
                 {/* Tactical Header */}
                 <header className="sticky top-0 z-50 bg-[var(--bg-main)]/80 backdrop-blur-xl border-b border-[var(--border-subtle)]">
-                    <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                    <div className="w-full px-6 h-16 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button onClick={() => navigate('/')} className="p-2 border border-[var(--border-default)] rounded-md hover:bg-[var(--bg-hover)] transition-colors">
                                 <ChevronLeft size={18} className="text-[var(--text-secondary)]" />
@@ -521,7 +521,7 @@ export const InputData: React.FC = () => {
                     </div>
                 </header>
 
-                <main className="max-w-7xl mx-auto px-6 py-8 space-y-8 pb-20">
+                <main className="w-full px-6 py-8 space-y-8 pb-20">
                     <CadastroSquad onSquadChange={setSquadJogadores} />
 
                     {/* 1. Dados da Partida */}
