@@ -20,6 +20,7 @@ import type { DashboardData } from '../types';
 import { processData } from '../utils/data-processing';
 import { useAuth } from '../contexts/AuthContext';
 import { OnboardingModal } from '../components/OnboardingModal';
+import { SidebarLayout } from '../components/SidebarLayout';
 
 // ─── Componentes de UI (Design System) ──────────────────────────────────────────
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -174,7 +175,7 @@ export const Dashboard: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [isDashboardLoading, setIsDashboardLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
     const [searchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos', round: 'Todos' });
@@ -1029,626 +1030,274 @@ export const Dashboard: React.FC = () => {
                 loading={loading}
             />
 
-            {/* Overlay para Mobile quando a sidebar estiver aberta */}
-            {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
+            <SidebarLayout activeTab={activeTab} isSubscriber={isSubscriber}>
+                {/* ── Content ── */}
+                <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[var(--bg-main)]">
 
-            {/* ── Sidebar ── */}
-            <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 bg-[var(--bg-surface)] border-r border-[var(--border-default)]`}
-            >
-                <div
-                    className="flex justify-center cursor-pointer transition-all duration-300 group px-6 py-6"
-                    onClick={() => navigate('/')}
-                >
-                    <img
-                        src="/ctracker_logo_square_nobg.png"
-                        alt="Celo Tracker"
-                        className="w-40 h-auto object-contain relative z-10 transition-all duration-500 group-hover:scale-105"
-                    />
-                </div>
-
-                {/* Nav */}
-                <nav className="flex-1 px-4 space-y-2">
-                    {[
-                        { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, premium: false },
-                        { id: 'rounds', label: 'Rodadas', icon: PlusCircle, premium: false },
-                        { id: 'players', label: 'Jogadores', icon: Users, premium: false },
-                        { id: 'coletivo', label: 'Coletivo', icon: Activity, premium: false },
-                        { id: 'quebras', label: 'Quebras', icon: Shield, premium: true },
-                        { id: 'history', label: 'Análise', icon: FileSpreadsheet, premium: true },
-                    ].map(item => {
-                        const isActive = activeTab === item.id;
-                        const isLocked = item.premium && !isSubscriber;
-                        
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => { 
-                                    if (isLocked) {
-                                        navigate('/planos', { state: { message: "Esta funcionalidade é exclusiva para assinantes. Assine um plano para ter acesso completo." } });
-                                        return;
-                                    }
-
-                                    if (item.id === 'coletivo') {
-                                        navigate('/coletivo');
-                                    } else if (item.id === 'quebras') {
-                                        navigate('/quebras');
-                                    } else {
-                                        setActiveTab(item.id); 
-                                    }
-                                    setIsSidebarOpen(false); 
-                                }}
-                                className={`nav-item w-full flex items-center justify-between ${isActive ? 'active' : ''} ${isLocked ? 'opacity-80' : ''}`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <item.icon size={18} />
-                                    {item.label}
+                    {/* Header / Top Bar */}
+                    <header
+                        className="flex flex-col gap-4 px-8 py-5 z-40 backdrop-blur-md sticky top-0 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]"
+                    >
+                        {/* Linha 1: Breadcrumb + Profile */}
+                        <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-4">
+                                <div className="hidden md:flex items-center text-[12px] uppercase tracking-widest text-[#6B7280] font-bold">
+                                    <span>CONTROLE</span>
+                                    <span className="mx-2 opacity-50">›</span>
+                                    <span>
+                                        {activeTab === 'overview' ? 'DASHBOARD' : activeTab === 'players' ? 'JOGADORES' : activeTab === 'rounds' ? 'RODADAS' : 'ANÁLISE'}
+                                    </span>
                                 </div>
-                                {isLocked && <Lock size={12} className="text-[var(--text-tertiary)]" />}
-                            </button>
-                        );
-                    })}
-
-                    <button
-                        onClick={() => { navigate('/afiliado'); setIsSidebarOpen(false); }}
-                        className="nav-item w-full"
-                    >
-                        <DollarSign size={18} />
-                        Afiliados
-                    </button>
-
-                    <button
-                        onClick={() => { navigate('/admin-celo/planos'); setIsSidebarOpen(false); }}
-                        className="nav-item w-full"
-                    >
-                        <CreditCard size={18} />
-                        Planos
-                    </button>
-
-                    <div className="pt-4 mt-4 border-t border-[var(--border-subtle)]">
-                        <button
-                            onClick={() => navigate('/input')}
-                            className="btn-primary w-full flex items-center justify-center gap-2"
-                        >
-                            <PlusCircle size={18} />
-                            Inserir Dados
-                        </button>
-                    </div>
-                </nav>
-
-
-                {/* Sidebar Footer */}
-                <div className="p-4 space-y-2 border-t border-[var(--border-subtle)]">
-                    <a
-                        href="https://wa.me/13981630304"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn-ghost w-full flex items-center justify-between"
-                    >
-                        <span className="flex items-center gap-2">
-                            <AlertCircle size={16} /> Suporte Técnico
-                        </span>
-                        <ChevronRight size={12} />
-                    </a>
-                    <button
-                        onClick={() => signOut()}
-                        className="btn-ghost w-full flex items-center gap-2 text-[var(--accent-red)] hover:bg-[var(--accent-red)]/10 border-transparent hover:border-[var(--accent-red)]/20"
-                    >
-                        <LogOut size={16} /> Sair da Conta
-                    </button>
-                    <div className="pt-4 text-center">
-                        <p className="text-label">
-                            Criado por <span className="text-[var(--accent)] font-bold">@CeloCoach</span>
-                        </p>
-                    </div>
-                </div>
-            </aside>
-
-
-            {/* ── Content ── */}
-            <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[var(--bg-main)]">
-
-                {/* Header / Top Bar */}
-                <header
-                    className="flex flex-col gap-4 px-8 py-5 z-40 backdrop-blur-md sticky top-0 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]"
-                >
-                    {/* Linha 1: Breadcrumb + Profile */}
-                    <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-4">
-                            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden btn-ghost p-2">
-                                <Menu size={20} />
-                            </button>
-                            <div className="hidden md:flex items-center text-[12px] uppercase tracking-widest text-[#6B7280] font-bold">
-                                <span>CONTROLE</span>
-                                <span className="mx-2 opacity-50">›</span>
-                                <span>
-                                    {activeTab === 'overview' ? 'DASHBOARD' : activeTab === 'players' ? 'JOGADORES' : activeTab === 'rounds' ? 'RODADAS' : 'ANÁLISE'}
-                                </span>
                             </div>
-                        </div>
-                        {/* Profile header */}
-                        <div className="flex items-center gap-4">
-                            <div className="hidden sm:flex flex-col text-right items-end gap-1">
-                                <span className="text-[13px] text-[#6B7280]">{nomeUsuario || user?.email || 'Analista'}</span>
-                            </div>
-                            <button
-                                onClick={handleShareDashboard}
-                                className="hidden md:flex items-center gap-2 text-[var(--accent)] text-[13px] hover:underline"
-                                title="Compartilhar Dashboard"
-                            >
-                                <Link size={16} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Linha 2: Filtros */}
-                    <div className="flex items-center justify-start w-full gap-4">
-                        {/* ── Filtros de Tempo Rápido (Tabs) ── */}
-                        <div className="hidden lg:flex items-center gap-[8px]">
-                            {([{ id: '7d', label: '7 DIAS' }, { id: '30d', label: 'ESTE MÊS' }, { id: 'all', label: 'TODOS' }] as const).map(t => (
+                            {/* Profile header */}
+                            <div className="flex items-center gap-4 pl-4 border-l border-[var(--border-subtle)]">
+                                <div className="hidden sm:flex flex-col text-right items-end gap-1">
+                                    <span className="text-[13px] text-[#6B7280]">{nomeUsuario || user?.email || 'Analista'}</span>
+                                </div>
                                 <button
-                                    key={t.id}
-                                    onClick={() => { setTimeFilter(t.id); setSpecificDate(''); }}
-                                    className={`px-[12px] py-[6px] rounded-[8px] text-[13px] border border-[var(--border-default)] transition-all ${timeFilter === t.id && !specificDate ? 'bg-[var(--accent-muted)] border-[var(--accent)] text-[var(--accent-hover)] font-bold' : 'bg-[#1A1A1A] text-[var(--text-secondary)] hover:bg-[var(--accent-muted)] font-medium'} ${specificDate ? 'opacity-50 grayscale' : ''}`}
+                                    onClick={handleShareDashboard}
+                                    className="hidden md:flex items-center gap-2 text-[var(--accent)] text-[13px] hover:underline"
+                                    title="Compartilhar Dashboard"
                                 >
-                                    {t.label}
+                                    <Link size={14} />
+                                    Link para Players
                                 </button>
-                            ))}
+                                {/* Mobile version simple icon */}
+                                <button
+                                    onClick={handleShareDashboard}
+                                    className="md:hidden btn-ghost p-2.5 text-[var(--accent)]"
+                                >
+                                    <Link size={18} />
+                                </button>
+
+                                <div
+                                    className="w-10 h-10 rounded-full border-2 border-[var(--accent)] flex items-center justify-center font-bold text-xs bg-[var(--accent-muted)] text-[var(--accent-hover)]"
+                                >
+                                    {(nomeUsuario || user?.email || 'A')[0].toUpperCase()}
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Filtros por Data / Campeonato */}
-                        <div className="hidden lg:flex items-center gap-2">
-                            {/* Dropdown de Datas Dashboard */}
-                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#09090b] border border-[var(--border-default)] transition-all ${specificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
-                                <Calendar size={13} className={specificDate ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'} />
-                                <select 
-                                    value={specificDate}
-                                    onChange={(e) => {
-                                        setSpecificDate(e.target.value);
-                                        if (e.target.value) setTimeFilter('all'); // Desativa período se selecionar data
-                                    }}
-                                    className="bg-transparent text-white outline-none border-none text-xs cursor-pointer appearance-none min-w-[100px]"
-                                >
-                                    <option value="" className="bg-[#09090b]">Filtrar por Data</option>
-                                    {filterOptions.dates.map(d => {
-                                        const displayDate = d.includes('-') ? d.split('-').reverse().join('/') : d;
-                                        return <option key={d} value={d} className="bg-[#09090b]">{displayDate}</option>;
-                                    })}
-                                </select>
-                                {specificDate && (
-                                    <button onClick={() => setSpecificDate('')} className="ml-1 text-[var(--text-tertiary)] hover:text-white transition-colors">
-                                        <XCircle size={14} />
+                        {/* Linha 2: Filtros */}
+                        <div className="flex items-center justify-start w-full gap-4">
+                            {/* ── Filtros de Tempo Rápido (Tabs) ── */}
+                            <div className="hidden lg:flex items-center gap-[8px]">
+                                {([{ id: '7d', label: '7 DIAS' }, { id: '30d', label: 'ESTE MÊS' }, { id: 'all', label: 'TODOS' }] as const).map(t => (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => { setTimeFilter(t.id); setSpecificDate(''); }}
+                                        className={`px-[12px] py-[6px] rounded-[8px] text-[13px] border border-[var(--border-default)] transition-all ${timeFilter === t.id && !specificDate ? 'bg-[var(--accent-muted)] border-[var(--accent)] text-[var(--accent-hover)] font-bold' : 'bg-[#1A1A1A] text-[var(--text-secondary)] hover:bg-[var(--accent-muted)] font-medium'} ${specificDate ? 'opacity-50 grayscale' : ''}`}
+                                    >
+                                        {t.label}
                                     </button>
-                                )}
+                                ))}
                             </div>
 
-                            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)] text-label">
-                                <Trophy size={13} className="text-[var(--accent)]" />
-                                <select
-                                    value={filters.championship}
-                                    onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}
-                                    className="outline-none cursor-pointer bg-zinc-950 text-white border-none py-1.5 px-2 rounded-md hover:bg-zinc-900 transition-colors"
+                            {/* Filtros por Data / Campeonato */}
+                            <div className="hidden lg:flex items-center gap-2">
+                                {/* Dropdown de Datas Dashboard */}
+                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#09090b] border border-[var(--border-default)] transition-all ${specificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
+                                    <Calendar size={13} className={specificDate ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'} />
+                                    <select 
+                                        value={specificDate}
+                                        onChange={(e) => {
+                                            setSpecificDate(e.target.value);
+                                            if (e.target.value) setTimeFilter('all'); // Desativa período se selecionar data
+                                        }}
+                                        className="bg-transparent text-white outline-none border-none text-xs cursor-pointer appearance-none min-w-[100px]"
+                                    >
+                                        <option value="" className="bg-[#09090b]">Filtrar por Data</option>
+                                        {filterOptions.dates.map(d => {
+                                            const displayDate = d.includes('-') ? d.split('-').reverse().join('/') : d;
+                                            return <option key={d} value={d} className="bg-[#09090b]">{displayDate}</option>;
+                                        })}
+                                    </select>
+                                    {specificDate && (
+                                        <button onClick={() => setSpecificDate('')} className="ml-1 text-[var(--text-tertiary)] hover:text-white transition-colors">
+                                            <XCircle size={14} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)] text-label">
+                                    <Trophy size={13} className="text-[var(--accent)]" />
+                                    <select
+                                        value={filters.championship}
+                                        onChange={e => setFilters(prev => ({ ...prev, championship: e.target.value }))}
+                                        className="outline-none cursor-pointer bg-zinc-950 text-white border-none py-1.5 px-2 rounded-md hover:bg-zinc-900 transition-colors"
+                                    >
+                                        <option value="Todos">Todos os Eventos</option>
+                                        {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                </div>
+
+                                {/* Dropdown de Rodada Dashboard */}
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#09090b] border border-[var(--border-default)]">
+                                    <Activity size={13} className="text-[var(--text-tertiary)]" />
+                                    <select 
+                                        value={filters.round}
+                                        onChange={(e) => setFilters({ ...filters, round: e.target.value })}
+                                        className="bg-transparent text-white outline-none border-none text-xs cursor-pointer appearance-none min-w-[100px]"
+                                    >
+                                        <option value="Todos" className="bg-[#09090b]">Todas Rodadas</option>
+                                        {filterOptions.rounds.map(r => (
+                                            <option key={r} value={r} className="bg-[#09090b]">Rodada {String(r).padStart(2, '0')}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Scrollable Content */}
+                    <main className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+
+                        {isDashboardLoading ? (
+                            <div className="h-full w-full flex flex-col items-center justify-center space-y-6">
+                                <div className="w-12 h-12 rounded-lg border-2 border-[var(--accent)]/20 border-t-[var(--accent)] animate-spin" />
+                                <p className="text-label animate-pulse text-[var(--accent)]">Inicializando Protocolo de Dados</p>
+                            </div>
+                        ) : fetchError ? (
+                            <div className="h-full flex flex-col items-center justify-center p-12 text-center card">
+                                <div className="p-5 rounded-xl bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/20 mb-6">
+                                    <AlertCircle size={40} className="text-[var(--accent-red)]" />
+                                </div>
+                                <h3 className="text-heading text-xl mb-2">Falha de Sincronização</h3>
+                                <p className="max-w-xs text-sm text-[var(--text-secondary)] mb-8">{fetchError}</p>
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="btn-primary"
                                 >
-                                    <option value="Todos">Todos os Eventos</option>
-                                    {filterOptions.championships.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
+                                    Reconectar Sistema
+                                </button>
                             </div>
-
-                            {/* Dropdown de Rodada Dashboard */}
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#09090b] border border-[var(--border-default)]">
-                                <Activity size={13} className="text-[var(--text-tertiary)]" />
-                                <select 
-                                    value={filters.round}
-                                    onChange={(e) => setFilters({ ...filters, round: e.target.value })}
-                                    className="bg-transparent text-white outline-none border-none text-xs cursor-pointer appearance-none min-w-[100px]"
-                                >
-                                    <option value="Todos" className="bg-[#09090b]">Todas Rodadas</option>
-                                    {filterOptions.rounds.map(r => (
-                                        <option key={r} value={r} className="bg-[#09090b]">Rodada {String(r).padStart(2, '0')}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-
-                        {/* Profile */}
-                        <div className="flex items-center gap-4 pl-4 border-l border-[var(--border-subtle)]">
-                            <div className="hidden sm:flex flex-col text-right items-end gap-1">
-                                <span className="text-[13px] text-[#6B7280]">{nomeUsuario || user?.email || 'Analista'}</span>
-                            </div>
-                            <button
-                                onClick={handleShareDashboard}
-                                className="hidden md:flex items-center gap-2 text-[var(--accent)] text-[13px] hover:underline"
-                                title="Compartilhar Dashboard"
-                            >
-                                <Link size={14} />
-                                Link para Players
-                            </button>
-                            {/* Mobile version simple icon */}
-                            <button
-                                onClick={handleShareDashboard}
-                                className="md:hidden btn-ghost p-2.5 text-[var(--accent)]"
-                            >
-                                <Link size={18} />
-                            </button>
-
-                            <div
-                                className="w-10 h-10 rounded-full border-2 border-[var(--accent)] flex items-center justify-center font-bold text-xs bg-[var(--accent-muted)] text-[var(--accent-hover)]"
-                            >
-                                {(nomeUsuario || user?.email || 'A')[0].toUpperCase()}
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
-
-                {/* Scrollable Content */}
-                <main className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-
-                    {isDashboardLoading ? (
-                        <div className="h-full w-full flex flex-col items-center justify-center space-y-6">
-                            <div className="w-12 h-12 rounded-lg border-2 border-[var(--accent)]/20 border-t-[var(--accent)] animate-spin" />
-                            <p className="text-label animate-pulse text-[var(--accent)]">Inicializando Protocolo de Dados</p>
-                        </div>
-                    ) : fetchError ? (
-                        <div className="h-full flex flex-col items-center justify-center p-12 text-center card">
-                            <div className="p-5 rounded-xl bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/20 mb-6">
-                                <AlertCircle size={40} className="text-[var(--accent-red)]" />
-                            </div>
-                            <h3 className="text-heading text-xl mb-2">Falha de Sincronização</h3>
-                            <p className="max-w-xs text-sm text-[var(--text-secondary)] mb-8">{fetchError}</p>
-                            <button
-                                onClick={() => window.location.reload()}
-                                className="btn-primary"
-                            >
-                                Reconectar Sistema
-                            </button>
-                        </div>
-                    ) : (
-
-                        <>
-                            {/* ══════════ OVERVIEW TAB ══════════ */}
-                            {activeTab === 'overview' && (
-                                <div className="space-y-8 animate-reveal">
-                                    {!data ? (
-                                        <div className="flex flex-col items-center justify-center py-20 text-center card border-dashed">
-                                            <div className="p-6 rounded-2xl mb-6 bg-[var(--accent-muted)]">
-                                                <FileSpreadsheet size={40} className="text-[var(--accent)]" />
-                                            </div>
-                                            <h3 className="text-heading text-xl mb-2">Protocolo de Dados Inativo</h3>
-                                            <p className="max-w-xs text-label px-4">
-                                                Nenhum dado detectado no sistema. Por favor, inicialize o banco de dados via importação (.xlsx) ou registro manual.
-                                            </p>
-                                            <button
-                                                onClick={() => setIsImportModalOpen(true)}
-                                                className="mt-8 btn-primary flex items-center gap-2"
-                                            >
-                                                <PlusCircle size={16} /> Inicializar Sistema
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {selectedMap && (
-                                                <div className="flex items-center gap-2 mb-6 animate-fade-in group pointer-events-none">
-                                                    <div className="bg-[var(--accent)]/10 border border-[var(--accent)]/20 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg shadow-[var(--accent)]/5 backdrop-blur-sm pointer-events-auto">
-                                                        <MapIcon size={12} className="text-[var(--accent)]" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">
-                                                            Filtrando por: {selectedMap}
-                                                        </span>
-                                                        <button 
-                                                            onClick={() => setSelectedMap(null)}
-                                                            className="hover:bg-[var(--accent)]/20 p-1 rounded-full transition-colors ml-1"
-                                                            title="Limpar filtro de mapa"
-                                                        >
-                                                            <XCircle size={14} className="text-[var(--accent)]" />
-                                                        </button>
-                                                    </div>
+                        ) : (
+                            <>
+                                {/* ══════════ OVERVIEW TAB ══════════ */}
+                                {activeTab === 'overview' && (
+                                    <div className="space-y-8 animate-reveal">
+                                        {!data ? (
+                                            <div className="flex flex-col items-center justify-center py-20 text-center card border-dashed">
+                                                <div className="p-6 rounded-2xl mb-6 bg-[var(--accent-muted)]">
+                                                    <FileSpreadsheet size={40} className="text-[var(--accent)]" />
                                                 </div>
-                                            )}
-                                            {/* Principais Métricas */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                                                <MetricCard
-                                                    title="Total de Kills"
-                                                    value={data.general.totalKills}
-                                                    subValue={`${data.general.mediaKills} por queda`}
-                                                    icon={Sword}
-                                                />
-                                                <MetricCard
-                                                    title="Pontuação Total"
-                                                    value={data.general.totalPontos}
-                                                    subValue={`Média: ${data.general.mediaPontos}`}
-                                                    icon={Target}
-                                                />
-                                                <MetricCard
-                                                    title="Booyahs"
-                                                    value={data.general.totalBooyahs}
-                                                    subValue={`${data.general.percentBooyah}% Win Rate`}
-                                                    icon={Trophy}
-                                                />
-                                                <MetricCard
-                                                    title="Dano Médio"
-                                                    value={data.squadMetrics.avgDamage.toLocaleString("pt-BR")}
-                                                    subValue={`${data.squadMetrics.avgDamage} por queda`}
-                                                    icon={Sword}
-                                                />
+                                                <h3 className="text-heading text-xl mb-2">Protocolo de Dados Inativo</h3>
+                                                <p className="max-w-xs text-label px-4">
+                                                    Nenhum dado detectado no sistema. Por favor, inicialize o banco de dados via importação (.xlsx) ou registro manual.
+                                                </p>
+                                                <button
+                                                    onClick={() => setIsImportModalOpen(true)}
+                                                    className="mt-8 btn-primary flex items-center gap-2"
+                                                >
+                                                    <PlusCircle size={16} /> Inicializar Sistema
+                                                </button>
                                             </div>
-
-                                            {/* ── NOVAS MÉTRICAS ── */}
-                                            {overviewExtras && (
-                                                <>
-
-
-
-                                                </>
-                                            )}
-
-                                            {/* Charts Row */}
-                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                                                <Card className="lg:col-span-2">
-                                                    <div className="flex items-center justify-between mb-4">
-                                                        <div>
-                                                            <h4 className="text-heading">Pontos por Mapa</h4>
-                                                            <p className="text-[12px] text-[#6B7280] mb-[16px]">Total de pontos por mapa</p>
-                                                        </div>
-                                                        <div className="p-2.5 text-[#4B5563] hover:text-[var(--accent)] transition-colors cursor-pointer">
-                                                            <MapIcon size={16} />
-                                                        </div>
-                                                    </div>
-                                                    <div className="h-72">
-                                                        <ResponsiveContainer width="100%" height="100%">
-                                                            <BarChart 
-                                                                layout="horizontal" 
-                                                                data={pointsByMapData} 
-                                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                                                                onClick={(e) => {
-                                                                    if (e && e.activeLabel) {
-                                                                        const mapClicked = String(e.activeLabel);
-                                                                        setSelectedMap(prev => prev === mapClicked ? null : mapClicked);
-                                                                    }
-                                                                }}
+                                        ) : (
+                                            <>
+                                                {selectedMap && (
+                                                    <div className="flex items-center gap-2 mb-6 animate-fade-in group pointer-events-none">
+                                                        <div className="bg-[var(--accent)]/10 border border-[var(--accent)]/20 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg shadow-[var(--accent)]/5 backdrop-blur-sm pointer-events-auto">
+                                                            <MapIcon size={12} className="text-[var(--accent)]" />
+                                                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">
+                                                                Filtrando por: {selectedMap}
+                                                            </span>
+                                                            <button 
+                                                                onClick={() => setSelectedMap(null)}
+                                                                className="hover:bg-[var(--accent)]/20 p-1 rounded-full transition-colors ml-1"
+                                                                title="Limpar filtro de mapa"
                                                             >
-                                                                <XAxis 
-                                                                    dataKey="mapa" 
-                                                                    axisLine={false} 
-                                                                    tickLine={false} 
-                                                                    tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 600 }} 
-                                                                />
-                                                                <YAxis hide type="number" />
-                                                                <Tooltip 
-                                                                    cursor={{ fill: 'rgba(124, 58, 237, 0.05)' }}
-                                                                    contentStyle={neonTooltipStyle}
-                                                                    itemStyle={neonItemStyle}
-                                                                    labelStyle={neonLabelStyle}
-                                                                />
-                                                                <Bar 
-                                                                    dataKey="total" 
-                                                                    name="Pontos Totais"
-                                                                    radius={[4, 4, 0, 0]} 
-                                                                    barSize={24}
-                                                                    style={{ cursor: 'pointer' }}
-                                                                >
-                                                                    {pointsByMapData.map((entry: any, index: number) => (
-                                                                        <Cell 
-                                                                            key={`cell-${index}`} 
-                                                                            fill={selectedMap === entry.mapa ? '#A855F7' : '#7C3AED'}
-                                                                            stroke={selectedMap === entry.mapa ? '#FFFFFF' : 'none'}
-                                                                            strokeWidth={selectedMap === entry.mapa ? 2 : 0}
-                                                                        />
-                                                                    ))}
-                                                                </Bar>
-                                                            </BarChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                </Card>
-
-                                                <Card className="flex flex-col h-full">
-                                                    <div className="flex items-center justify-between mb-4">
-                                                        <div>
-                                                            <h4 className="text-heading">Performance por Mapa</h4>
-                                                            <p className="text-[12px] text-[#6B7280] mb-[16px]">Comparação de pontuação extrema</p>
-                                                        </div>
-                                                        <div className="p-2.5 text-[#4B5563] hover:text-[var(--accent)] transition-colors cursor-pointer">
-                                                            <MapIcon size={16} />
+                                                                <XCircle size={14} className="text-[var(--accent)]" />
+                                                            </button>
                                                         </div>
                                                     </div>
+                                                )}
+                                                {/* Principais Métricas */}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                                                    <MetricCard
+                                                        title="Total de Kills"
+                                                        value={data.general.totalKills}
+                                                        subValue={`${data.general.mediaKills} por queda`}
+                                                        icon={Sword}
+                                                    />
+                                                    <MetricCard
+                                                        title="Pontuação Total"
+                                                        value={data.general.totalPontos}
+                                                        subValue={`Média: ${data.general.mediaPontos}`}
+                                                        icon={Target}
+                                                    />
+                                                    <MetricCard
+                                                        title="Booyahs"
+                                                        value={data.general.totalBooyahs}
+                                                        subValue={`${data.general.percentBooyah}% Win Rate`}
+                                                        icon={Trophy}
+                                                    />
+                                                    <MetricCard
+                                                        title="Dano Médio"
+                                                        value={data.squadMetrics.avgDamage.toLocaleString("pt-BR")}
+                                                        subValue={`${data.squadMetrics.avgDamage} por queda`}
+                                                        icon={Sword}
+                                                    />
+                                                </div>
 
-                                                    {!mapComparisonData ? (
-                                                        <div className="flex flex-col items-center justify-center h-full py-10 opacity-30">
-                                                            <MapIcon size={48} className="mb-4" />
-                                                            <p className="text-label">Sem dados para comparar</p>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="grid grid-cols-2 gap-0 h-full">
-                                                            {/* Melhor Mapa */}
-                                                            <div className="pr-6 flex flex-col justify-center overflow-hidden">
-                                                                <span className="text-[10px] whitespace-nowrap font-black uppercase tracking-[0.2em] text-[#10B981] mb-2 block">Melhor Mapa</span>
-                                                                <h3 className="text-heading text-xl font-black uppercase tracking-tight mb-6 truncate">{mapComparisonData.best.mapa}</h3>
-                                                                
-                                                                <div className="space-y-4">
-                                                                    <div>
-                                                                        <div className="text-heading text-xl font-bold text-white whitespace-nowrap">{mapComparisonData.best.total}</div>
-                                                                        <span className="text-label whitespace-nowrap !text-[#10B981]/80">Pontos no Melhor</span>
-                                                                    </div>
-                                                                    <div>
-                                                                        <div className="text-heading text-xl font-semibold text-white/90 whitespace-nowrap">{mapComparisonData.best.media}</div>
-                                                                        <span className="text-label whitespace-nowrap !text-[#10B981]/50">Média por queda</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Pior Mapa */}
-                                                            <div className="pl-6 border-l border-[var(--border-subtle)] flex flex-col justify-center overflow-hidden">
-                                                                <span className="text-[10px] whitespace-nowrap font-black uppercase tracking-[0.2em] text-[#EF4444] mb-2 block">Pior Mapa</span>
-                                                                <h3 className="text-heading text-xl font-black uppercase tracking-tight mb-6 truncate">{mapComparisonData.worst.mapa}</h3>
-                                                                
-                                                                <div className="space-y-4">
-                                                                    <div>
-                                                                        <div className="text-heading text-xl font-bold text-white whitespace-nowrap">{mapComparisonData.worst.total}</div>
-                                                                        <span className="text-label whitespace-nowrap !text-[#EF4444]/80">Pontos no Pior</span>
-                                                                    </div>
-                                                                    <div>
-                                                                        <div className="text-heading text-xl font-semibold text-white/90 whitespace-nowrap">{mapComparisonData.worst.media}</div>
-                                                                        <span className="text-label whitespace-nowrap !text-[#EF4444]/50">Média por queda</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </Card>
-                                            </div>
-
-                                            {/* MVP & Squad Metrics */}
-                                            {filteredPlayerRows.length > 0 && (
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                                    <Card className="p-6 md:col-span-2">
+                                                {/* Charts Row */}
+                                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                                                    <Card className="lg:col-span-2">
                                                         <div className="flex items-center justify-between mb-4">
                                                             <div>
-                                                                <h4 className="text-heading">Evolução Diária</h4>
-                                                                <p className="text-[12px] text-[#6B7280] mb-[16px]">Média e total de pontos por dia</p>
+                                                                <h4 className="text-heading">Pontos por Mapa</h4>
+                                                                <p className="text-[12px] text-[#6B7280] mb-[16px]">Total de pontos por mapa</p>
                                                             </div>
                                                             <div className="p-2.5 text-[#4B5563] hover:text-[var(--accent)] transition-colors cursor-pointer">
-                                                                <TrendingUp size={16} />
+                                                                <MapIcon size={16} />
                                                             </div>
                                                         </div>
-                                                        <div className="h-56">
+                                                        <div className="h-72">
                                                             <ResponsiveContainer width="100%" height="100%">
-                                                                <LineChart data={dailyEvolData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
-                                                                    <CartesianGrid stroke="var(--border-subtle)" vertical={false} strokeDasharray="3 3" />
+                                                                <BarChart 
+                                                                    layout="horizontal" 
+                                                                    data={pointsByMapData} 
+                                                                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                                                    onClick={(e) => {
+                                                                        if (e && e.activeLabel) {
+                                                                            const mapClicked = String(e.activeLabel);
+                                                                            setSelectedMap(prev => prev === mapClicked ? null : mapClicked);
+                                                                        }
+                                                                    }}
+                                                                >
                                                                     <XAxis 
-                                                                        dataKey="name" 
-                                                                        tickLine={false} 
+                                                                        dataKey="mapa" 
                                                                         axisLine={false} 
-                                                                        tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontWeight: 600 }} 
+                                                                        tickLine={false} 
+                                                                        tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 600 }} 
                                                                     />
-                                                                    <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
-                                                                    <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
-                                                                    <Legend 
-                                                                        verticalAlign="top" 
-                                                                        align="right" 
-                                                                        iconType="circle" 
-                                                                        iconSize={8}
-                                                                        wrapperStyle={{ fontSize: '10px', marginTop: '-20px' }}
+                                                                    <YAxis hide type="number" />
+                                                                    <Tooltip 
+                                                                        cursor={{ fill: 'rgba(124, 58, 237, 0.05)' }}
+                                                                        contentStyle={neonTooltipStyle}
+                                                                        itemStyle={neonItemStyle}
+                                                                        labelStyle={neonLabelStyle}
                                                                     />
-                                                                    <Line type="monotone" dataKey="media" name="Média" stroke="#7C3AED" strokeWidth={2} dot={{ r: 4, fill: '#7C3AED', strokeWidth: 0 }} activeDot={{ r: 6 }} />
-                                                                    <Line type="monotone" dataKey="total" name="Total" stroke="#10B981" strokeWidth={2} dot={{ r: 4, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 6 }} />
-                                                                </LineChart>
+                                                                    <Bar 
+                                                                        dataKey="total" 
+                                                                        name="Pontos Totais"
+                                                                        radius={[4, 4, 0, 0]} 
+                                                                        barSize={24}
+                                                                        style={{ cursor: 'pointer' }}
+                                                                    >
+                                                                        {pointsByMapData.map((entry: any, index: number) => (
+                                                                            <Cell 
+                                                                                key={`cell-${index}`} 
+                                                                                fill={selectedMap === entry.mapa ? '#A855F7' : '#7C3AED'}
+                                                                                stroke={selectedMap === entry.mapa ? '#FFFFFF' : 'none'}
+                                                                                strokeWidth={selectedMap === entry.mapa ? 2 : 0}
+                                                                            />
+                                                                        ))}
+                                                                    </Bar>
+                                                                </BarChart>
                                                             </ResponsiveContainer>
                                                         </div>
                                                     </Card>
 
-                                                    <Card className="md:col-span-1 p-6 flex flex-col justify-between">
-                                                        <div className="flex items-center justify-between mb-4">
-                                                            <div>
-                                                                <h4 className="text-heading">Médias do squad</h4>
-                                                                <p className="text-[12px] text-[#6B7280] mb-[16px]">Análise consolidada por queda</p>
-                                                            </div>
-                                                            <div className="flex gap-2">
-                                                                <span className="badge badge-purple">GLOBAL</span>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div className="grid grid-cols-2 gap-4 h-full">
-                                                            <div className="p-4 rounded-xl bg-[var(--bg-main)]/50 border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 transition-all flex flex-col justify-between">
-                                                                <div className="flex items-center justify-between text-[var(--accent)] mb-2">
-                                                                    <span className="text-label !mt-0">Quedas</span>
-                                                                    <Activity size={12} className="opacity-50" />
-                                                                </div>
-                                                                <div className="text-heading text-4xl font-black text-white">{globalSquadStats.quedas}</div>
-                                                            </div>
-
-                                                            <div className="p-4 rounded-xl bg-[var(--bg-main)]/50 border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 transition-all flex flex-col justify-between">
-                                                                <div className="flex items-center justify-between text-[var(--accent)] mb-2">
-                                                                    <span className="text-label !mt-0">K/D</span>
-                                                                    <TrendingUp size={12} className="opacity-50" />
-                                                                </div>
-                                                                <div className="text-heading text-4xl font-black text-white">{globalSquadStats.kd}</div>
-                                                            </div>
-
-                                                            <div className="p-4 rounded-xl bg-[var(--bg-main)]/50 border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 transition-all flex flex-col justify-between">
-                                                                <div className="flex items-center justify-between text-[var(--accent)] mb-2">
-                                                                    <span className="text-label !mt-0">Abates</span>
-                                                                    <Sword size={12} className="opacity-50" />
-                                                                </div>
-                                                                <div className="text-heading text-4xl font-black text-white">{globalSquadStats.medAbates}</div>
-                                                            </div>
-
-                                                            <div className="p-4 rounded-xl bg-[var(--bg-main)]/50 border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 transition-all flex flex-col justify-between">
-                                                                <div className="flex items-center justify-between text-[var(--accent)] mb-2">
-                                                                    <span className="text-label !mt-0">Derrub.</span>
-                                                                    <Target size={12} className="opacity-50" />
-                                                                </div>
-                                                                <div className="text-heading text-4xl font-black text-white">{globalSquadStats.medDerrubados}</div>
-                                                            </div>
-                                                        </div>
-                                                    </Card>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* ══════════ PLAYERS TAB ══════════ */}
-                            {activeTab === 'players' && (
-                                <div className="space-y-6 animate-reveal">
-                                    <div className="flex flex-wrap items-center gap-4">
-                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
-                                            <UserCircle2 size={16} className="text-[var(--accent)]" />
-                                            <select
-                                                value={playerSelectedPlayer}
-                                                onChange={e => setPlayerSelectedPlayer(e.target.value)}
-                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
-                                            >
-                                                <option value="Todos" className="bg-[#141416]">Todos os Jogadores</option>
-                                                {playerList.map((p: any) => (
-                                                    <option key={p} value={p} className="bg-[#141416]">{p}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
-                                            <Trophy size={16} className="text-[var(--accent)]" />
-                                            <select
-                                                value={playerChampFilter}
-                                                onChange={e => setPlayerChampFilter(e.target.value)}
-                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
-                                            >
-                                                <option value="Todos" className="bg-[#141416]">Todos os Eventos</option>
-                                                {/* Usa playerChampOptions populado direto da view para evitar mismatch */}
-                                                {playerChampOptions.map(c => (
-                                                    <option key={c} value={c} className="bg-[#141416]">{c}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
-                                            <Calendar size={16} className="text-[var(--accent)]" />
-                                            <select
-                                                value={playerDateFilter}
-                                                onChange={e => setPlayerDateFilter(e.target.value)}
-                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
-                                            >
-                                                <option value="Todos" className="bg-[#141416]">Todas as Datas</option>
-                                                {filterOptions.dates.map(d => (
-                                                    <option key={d} value={d} className="bg-[#141416]">{d}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-default)]">
-                                            <Activity size={16} className="text-[var(--accent)]" />
-                                            <select
-                                                value={playerRoundFilter}
-                                                onChange={e => setPlayerRoundFilter(e.target.value)}
-                                                className="bg-transparent text-[var(--text-primary)] border-none px-2 outline-none cursor-pointer min-w-[160px] font-bold text-sm"
-                                            >
-                                                <option value="Todos" className="bg-[#141416]">Todas as Rodadas</option>
-                                                {filterOptions.rounds.map(r => (
                                                     <option key={r} value={r} className="bg-[#141416]">Rodada {String(r).padStart(2, '0')}</option>
                                                 ))}
                                             </select>

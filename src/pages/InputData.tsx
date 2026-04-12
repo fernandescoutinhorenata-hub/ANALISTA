@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { verificarDesbloqueioConquistas } from '../utils/conquistas';
 import { readScreenshot } from '../lib/vision';
+import { SidebarLayout } from '../components/SidebarLayout';
 
 const MAPAS = ['BERMUDA', 'PURGATÓRIO', 'KALAHARI', 'ALPINE', 'NOVA TERRA', 'SOLARA'];
 const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
@@ -133,22 +134,16 @@ export const InputData: React.FC = () => {
     useEffect(() => {
         if (!user) return;
         const checkSubAndUses = async () => {
-            const { data: subData } = await supabase
-                .from('subscriptions')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('status', 'ativo')
-                .gt('data_fim', new Date().toISOString())
-                .maybeSingle();
-            setAssinaturaAtiva(!!subData);
-
-            const { data: profile } = await supabase
-                .from('perfis')
-                .select('ocr_uses')
+             // Busca status geral de assinante no perfil
+             const { data: profile } = await supabase
+                .from('profiles')
+                .select('is_subscriber, ocr_uses')
                 .eq('id', user.id)
-                .single();
+                .maybeSingle();
+            
+            setAssinaturaAtiva(!!profile?.is_subscriber);
             if (profile) setOcrUses(profile.ocr_uses ?? 0);
-            console.log('[OCR DEBUG] ocr_uses carregado:', profile?.ocr_uses, '| assinatura:', !!subData);
+            console.log('[OCR DEBUG] ocr_uses carregado:', profile?.ocr_uses, '| assinatura:', !!profile?.is_subscriber);
         };
         checkSubAndUses();
     }, [user]);
@@ -297,7 +292,7 @@ export const InputData: React.FC = () => {
             // 2. Incrementar uso se não for PRO
             if (!assinaturaAtiva && user) {
                 const nextUses = ocrUses + 1;
-                await supabase.from('perfis').update({ ocr_uses: nextUses }).eq('id', user.id);
+                await supabase.from('profiles').update({ ocr_uses: nextUses }).eq('id', user.id);
                 setOcrUses(nextUses);
             }
 
@@ -479,378 +474,377 @@ export const InputData: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-['Inter',sans-serif]">
-            {toast && <Toast message={toast.message} type={toast.type} />}
+        <SidebarLayout isSubscriber={assinaturaAtiva}>
+            <div className="flex-1 overflow-y-auto font-['Inter',sans-serif] custom-scrollbar">
+                {toast && <Toast message={toast.message} type={toast.type} />}
 
-            {/* Tactical Header */}
-            <header className="sticky top-0 z-50 bg-[var(--bg-main)]/80 backdrop-blur-xl border-b border-[var(--border-subtle)]">
-                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => navigate('/')} className="p-2 border border-[var(--border-default)] rounded-md hover:bg-[var(--bg-hover)] transition-colors">
-                            <ChevronLeft size={18} className="text-[var(--text-secondary)]" />
-                        </button>
-                        <div className="flex flex-col">
-                            <h1 className="text-sm font-bold text-[var(--text-primary)]">Inserir Partida</h1>
-                            <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Preencha os dados do squad</p>
+                {/* Tactical Header */}
+                <header className="sticky top-0 z-50 bg-[var(--bg-main)]/80 backdrop-blur-xl border-b border-[var(--border-subtle)]">
+                    <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => navigate('/')} className="p-2 border border-[var(--border-default)] rounded-md hover:bg-[var(--bg-hover)] transition-colors">
+                                <ChevronLeft size={18} className="text-[var(--text-secondary)]" />
+                            </button>
+                            <div className="flex flex-col">
+                                <h1 className="text-sm font-bold text-[var(--text-primary)]">Inserir Partida</h1>
+                                <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Preencha os dados do squad</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            {/* Input oculto para a imagem */}
+                            <input
+                                ref={screenshotInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleScreenshot}
+                            />
+
+                            <button
+                                onClick={() => setIsResetModalOpen(true)}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-transparent border border-[var(--border-default)] rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all"
+                            >
+                                <Trash2 size={14} />
+                                <span className="text-xs font-semibold md:inline hidden">Reiniciar Tabela</span>
+                            </button>
+
+                            {!assinaturaAtiva && (
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-hover)] border border-[var(--border-subtle)] rounded-md md:flex hidden">
+                                    <span className="text-[10px] font-bold text-[var(--text-secondary)]">
+                                        {Math.max(0, 4 - ocrUses)} de 4 usos gratuitos restantes
+                                    </span>
+                                </div>
+                            )}
+
                         </div>
                     </div>
+                </header>
 
-                    <div className="flex items-center gap-3">
-                        {/* Input oculto para a imagem */}
-                        <input
-                            ref={screenshotInputRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleScreenshot}
-                        />
+                <main className="max-w-7xl mx-auto px-6 py-8 space-y-8 pb-20">
+                    <CadastroSquad onSquadChange={setSquadJogadores} />
+
+                    {/* 1. Dados da Partida */}
+                    <section className="animate-reveal">
+                        <div className="flex items-center gap-2 mb-4">
+                            <h2 className="text-sm font-bold text-[var(--text-primary)]">Dados da partida</h2>
+                        </div>
+                        <div className="card p-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                            <InputField label="Data" type="date" value={matchData.data} onChange={(v: string) => setMatchData(p => ({ ...p, data: v }))} className="rounded-lg" />
+                            <InputField label="Campeonato" value={matchData.campeonato} onChange={(v: string) => setMatchData(p => ({ ...p, campeonato: v.trim().toUpperCase() }))} placeholder="Ex: LBFF" className="rounded-lg" />
+                            <SelectField label="Mapa" value={matchData.mapa} onChange={(v: string) => setMatchData(p => ({ ...p, mapa: v }))} options={MAPAS} className="rounded-lg" />
+                            <InputField label="Rodada" type="number" value={matchData.rodada} onChange={(v: string) => setMatchData(p => ({ ...p, rodada: v }))} placeholder="No." className="rounded-lg" />
+                            <SelectField label="Colocação" value={matchData.colocacao} onChange={(v: string) => setMatchData(p => ({ ...p, colocacao: v }))} options={COLOCACOES} className="rounded-lg" />
+                            <InputField label="Kills Squad" type="number" value={matchData.totalKillsManual} onChange={(v: string) => setMatchData(p => ({ ...p, totalKillsManual: v }))} className="rounded-lg" />
+
+                            <div className="flex flex-col gap-1.5 w-full">
+                                <span className="text-[11px] font-medium text-[var(--text-secondary)]">Total de Pontos</span>
+                                <div className="w-full h-[38px] flex items-center justify-center bg-[var(--accent-muted)] rounded-lg">
+                                    <span className="text-xl font-bold text-[var(--accent-hover)]">{totalPontosPartida}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* 2. Squad Container */}
+                    <section className="animate-reveal">
+                        <div className="flex items-center gap-2 mb-4">
+                            <h2 className="text-sm font-bold text-[var(--text-primary)]">Integrantes do squad</h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {players.map((player, idx) => (
+                                <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 hover:border-[var(--accent-glow)] transition-all">
+                                    <div className="pb-4 mb-4 border-b border-[var(--border-subtle)]">
+                                        <div className="flex flex-col gap-1.5 animate-reveal w-full">
+                                            <label className="text-[11px] font-bold text-[#F97316] flex items-center gap-1.5 uppercase tracking-wide">
+                                                Jogador {idx + 1}
+                                            </label>
+                                            <div className="relative flex items-center">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Nome do Player"
+                                                    value={player.nome}
+                                                    onChange={e => updatePlayer(idx, 'nome', e.target.value.toUpperCase())}
+                                                    className="input-base px-4 pr-10 border-[#F97316] bg-[#1C1410] rounded-md w-full focus:ring-1 focus:ring-[#F97316] uppercase transition-all shadow-[0_0_15px_rgba(249,115,22,0.1)] font-bold text-[#F97316]"
+                                                />
+                                                <div className="absolute right-3 text-[#F97316] pointer-events-none">
+                                                    <AlertTriangle size={16} />
+                                                </div>
+                                            </div>
+                                            <span className="text-[10px] text-[#F97316]/80 font-medium mt-0.5">Confirme o nome antes de salvar</span>
+                                        </div>
+                                        <span className="text-[11px] text-[var(--text-tertiary)] font-medium mt-1 inline-block">Métricas de partida</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <InputField label="Kills" type="number" value={player.kills} onChange={(v: string) => updatePlayer(idx, 'kills', v)} className="rounded-[6px]" />
+                                        <InputField label="Assists" type="number" value={player.assistencias} onChange={(v: string) => updatePlayer(idx, 'assistencias', v)} className="rounded-[6px]" />
+                                        <InputField label="Derrub." type="number" value={player.derrubados} onChange={(v: string) => updatePlayer(idx, 'derrubados', v)} className="rounded-[6px]" />
+                                        <InputField label="Dano" type="number" value={player.dano} onChange={(v: string) => updatePlayer(idx, 'dano', v)} className="rounded-[6px]" />
+                                        <InputField label="Mortes" type="number" value={player.morte} onChange={(v: string) => updatePlayer(idx, 'morte', v)} className="rounded-[6px]" />
+                                        <InputField label="Reviv." type="number" value={player.revividos} onChange={(v: string) => updatePlayer(idx, 'revividos', v)} className="rounded-[6px]" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* 3. Botões de Ação */}
+                    <div className="flex flex-col items-center gap-3 pt-8 animate-reveal max-w-2xl mx-auto w-full">
+                        {/* Contador de usos gratuitos */}
+                        {!assinaturaAtiva && (
+                            <p style={{
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                textAlign: 'center',
+                                color: ocrUses >= 3
+                                    ? 'var(--accent-red)'
+                                    : ocrUses >= 2
+                                        ? 'var(--accent-amber)'
+                                        : 'var(--text-secondary)',
+                                marginBottom: '-4px'
+                            }}>
+                                {ocrUses} de 4 leituras gratuitas utilizadas
+                            </p>
+                        )}
+
+                        {/* Botão Ler Screenshot */}
+                        <button
+                            onClick={() => {
+                                console.log('[OCR DEBUG] botão clicado | assinatura:', assinaturaAtiva, '| ocrUses:', ocrUses);
+                                if (assinaturaAtiva || ocrUses < 4) {
+                                    screenshotInputRef.current?.click();
+                                } else {
+                                    setIsUpsellModalOpen(true);
+                                }
+                            }}
+                            disabled={ocrLoading}
+                            className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10 flex items-center justify-center gap-2"
+                        >
+                            {ocrLoading ? (
+                                <><Loader2 size={16} className="animate-spin" /><span>LENDO...</span></>
+                            ) : (
+                                <span>Ler Screenshot</span>
+                            )}
+                        </button>
 
                         <button
-                            onClick={() => setIsResetModalOpen(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-transparent border border-[var(--border-default)] rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all"
+                            onClick={handleSaveSquad}
+                            disabled={loading || players.some(p => !p.nome || p.nome.trim() === '')}
+                            className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:bg-[#27272A] disabled:text-[#A1A1AA] disabled:shadow-none disabled:cursor-not-allowed text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10"
                         >
-                            <Trash2 size={14} />
-                            <span className="text-xs font-semibold">Reiniciar Tabela</span>
+                            {loading ? 'PROCESSANDO...' : 'SALVAR PARTIDA'}
                         </button>
-
-                        {!assinaturaAtiva && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-hover)] border border-[var(--border-subtle)] rounded-md">
-                                <span className="text-[10px] font-bold text-[var(--text-secondary)]">
-                                    {Math.max(0, 4 - ocrUses)} de 4 usos gratuitos restantes
-                                </span>
-                            </div>
-                        )}
-
                     </div>
-                </div>
-            </header>
+                </main>
 
-            <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-                <CadastroSquad onSquadChange={setSquadJogadores} />
-
-                {/* 1. Dados da Partida */}
-                <section className="animate-reveal">
-                    <div className="flex items-center gap-2 mb-4">
-                        <h2 className="text-sm font-bold text-[var(--text-primary)]">Dados da partida</h2>
-                    </div>
-                    <div className="card p-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                        <InputField label="Data" type="date" value={matchData.data} onChange={(v: string) => setMatchData(p => ({ ...p, data: v }))} className="rounded-lg" />
-                        <InputField label="Campeonato" value={matchData.campeonato} onChange={(v: string) => setMatchData(p => ({ ...p, campeonato: v.trim().toUpperCase() }))} placeholder="Ex: LBFF" className="rounded-lg" />
-                        <SelectField label="Mapa" value={matchData.mapa} onChange={(v: string) => setMatchData(p => ({ ...p, mapa: v }))} options={MAPAS} className="rounded-lg" />
-                        <InputField label="Rodada" type="number" value={matchData.rodada} onChange={(v: string) => setMatchData(p => ({ ...p, rodada: v }))} placeholder="No." className="rounded-lg" />
-                        <SelectField label="Colocação" value={matchData.colocacao} onChange={(v: string) => setMatchData(p => ({ ...p, colocacao: v }))} options={COLOCACOES} className="rounded-lg" />
-                        <InputField label="Kills Squad" type="number" value={matchData.totalKillsManual} onChange={(v: string) => setMatchData(p => ({ ...p, totalKillsManual: v }))} className="rounded-lg" />
-
-                        <div className="flex flex-col gap-1.5 w-full">
-                            <span className="text-[11px] font-medium text-[var(--text-secondary)]">Total de Pontos</span>
-                            <div className="w-full h-[38px] flex items-center justify-center bg-[var(--accent-muted)] rounded-lg">
-                                <span className="text-xl font-bold text-[var(--accent-hover)]">{totalPontosPartida}</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* 2. Squad Container */}
-                <section className="animate-reveal">
-                    <div className="flex items-center gap-2 mb-4">
-                        <h2 className="text-sm font-bold text-[var(--text-primary)]">Integrantes do squad</h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {players.map((player, idx) => (
-                            <div key={idx} className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-5 hover:border-[var(--accent-glow)] transition-all">
-                                <div className="pb-4 mb-4 border-b border-[var(--border-subtle)]">
-                                    <div className="flex flex-col gap-1.5 animate-reveal w-full">
-                                        <label className="text-[11px] font-bold text-[#F97316] flex items-center gap-1.5 uppercase tracking-wide">
-                                            Jogador {idx + 1}
-                                        </label>
-                                        <div className="relative flex items-center">
-                                            <input
-                                                type="text"
-                                                placeholder="Nome do Player"
-                                                value={player.nome}
-                                                onChange={e => updatePlayer(idx, 'nome', e.target.value.toUpperCase())}
-                                                className="input-base px-4 pr-10 border-[#F97316] bg-[#1C1410] rounded-md w-full focus:ring-1 focus:ring-[#F97316] uppercase transition-all shadow-[0_0_15px_rgba(249,115,22,0.1)] font-bold text-[#F97316]"
-                                            />
-                                            <div className="absolute right-3 text-[#F97316] pointer-events-none">
-                                                <AlertTriangle size={16} />
-                                            </div>
-                                        </div>
-                                        <span className="text-[10px] text-[#F97316]/80 font-medium mt-0.5">Confirme o nome antes de salvar</span>
-                                    </div>
-                                    <span className="text-[11px] text-[var(--text-tertiary)] font-medium mt-1 inline-block">Métricas de partida</span>
+                {/* ⚠️ Reset Modal */}
+                {isResetModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                        <div className="w-full max-w-sm bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl animate-reveal">
+                            <div className="flex flex-col items-center text-center gap-4">
+                                <div className="p-4 rounded-full bg-red-500/10 text-red-500 mb-2">
+                                    <AlertTriangle size={32} />
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <InputField label="Kills" type="number" value={player.kills} onChange={(v: string) => updatePlayer(idx, 'kills', v)} className="rounded-[6px]" />
-                                    <InputField label="Assists" type="number" value={player.assistencias} onChange={(v: string) => updatePlayer(idx, 'assistencias', v)} className="rounded-[6px]" />
-                                    <InputField label="Derrub." type="number" value={player.derrubados} onChange={(v: string) => updatePlayer(idx, 'derrubados', v)} className="rounded-[6px]" />
-                                    <InputField label="Dano" type="number" value={player.dano} onChange={(v: string) => updatePlayer(idx, 'dano', v)} className="rounded-[6px]" />
-                                    <InputField label="Mortes" type="number" value={player.morte} onChange={(v: string) => updatePlayer(idx, 'morte', v)} className="rounded-[6px]" />
-                                    <InputField label="Reviv." type="number" value={player.revividos} onChange={(v: string) => updatePlayer(idx, 'revividos', v)} className="rounded-[6px]" />
+                                <h3 className="text-lg font-bold text-[var(--text-primary)]">Ação Irreversível</h3>
+                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                                    Após você aceitar, sua planilha será resetada e você não terá mais acesso aos resultados passados. Deseja continuar?
+                                </p>
+                                <div className="grid grid-cols-2 gap-3 w-full mt-6">
+                                    <button
+                                        onClick={() => setIsResetModalOpen(false)}
+                                        className="px-4 py-2 border border-[var(--border-default)] rounded-md text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleResetData}
+                                        disabled={resetLoading}
+                                        className="py-2 px-4 rounded-md bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-bold hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                                    >
+                                        {resetLoading ? 'LIMPENDO...' : 'CONFIRMAR'}
+                                    </button>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* 3. Botões de Ação */}
-                <div className="flex flex-col items-center gap-3 pt-8 animate-reveal max-w-2xl mx-auto w-full">
-                    {/* Contador de usos gratuitos */}
-                    {!assinaturaAtiva && (
-                        <p style={{
-                            fontSize: '12px',
-                            fontWeight: 500,
-                            textAlign: 'center',
-                            color: ocrUses >= 3
-                                ? 'var(--accent-red)'
-                                : ocrUses >= 2
-                                    ? 'var(--accent-amber)'
-                                    : 'var(--text-secondary)',
-                            marginBottom: '-4px'
-                        }}>
-                            {ocrUses} de 4 leituras gratuitas utilizadas
-                        </p>
-                    )}
-
-                    {/* Botão Ler Screenshot */}
-                    <button
-                        onClick={() => {
-                            console.log('[OCR DEBUG] botão clicado | assinatura:', assinaturaAtiva, '| ocrUses:', ocrUses);
-                            if (assinaturaAtiva || ocrUses < 4) {
-                                screenshotInputRef.current?.click();
-                            } else {
-                                setIsUpsellModalOpen(true);
-                            }
-                        }}
-                        disabled={ocrLoading}
-                        className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10 flex items-center justify-center gap-2"
-                    >
-                        {ocrLoading ? (
-                            <><Loader2 size={16} className="animate-spin" /><span>LENDO...</span></>
-                        ) : (
-                            <span>Ler Screenshot</span>
-                        )}
-                    </button>
-
-                    <button
-                        onClick={handleSaveSquad}
-                        disabled={loading || players.some(p => !p.nome || p.nome.trim() === '')}
-                        className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:bg-[#27272A] disabled:text-[#A1A1AA] disabled:shadow-none disabled:cursor-not-allowed text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10"
-                    >
-                        {loading ? 'PROCESSANDO...' : 'SALVAR PARTIDA'}
-                    </button>
-                </div>
-            </main>
-
-            {/* ⚠️ Reset Modal */}
-            {isResetModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="w-full max-w-sm bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl animate-reveal">
-                        <div className="flex flex-col items-center text-center gap-4">
-                            <div className="p-4 rounded-full bg-red-500/10 text-red-500 mb-2">
-                                <AlertTriangle size={32} />
-                            </div>
-                            <h3 className="text-lg font-bold text-[var(--text-primary)]">Ação Irreversível</h3>
-                            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                                Após você aceitar, sua planilha será resetada e você não terá mais acesso aos resultados passados. Deseja continuar?
-                            </p>
-                            <div className="grid grid-cols-2 gap-3 w-full mt-6">
-                                <button
-                                    onClick={() => setIsResetModalOpen(false)}
-                                    className="px-4 py-2 border border-[var(--border-default)] rounded-md text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={handleResetData}
-                                    disabled={resetLoading}
-                                    className="py-2 px-4 rounded-md bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-bold hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
-                                >
-                                    {resetLoading ? 'LIMPENDO...' : 'CONFIRMAR'}
-                                </button>
-                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* 💎 Upsell Modal (Plano Pro) */}
-            {isUpsellModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-reveal">
-                    <div className="w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl overflow-hidden relative">
-                        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                            <Camera size={120} />
-                        </div>
-                        
-                        <div className="flex flex-col items-center text-center gap-6 relative z-10">
-                            <div className="w-16 h-16 rounded-2xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] shrink-0">
-                                <Zap size={32} fill="currentColor" />
+                {/* 💎 Upsell Modal (Plano Pro) */}
+                {isUpsellModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-reveal">
+                        <div className="w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                                <Camera size={120} />
                             </div>
                             
-                            <div>
-                                <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2 uppercase tracking-tight">
-                                    {ocrUses >= 4 ? "Seus usos gratuitos acabaram" : "Recurso exclusivo do Plano Pro"}
-                                </h3>
-                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                                    {ocrUses >= 4 
-                                        ? "Você usou todos os 4 usos gratuitos. Assine o Plano Pro para continuar usando sem limite."
-                                        : "Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos."
-                                    }
-                                </p>
-                            </div>
+                            <div className="flex flex-col items-center text-center gap-6 relative z-10">
+                                <div className="w-16 h-16 rounded-2xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] shrink-0">
+                                    <Zap size={32} fill="currentColor" />
+                                </div>
+                                
+                                <div>
+                                    <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2 uppercase tracking-tight">
+                                        {ocrUses >= 4 ? "Seus usos gratuitos acabaram" : "Recurso exclusivo do Plano Pro"}
+                                    </h3>
+                                    <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                                        {ocrUses >= 4 
+                                            ? "Você usou todos os 4 usos gratuitos. Assine o Plano Pro para continuar usando sem limite."
+                                            : "Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos."
+                                        }
+                                    </p>
+                                </div>
 
-                            <ul className="text-left w-full space-y-3 bg-[var(--bg-main)]/50 p-5 rounded-xl border border-[var(--border-subtle)]">
-                                {[
-                                    'Leitura automática de screenshots',
-                                    'Preenchimento instantâneo do formulário',
-                                    'Economize tempo em cada partida'
-                                ].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 text-xs font-semibold text-[var(--text-secondary)]">
-                                        <div className="w-5 h-5 rounded-full bg-[var(--accent-green-muted)] flex items-center justify-center">
-                                            <CheckCircle size={12} className="text-[var(--accent-green)]" />
-                                        </div>
-                                        {item}
-                                    </li>
-                                ))}
-                            </ul>
+                                <ul className="text-left w-full space-y-3 bg-[var(--bg-main)]/50 p-5 rounded-xl border border-[var(--border-subtle)]">
+                                    {[
+                                        'Leitura automática de screenshots',
+                                        'Preenchimento instantâneo do formulário',
+                                        'Economize tempo em cada partida'
+                                    ].map((item, i) => (
+                                        <li key={i} className="flex items-center gap-3 text-xs font-semibold text-[var(--text-secondary)]">
+                                            <div className="w-5 h-5 rounded-full bg-[var(--accent-green-muted)] flex items-center justify-center">
+                                                <CheckCircle size={12} className="text-[var(--accent-green)]" />
+                                            </div>
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
 
-                            <div className="flex flex-col gap-3 w-full">
-                                <button
-                                    onClick={() => navigate('/admin-celo/planos')}
-                                    className="btn-primary w-full py-4 text-sm font-black uppercase tracking-widest shadow-xl shadow-[var(--accent-glow)]"
-                                >
-                                    Assinar agora — R$10/semana
-                                </button>
-                                <button
-                                    onClick={() => setIsUpsellModalOpen(false)}
-                                    className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-xs font-bold uppercase transition-colors py-2"
-                                >
-                                    Preencher manualmente
-                                </button>
+                                <div className="flex flex-col gap-3 w-full">
+                                    <button
+                                        onClick={() => navigate('/admin-celo/planos')}
+                                        className="btn-primary w-full py-4 text-sm font-black uppercase tracking-widest shadow-xl shadow-[var(--accent-glow)]"
+                                    >
+                                        Assinar agora — R$10/semana
+                                    </button>
+                                    <button
+                                        onClick={() => setIsUpsellModalOpen(false)}
+                                        className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-xs font-bold uppercase transition-colors py-2"
+                                    >
+                                        Preencher manualmente
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            
-
-            {/* 📊 Modal de Detalhes da Partida (Pós-Salvamento) */}
-            {isMatchDetailModalOpen && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-reveal">
-                    <div className="w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-                            <HelpCircle size={100} />
-                        </div>
-
-                        <div className="flex flex-col gap-6 relative z-10">
-                            <div className="flex flex-col items-center text-center gap-2">
-                                <div className="w-12 h-12 rounded-xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] mb-2">
-                                    <Zap size={24} fill="currentColor" />
-                                </div>
-                                <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight">Detalhes da Partida</h3>
-                                <p className="text-xs text-[var(--text-secondary)] font-medium">Preencha para análise completa do coach</p>
+                {/* 📊 Modal de Detalhes da Partida (Pós-Salvamento) */}
+                {isMatchDetailModalOpen && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-reveal">
+                        <div className="w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                                <HelpCircle size={100} />
                             </div>
 
-                            <div className="space-y-6 mt-4">
-                                {/* Pergunta 1: Quebra de Call */}
-                                <div className="space-y-3">
-                                    <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                                        Houve quebra de call?
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button 
-                                            onClick={() => setCallDetail(p => ({ ...p, quebraCall: true }))}
-                                            className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.quebraCall === true ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
-                                        >
-                                            SIM
-                                        </button>
-                                        <button 
-                                            onClick={handleNoQuebraCall}
-                                            className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.quebraCall === false ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
-                                        >
-                                            {loading && callDetail.quebraCall === false ? 'Aguarde...' : 'NÃO'}
-                                        </button>
+                            <div className="flex flex-col gap-6 relative z-10">
+                                <div className="flex flex-col items-center text-center gap-2">
+                                    <div className="w-12 h-12 rounded-xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] mb-2">
+                                        <Zap size={24} fill="currentColor" />
                                     </div>
+                                    <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight">Detalhes da Partida</h3>
+                                    <p className="text-xs text-[var(--text-secondary)] font-medium">Preencha para análise completa do coach</p>
                                 </div>
 
-                                {/* Condicional: Se Houve quebra de call */}
-                                {callDetail.quebraCall === true && (
-                                    <div className="space-y-6 animate-reveal">
-                                        {/* Pergunta 2: Resultado */}
-                                        <div className="space-y-3">
-                                            <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                                                Qual foi o resultado?
-                                            </label>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <button 
-                                                    onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'win' }))}
-                                                    className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'win' ? 'bg-[var(--accent-green)] border-[var(--accent-green)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
-                                                >
-                                                    WIN
-                                                </button>
-                                                <button 
-                                                    onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'loss' }))}
-                                                    className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'loss' ? 'bg-[var(--accent-red)] border-[var(--accent-red)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
-                                                >
-                                                    LOSS
-                                                </button>
+                                <div className="space-y-6 mt-4">
+                                    {/* Pergunta 1: Quebra de Call */}
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                                            Houve quebra de call?
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button 
+                                                onClick={() => setCallDetail(p => ({ ...p, quebraCall: true }))}
+                                                className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.quebraCall === true ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                            >
+                                                SIM
+                                            </button>
+                                            <button 
+                                                onClick={handleNoQuebraCall}
+                                                className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.quebraCall === false ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                            >
+                                                {loading && callDetail.quebraCall === false ? 'Aguarde...' : 'NÃO'}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Condicional: Se Houve quebra de call */}
+                                    {callDetail.quebraCall === true && (
+                                        <div className="space-y-6 animate-reveal">
+                                            {/* Pergunta 2: Resultado */}
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                                                    Qual foi o resultado?
+                                                </label>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <button 
+                                                        onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'win' }))}
+                                                        className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'win' ? 'bg-[var(--accent-green)] border-[var(--accent-green)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                                    >
+                                                        WIN
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setCallDetail(p => ({ ...p, resultadoCall: 'loss' }))}
+                                                        className={`py-3 rounded-lg text-xs font-bold transition-all border ${callDetail.resultadoCall === 'loss' ? 'bg-[var(--accent-red)] border-[var(--accent-red)] text-white' : 'bg-[var(--bg-main)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                                                    >
+                                                        LOSS
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Pergunta 3: Qual Call (Condicional) */}
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
+                                                    Em qual call quebramos?
+                                                </label>
+                                                <input 
+                                                    type="text"
+                                                    value={callDetail.qualCall}
+                                                    onChange={(e) => setCallDetail(p => ({ ...p, qualCall: e.target.value }))}
+                                                    placeholder="Ex: Call do final, call da zona..."
+                                                    className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-all"
+                                                />
                                             </div>
                                         </div>
+                                    )}
+                                </div>
 
-                                        {/* Pergunta 3: Qual Call (Condicional) */}
-                                        <div className="space-y-3">
-                                            <label className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                                                Em qual call quebramos?
-                                            </label>
-                                            <input 
-                                                type="text"
-                                                value={callDetail.qualCall}
-                                                onChange={(e) => setCallDetail(p => ({ ...p, qualCall: e.target.value }))}
-                                                placeholder="Ex: Call do final, call da zona..."
-                                                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-all"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-3 mt-4">
-                                {callDetail.quebraCall === true && callDetail.resultadoCall !== null && (
+                                <div className="flex flex-col gap-3 mt-4">
+                                    {callDetail.quebraCall === true && callDetail.resultadoCall !== null && (
+                                        <button
+                                            onClick={handleSaveCallDetails}
+                                            disabled={loading}
+                                            className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-4 font-black uppercase tracking-widest text-xs rounded-xl shadow-xl shadow-[var(--accent-glow)] transition-all disabled:opacity-30 animate-reveal"
+                                        >
+                                            {loading ? 'SALVANDO...' : 'Salvar e Continuar'}
+                                        </button>
+                                    )}
                                     <button
-                                        onClick={handleSaveCallDetails}
-                                        disabled={loading}
-                                        className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-4 font-black uppercase tracking-widest text-xs rounded-xl shadow-xl shadow-[var(--accent-glow)] transition-all disabled:opacity-30 animate-reveal"
+                                        onClick={handleCloseDetailModal}
+                                        className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-[10px] font-bold uppercase transition-colors py-2 tracking-widest"
                                     >
-                                        {loading ? 'SALVANDO...' : 'Salvar e Continuar'}
+                                        Pular e fechar
                                     </button>
-                                )}
-                                <button
-                                    onClick={handleCloseDetailModal}
-                                    className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-[10px] font-bold uppercase transition-colors py-2 tracking-widest"
-                                >
-                                    Pular e fechar
-                                </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-
-            <style>{`
-                @keyframes reveal {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-reveal {
-                    animation: reveal 0.4s ease-out forwards;
-                }
-            `}</style>
-        </div>
+                <style>{`
+                    @keyframes reveal {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .animate-reveal {
+                        animation: reveal 0.4s ease-out forwards;
+                    }
+                `}</style>
+            </div>
+        </SidebarLayout>
     );
 };

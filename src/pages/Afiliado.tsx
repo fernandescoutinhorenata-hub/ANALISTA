@@ -6,6 +6,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { SidebarLayout } from '../components/SidebarLayout';
 
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
     <div className={`card overflow-hidden ${className}`}>
@@ -41,11 +42,21 @@ export default function Afiliado() {
     const [affiliate, setAffiliate] = useState<any>(null);
     const [sales, setSales] = useState<any[]>([]);
     const [copied, setCopied] = useState(false);
+    const [isSubscriber, setIsSubscriber] = useState(false);
 
     const fetchOrCreateAffiliate = async () => {
-        if (!user || !user.email) return;
+        if (!user || !user.id) return;
         setLoading(true);
         try {
+            // Verifica status de assinante
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('is_subscriber')
+                .eq('id', user.id)
+                .maybeSingle();
+            
+            setIsSubscriber(!!profile?.is_subscriber);
+
             // 1. Tenta buscar registro existente
             const { data: existing } = await supabase
                 .from('affiliates')
@@ -57,7 +68,7 @@ export default function Afiliado() {
 
             // 2. Se não existir (usuário antigo, pré-trigger), cria agora
             if (!aff) {
-                const prefix = user.email.split('@')[0].substring(0, 4).toUpperCase();
+                const prefix = user.email?.split('@')[0].substring(0, 4).toUpperCase() || 'USER';
                 const random = Math.floor(10 + Math.random() * 90);
                 const code = `${prefix}${random}`;
 
@@ -129,157 +140,159 @@ export default function Afiliado() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] p-6 md:p-12 font-['Inter',sans-serif] animate-reveal">
-            {/* Header */}
-            <header className="max-w-6xl mx-auto mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <button
-                        onClick={() => navigate('/')}
-                        className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4 text-sm font-medium"
-                    >
-                        <ChevronLeft size={16} /> Dashboard
-                    </button>
-                    <h1 className="text-3xl font-extrabold tracking-tight">Programa de Afiliados</h1>
-                    <p className="text-[var(--text-secondary)] mt-1 text-sm">Compartilhe seu código e ganhe 20% por cada venda</p>
-                </div>
-
-                {/* Código em destaque */}
-                {affiliate && (
-                    <div className="bg-[#141416] p-5 rounded-2xl border border-[var(--border-subtle)] flex items-center gap-6 min-w-[240px]">
-                        <div className="flex-1">
-                            <p className="text-[10px] font-black text-[var(--text-tertiary)] uppercase tracking-widest mb-1">
-                                Seu Código de Afiliado
-                            </p>
-                            <p className="text-3xl font-black text-[var(--accent)] tracking-tighter font-mono">
-                                {affiliate.coupon_code}
-                            </p>
-                            <p className="text-[10px] text-[var(--text-tertiary)] mt-1">20% de desconto para o comprador</p>
-                        </div>
+        <SidebarLayout activeTab="afiliados" isSubscriber={isSubscriber}>
+            <div className="flex-1 overflow-y-auto p-6 md:p-12 font-['Inter',sans-serif] animate-reveal custom-scrollbar">
+                {/* Header */}
+                <header className="max-w-6xl mx-auto mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
                         <button
-                            onClick={copyToClipboard}
-                            title="Copiar código"
-                            className={`p-3 rounded-xl transition-all flex-shrink-0 ${
-                                copied
-                                    ? 'bg-green-500 text-white'
-                                    : 'bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--border-default)]'
-                            }`}
+                            onClick={() => navigate('/')}
+                            className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4 text-sm font-medium"
                         >
-                            {copied ? <Check size={20} /> : <Copy size={20} />}
+                            <ChevronLeft size={16} /> Dashboard
                         </button>
+                        <h1 className="text-3xl font-extrabold tracking-tight">Programa de Afiliados</h1>
+                        <p className="text-[var(--text-secondary)] mt-1 text-sm">Compartilhe seu código e ganhe 20% por cada venda</p>
                     </div>
-                )}
-            </header>
 
-            <main className="max-w-6xl mx-auto space-y-10">
-                {/* 4 Cards de Métricas */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <MetricCard
-                        title="Total de Vendas"
-                        value={metrics.totalSales}
-                        icon={TrendingUp}
-                        color="#7C3AED"
-                    />
-                    <MetricCard
-                        title="Comissão Pendente"
-                        value={metrics.pending}
-                        icon={Clock}
-                        color="#F59E0B"
-                        desc="Aguardando"
-                    />
-                    <MetricCard
-                        title="Comissão Paga"
-                        value={metrics.paid}
-                        icon={Check}
-                        color="#10B981"
-                        desc="Recebido"
-                    />
-                    <MetricCard
-                        title="Total Ganho"
-                        value={metrics.totalEarned}
-                        icon={DollarSign}
-                        color="#A855F7"
-                    />
-                </div>
+                    {/* Código em destaque */}
+                    {affiliate && (
+                        <div className="bg-[#141416] p-5 rounded-2xl border border-[var(--border-subtle)] flex items-center gap-6 min-w-[240px]">
+                            <div className="flex-1">
+                                <p className="text-[10px] font-black text-[var(--text-tertiary)] uppercase tracking-widest mb-1">
+                                    Seu Código de Afiliado
+                                </p>
+                                <p className="text-3xl font-black text-[var(--accent)] tracking-tighter font-mono">
+                                    {affiliate.coupon_code}
+                                </p>
+                                <p className="text-[10px] text-[var(--text-tertiary)] mt-1">20% de desconto para o comprador</p>
+                            </div>
+                            <button
+                                onClick={copyToClipboard}
+                                title="Copiar código"
+                                className={`p-3 rounded-xl transition-all flex-shrink-0 ${
+                                    copied
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--border-default)]'
+                                }`}
+                            >
+                                {copied ? <Check size={20} /> : <Copy size={20} />}
+                            </button>
+                        </div>
+                    )}
+                </header>
 
-                {/* Tabela de Histórico */}
-                <Card className="bg-[#0B0B0C] border border-[var(--border-default)]">
-                    <div className="p-6 border-b border-[var(--border-subtle)] flex items-center gap-3">
-                        <TrendingUp size={18} className="text-[var(--accent)]" />
-                        <h3 className="text-lg font-bold">Histórico de Comissões</h3>
+                <main className="max-w-6xl mx-auto space-y-10 pb-12">
+                    {/* 4 Cards de Métricas */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <MetricCard
+                            title="Total de Vendas"
+                            value={metrics.totalSales}
+                            icon={TrendingUp}
+                            color="#7C3AED"
+                        />
+                        <MetricCard
+                            title="Comissão Pendente"
+                            value={metrics.pending}
+                            icon={Clock}
+                            color="#F59E0B"
+                            desc="Aguardando"
+                        />
+                        <MetricCard
+                            title="Comissão Paga"
+                            value={metrics.paid}
+                            icon={Check}
+                            color="#10B981"
+                            desc="Recebido"
+                        />
+                        <MetricCard
+                            title="Total Ganho"
+                            value={metrics.totalEarned}
+                            icon={DollarSign}
+                            color="#A855F7"
+                        />
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-[#161618]">
-                                <tr>
-                                    {['Data', 'Plano', 'Valor da Venda', 'Sua Comissão', 'Status'].map(h => (
-                                        <th key={h} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--text-tertiary)]">
-                                            {h}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[var(--border-subtle)]">
-                                {sales.length === 0 ? (
+
+                    {/* Tabela de Histórico */}
+                    <Card className="bg-[#0B0B0C] border border-[var(--border-default)]">
+                        <div className="p-6 border-b border-[var(--border-subtle)] flex items-center gap-3">
+                            <TrendingUp size={18} className="text-[var(--accent)]" />
+                            <h3 className="text-lg font-bold">Histórico de Comissões</h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-[#161618]">
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-20 text-center">
-                                            <div className="flex flex-col items-center gap-3 opacity-20">
-                                                <FileText size={40} />
-                                                <p className="font-bold uppercase tracking-widest text-xs">
-                                                    Nenhuma venda registrada ainda
-                                                </p>
-                                            </div>
-                                        </td>
+                                        {['Data', 'Plano', 'Valor da Venda', 'Sua Comissão', 'Status'].map(h => (
+                                            <th key={h} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--text-tertiary)]">
+                                                {h}
+                                            </th>
+                                        ))}
                                     </tr>
-                                ) : (
-                                    sales.map(sale => (
-                                        <tr key={sale.id} className="hover:bg-white/[0.02] transition-colors">
-                                            <td className="px-6 py-4 text-sm font-medium">
-                                                {new Date(sale.created_at).toLocaleDateString('pt-BR')}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-xs font-black uppercase tracking-tighter text-white">
-                                                    {sale.plan_name}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm font-bold text-[var(--text-secondary)]">
-                                                R$ {Number(sale.sale_amount).toFixed(2)}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm font-black text-white">
-                                                R$ {Number(sale.commission_amount).toFixed(2)}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {sale.status === 'pending' ? (
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest">
-                                                        <Clock size={10} /> Pendente
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest">
-                                                        <Check size={10} /> Pago
-                                                    </span>
-                                                )}
+                                </thead>
+                                <tbody className="divide-y divide-[var(--border-subtle)]">
+                                    {sales.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-20 text-center">
+                                                <div className="flex flex-col items-center gap-3 opacity-20">
+                                                    <FileText size={40} />
+                                                    <p className="font-bold uppercase tracking-widest text-xs">
+                                                        Nenhuma venda registrada ainda
+                                                    </p>
+                                                </div>
                                             </td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </Card>
+                                    ) : (
+                                        sales.map(sale => (
+                                            <tr key={sale.id} className="hover:bg-white/[0.02] transition-colors">
+                                                <td className="px-6 py-4 text-sm font-medium">
+                                                    {new Date(sale.created_at).toLocaleDateString('pt-BR')}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className="text-xs font-black uppercase tracking-tighter text-white">
+                                                        {sale.plan_name}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm font-bold text-[var(--text-secondary)]">
+                                                    R$ {Number(sale.sale_amount).toFixed(2)}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm font-black text-white">
+                                                    R$ {Number(sale.commission_amount).toFixed(2)}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {sale.status === 'pending' ? (
+                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest">
+                                                            <Clock size={10} /> Pendente
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest">
+                                                            <Check size={10} /> Pago
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
 
-                {/* Aviso de Pagamento */}
-                <div className="flex items-start gap-3 p-6 rounded-2xl bg-[var(--accent)]/5 border border-[var(--accent)]/20 text-[var(--text-secondary)] text-xs">
-                    <AlertCircle size={16} className="text-[var(--accent)] shrink-0 mt-0.5" />
-                    <div>
-                        <p className="font-bold text-[var(--text-primary)] mb-1 uppercase tracking-widest text-[10px]">
-                            Como funcionam os pagamentos?
-                        </p>
-                        <p className="leading-relaxed">
-                            Nossa equipe revisa semanalmente as comissões pendentes. Uma vez marcadas como "Pago" pelo administrador, 
-                            o valor é enviado via PIX para os dados cadastrados no seu perfil. Em caso de dúvidas, acione o Suporte Técnico.
-                        </p>
+                    {/* Aviso de Pagamento */}
+                    <div className="flex items-start gap-3 p-6 rounded-2xl bg-[var(--accent)]/5 border border-[var(--accent)]/20 text-[var(--text-secondary)] text-xs">
+                        <AlertCircle size={16} className="text-[var(--accent)] shrink-0 mt-0.5" />
+                        <div>
+                            <p className="font-bold text-[var(--text-primary)] mb-1 uppercase tracking-widest text-[10px]">
+                                Como funcionam os pagamentos?
+                            </p>
+                            <p className="leading-relaxed">
+                                Nossa equipe revisa semanalmente as comissões pendentes. Uma vez marcadas como "Pago" pelo administrador, 
+                                o valor é enviado via PIX para os dados cadastrados no seu perfil. Em caso de dúvidas, acione o Suporte Técnico.
+                            </p>
+                        </div>
                     </div>
-                </div>
-            </main>
-        </div>
+                </main>
+            </div>
+        </SidebarLayout>
     );
 }
