@@ -1033,7 +1033,7 @@ export const Dashboard: React.FC = () => {
 
             <SidebarLayout activeTab={activeTab} isSubscriber={isSubscriber}>
                 {/* ── Content ── */}
-                <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[var(--bg-main)] w-full">
+                <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden bg-[var(--bg-main)]">
 
                     {/* Header / Top Bar */}
                     <header
@@ -1151,7 +1151,7 @@ export const Dashboard: React.FC = () => {
                     </header>
 
                     {/* Scrollable Content */}
-                    <main className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar w-full">
+                    <main className="flex-1 min-w-0 overflow-y-auto p-8 space-y-8 custom-scrollbar">
 
                         {isDashboardLoading ? (
                             <div className="h-full w-full flex flex-col items-center justify-center space-y-6">
