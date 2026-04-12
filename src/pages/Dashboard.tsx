@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import {
     Trophy, Target, Map as MapIcon, FileSpreadsheet, RefreshCcw,
-    TrendingUp, LogOut, Users, Sword, Shield,
-    Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2,
-    Lock, DollarSign
+    TrendingUp, Users, Sword, 
+    Calendar, UserCircle2, PlusCircle,
+    CheckCircle, XCircle, AlertCircle, Link, Activity, Trash2
 } from 'lucide-react';
 import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -20,6 +19,7 @@ import type { DashboardData } from '../types';
 import { processData } from '../utils/data-processing';
 import { useAuth } from '../contexts/AuthContext';
 import { OnboardingModal } from '../components/OnboardingModal';
+import { SidebarLayout } from '../components/SidebarLayout';
 
 // ─── Componentes de UI (Design System) ──────────────────────────────────────────
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -174,7 +174,7 @@ export const Dashboard: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [isDashboardLoading, setIsDashboardLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
     const [searchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos', round: 'Todos' });
@@ -221,8 +221,7 @@ export const Dashboard: React.FC = () => {
     const [selectedMap, setSelectedMap] = useState<string | null>(null);
     const [isSubscriber, setIsSubscriber] = useState(false);
 
-    const { signOut, user } = useAuth();
-    const navigate = useNavigate();
+    const { user } = useAuth();
 
     // ─── showToast declarado aqui para evitar uso antes da declaração ───────────
     const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
@@ -1029,129 +1028,9 @@ export const Dashboard: React.FC = () => {
                 loading={loading}
             />
 
-            {/* Overlay para Mobile quando a sidebar estiver aberta */}
-            {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
-
-            {/* ── Sidebar ── */}
-            <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 bg-[var(--bg-surface)] border-r border-[var(--border-default)]`}
-            >
-                <div
-                    className="flex justify-center cursor-pointer transition-all duration-300 group px-6 py-6"
-                    onClick={() => navigate('/')}
-                >
-                    <img
-                        src="/ctracker_logo_square_nobg.png"
-                        alt="Celo Tracker"
-                        className="w-40 h-auto object-contain relative z-10 transition-all duration-500 group-hover:scale-105"
-                    />
-                </div>
-
-                {/* Nav */}
-                <nav className="flex-1 px-4 space-y-2">
-                    {[
-                        { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, premium: false },
-                        { id: 'rounds', label: 'Rodadas', icon: PlusCircle, premium: false },
-                        { id: 'players', label: 'Jogadores', icon: Users, premium: false },
-                        { id: 'coletivo', label: 'Coletivo', icon: Activity, premium: false },
-                        { id: 'quebras', label: 'Quebras', icon: Shield, premium: true },
-                        { id: 'history', label: 'Análise', icon: FileSpreadsheet, premium: true },
-                    ].map(item => {
-                        const isActive = activeTab === item.id;
-                        const isLocked = item.premium && !isSubscriber;
-                        
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => { 
-                                    if (isLocked) {
-                                        navigate('/planos', { state: { message: "Esta funcionalidade é exclusiva para assinantes. Assine um plano para ter acesso completo." } });
-                                        return;
-                                    }
-
-                                    if (item.id === 'coletivo') {
-                                        navigate('/coletivo');
-                                    } else if (item.id === 'quebras') {
-                                        navigate('/quebras');
-                                    } else {
-                                        setActiveTab(item.id); 
-                                    }
-                                    setIsSidebarOpen(false); 
-                                }}
-                                className={`nav-item w-full flex items-center justify-between ${isActive ? 'active' : ''} ${isLocked ? 'opacity-80' : ''}`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <item.icon size={18} />
-                                    {item.label}
-                                </div>
-                                {isLocked && <Lock size={12} className="text-[var(--text-tertiary)]" />}
-                            </button>
-                        );
-                    })}
-
-                    <button
-                        onClick={() => { navigate('/afiliado'); setIsSidebarOpen(false); }}
-                        className="nav-item w-full"
-                    >
-                        <DollarSign size={18} />
-                        Afiliados
-                    </button>
-
-                    <button
-                        onClick={() => { navigate('/admin-celo/planos'); setIsSidebarOpen(false); }}
-                        className="nav-item w-full"
-                    >
-                        <CreditCard size={18} />
-                        Planos
-                    </button>
-
-                    <div className="pt-4 mt-4 border-t border-[var(--border-subtle)]">
-                        <button
-                            onClick={() => navigate('/input')}
-                            className="btn-primary w-full flex items-center justify-center gap-2"
-                        >
-                            <PlusCircle size={18} />
-                            Inserir Dados
-                        </button>
-                    </div>
-                </nav>
-
-
-                {/* Sidebar Footer */}
-                <div className="p-4 space-y-2 border-t border-[var(--border-subtle)]">
-                    <a
-                        href="https://wa.me/13981630304"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn-ghost w-full flex items-center justify-between"
-                    >
-                        <span className="flex items-center gap-2">
-                            <AlertCircle size={16} /> Suporte Técnico
-                        </span>
-                        <ChevronRight size={12} />
-                    </a>
-                    <button
-                        onClick={() => signOut()}
-                        className="btn-ghost w-full flex items-center gap-2 text-[var(--accent-red)] hover:bg-[var(--accent-red)]/10 border-transparent hover:border-[var(--accent-red)]/20"
-                    >
-                        <LogOut size={16} /> Sair da Conta
-                    </button>
-                    <div className="pt-4 text-center">
-                        <p className="text-label">
-                            Criado por <span className="text-[var(--accent)] font-bold">@CeloCoach</span>
-                        </p>
-                    </div>
-                </div>
-            </aside>
-
-
-            {/* ── Content ── */}
-            <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[var(--bg-main)]">
+            <SidebarLayout activeTab={activeTab} isSubscriber={isSubscriber}>
+                {/* ── Content ── */}
+                <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[var(--bg-main)]">
 
                 {/* Header / Top Bar */}
                 <header
@@ -1160,9 +1039,6 @@ export const Dashboard: React.FC = () => {
                     {/* Linha 1: Breadcrumb + Profile */}
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-4">
-                            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden btn-ghost p-2">
-                                <Menu size={20} />
-                            </button>
                             <div className="hidden md:flex items-center text-[12px] uppercase tracking-widest text-[#6B7280] font-bold">
                                 <span>CONTROLE</span>
                                 <span className="mx-2 opacity-50">›</span>
@@ -2042,6 +1918,7 @@ export const Dashboard: React.FC = () => {
                     )}
                 </main>
             </div>
-        </div>
+        </SidebarLayout>
+    </div>
     );
 };
