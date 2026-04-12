@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import {
     Trophy, Target, Map as MapIcon, FileSpreadsheet, RefreshCcw,
-    TrendingUp, LogOut, Users, Sword, Shield,
-    Calendar, LayoutDashboard, Menu, ChevronRight, UserCircle2, PlusCircle,
-    CheckCircle, XCircle, AlertCircle, Link, CreditCard, Activity, Trash2,
-    Lock, DollarSign
+    TrendingUp, Users, Sword,
+    Calendar, PlusCircle,
+    CheckCircle, XCircle, AlertCircle, Link, Activity, Trash2
 } from 'lucide-react';
 import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -175,7 +174,6 @@ export const Dashboard: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [isDashboardLoading, setIsDashboardLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
-    const [fetchError, setFetchError] = useState<string | null>(null);
     const [searchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
     const [filters, setFilters] = useState({ date: 'Todos', championship: 'Todos', round: 'Todos' });
@@ -222,8 +220,7 @@ export const Dashboard: React.FC = () => {
     const [selectedMap, setSelectedMap] = useState<string | null>(null);
     const [isSubscriber, setIsSubscriber] = useState(false);
 
-    const { signOut, user } = useAuth();
-    const navigate = useNavigate();
+    const { user } = useAuth();
 
     // ─── showToast declarado aqui para evitar uso antes da declaração ───────────
     const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
@@ -635,6 +632,7 @@ export const Dashboard: React.FC = () => {
     // Total de Kills somado de todos os jogadores (performance_jogadores)
 
 
+    /*
     const globalSquadStats = useMemo(() => {
         const quedas = filteredGeneralRows.length || 1;
         const totalKills = filteredPlayerRows.reduce((sum, p) => sum + (Number(p.Kill) || 0), 0);
@@ -647,6 +645,7 @@ export const Dashboard: React.FC = () => {
             medDerrubados: parseFloat((totalDerrubados / quedas).toFixed(2))
         };
     }, [filteredGeneralRows, filteredPlayerRows]);
+    */
 
     // ─── Métricas novas da aba overview ───────────────────────────────────────
     const overviewExtras = useMemo(() => {
@@ -793,6 +792,7 @@ export const Dashboard: React.FC = () => {
     }, [data?.byMap]);
 
     // Cálculo do Melhor e Pior Mapa
+    /*
     const mapComparisonData = useMemo(() => {
         if (!allGeneralRows || allGeneralRows.length === 0) return null;
         
@@ -819,6 +819,7 @@ export const Dashboard: React.FC = () => {
             worst: sorted[sorted.length - 1]
         };
     }, [filteredGeneralRows]);
+    */
 
     const handleTemplateDownload = () => {
         const wb = XLSX.utils.book_new();
@@ -1297,12 +1298,122 @@ export const Dashboard: React.FC = () => {
                                                             </ResponsiveContainer>
                                                         </div>
                                                     </Card>
+                                                    <Card className="lg:col-span-1">
+                                                        <div className="mb-6">
+                                                            <h4 className="text-heading text-sm">Vitórias por Mapa</h4>
+                                                            <p className="text-[12px] text-[#6B7280]">Dominância territorial</p>
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            {overviewExtras?.booyahsByMap.map((m: any, idx: number) => (
+                                                                <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-[#1A1A1A] border border-[var(--border-subtle)]">
+                                                                    <span className="text-xs font-bold text-white uppercase">{m.mapa}</span>
+                                                                    <span className="badge badge-purple">{m.qtd} BOOYAH</span>
+                                                                </div>
+                                                            ))}
+                                                            {overviewExtras?.booyahsByMap.length === 0 && (
+                                                                <div className="text-center py-10 text-[var(--text-tertiary)] italic text-xs">
+                                                                    Aguardando vitória...
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </Card>
+                                                </div>
 
-                                                    <option key={r} value={r} className="bg-[#141416]">Rodada {String(r).padStart(2, '0')}</option>
-                                                ))}
-                                            </select>
-                                        </div>
+                                                <Card className="p-8">
+                                                    <div className="mb-8">
+                                                        <div className="flex items-center gap-3 mb-1">
+                                                            <Activity size={16} className="text-[var(--accent)]" />
+                                                            <h4 className="text-heading text-sm">Evolução de Performance</h4>
+                                                        </div>
+                                                        <p className="text-[12px] text-[#6B7280]">Pontuação média por dia de competição</p>
+                                                    </div>
+                                                    <div className="h-64">
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <LineChart data={dailyEvolData}>
+                                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272A" />
+                                                                <XAxis 
+                                                                    dataKey="name" 
+                                                                    axisLine={false} 
+                                                                    tickLine={false} 
+                                                                    tick={{ fill: '#71717A', fontSize: 10, fontWeight: 600 }}
+                                                                />
+                                                                <YAxis 
+                                                                    axisLine={false} 
+                                                                    tickLine={false} 
+                                                                    tick={{ fill: '#71717A', fontSize: 10 }}
+                                                                />
+                                                                <Tooltip contentStyle={neonTooltipStyle} />
+                                                                <Line 
+                                                                    type="monotone" 
+                                                                    dataKey="media" 
+                                                                    stroke="#A855F7" 
+                                                                    strokeWidth={3} 
+                                                                    dot={{ r: 4, fill: '#A855F7', strokeWidth: 2, stroke: '#141416' }}
+                                                                    activeDot={{ r: 6, strokeWidth: 0 }}
+                                                                />
+                                                            </LineChart>
+                                                        </ResponsiveContainer>
+                                                    </div>
+                                                </Card>
+                                            </>
+                                        )}
                                     </div>
+                                )}
+
+                                {/* ══════════ PLAYERS TAB ══════════ */}
+                                {activeTab === 'players' && (
+                                    <div className="space-y-8 animate-reveal">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                                            <div className="flex items-center gap-4 px-4 py-2 rounded-lg bg-[#141416] border border-[#27272A]">
+                                                <Users size={16} className="text-[#EAB308]" />
+                                                <select 
+                                                    value={playerSelectedPlayer}
+                                                    onChange={(e) => setPlayerSelectedPlayer(e.target.value)}
+                                                    className="bg-transparent text-[#FAFAFA] text-xs font-bold focus:outline-none min-w-[120px] appearance-none"
+                                                >
+                                                    <option value="Todos" className="bg-[#141416]">Todos Jogadores</option>
+                                                    {playerList.map(p => <option key={p} value={p} className="bg-[#141416]">{p}</option>)}
+                                                </select>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-4 px-4 py-2 rounded-lg bg-[#141416] border border-[#27272A]">
+                                                <Trophy size={16} className="text-[#EAB308]" />
+                                                <select 
+                                                    value={playerChampFilter}
+                                                    onChange={(e) => setPlayerChampFilter(e.target.value)}
+                                                    className="bg-transparent text-[#FAFAFA] text-xs font-bold focus:outline-none min-w-[120px] appearance-none"
+                                                >
+                                                    <option value="Todos" className="bg-[#141416]">Todos Eventos</option>
+                                                    {playerChampOptions.map(c => <option key={c} value={c} className="bg-[#141416]">{c}</option>)}
+                                                </select>
+                                            </div>
+
+                                            <div className="flex items-center gap-4 px-4 py-2 rounded-lg bg-[#141416] border border-[#27272A]">
+                                                <Calendar size={16} className="text-[#EAB308]" />
+                                                <select 
+                                                    value={playerDateFilter}
+                                                    onChange={(e) => setPlayerDateFilter(e.target.value)}
+                                                    className="bg-transparent text-[#FAFAFA] text-xs font-bold focus:outline-none min-w-[120px] appearance-none"
+                                                >
+                                                    <option value="Todos" className="bg-[#141416]">Todas as Datas</option>
+                                                    {filterOptions.dates.map(d => <option key={d} value={d} className="bg-[#141416]">{d}</option>)}
+                                                </select>
+                                            </div>
+
+                                            <div className="flex items-center gap-4 px-4 py-2 rounded-lg bg-[#141416] border border-[#27272A]">
+                                                <Activity size={16} className="text-[#EAB308]" />
+                                                <select 
+                                                    value={playerRoundFilter}
+                                                    onChange={(e) => setPlayerRoundFilter(e.target.value)}
+                                                    className="bg-transparent text-[#FAFAFA] text-xs font-bold focus:outline-none min-w-[120px] appearance-none"
+                                                >
+                                                    <option value="Todos" className="bg-[#141416]">Todas Rodadas</option>
+                                                    {filterOptions.rounds.map(r => (
+                                                        <option key={r} value={r} className="bg-[#141416]">Rodada {String(r).padStart(2, '0')}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
                                     
                                     {(playerSelectedPlayer !== 'Todos' || playerChampFilter !== 'Todos' || playerDateFilter !== 'Todos') && (
                                         <div className="flex items-center gap-2 mb-4 animate-fade-in group">
@@ -1691,6 +1802,7 @@ export const Dashboard: React.FC = () => {
                     )}
                 </main>
             </div>
-        </div>
-    );
+        </SidebarLayout>
+    </div>
+);
 };
