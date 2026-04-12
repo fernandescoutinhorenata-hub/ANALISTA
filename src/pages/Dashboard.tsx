@@ -35,16 +35,16 @@ const MetricCard: React.FC<{
     icon: any;
     accentColor?: string; // Mantido para compatibilidade, mas o estilo vem do CSS
 }> = ({ title, value, subValue, icon: Icon }) => (
-    <div className="card-metric flex flex-col gap-4">
+    <div className="card-metric flex flex-col gap-4 relative">
         <div className="flex justify-between items-start">
-            <div className="p-2.5 rounded-xl bg-[var(--accent-muted)] text-[var(--accent)]">
-                <Icon size={20} />
-            </div>
-            {subValue && (
+            {subValue ? (
                 <span className="badge badge-purple">
                     {subValue}
                 </span>
-            )}
+            ) : <div />}
+            <div className="text-[var(--accent)]">
+                <Icon size={20} strokeWidth={1.5} />
+            </div>
         </div>
         <div>
             <h3 className="text-metric">
@@ -1155,30 +1155,46 @@ export const Dashboard: React.FC = () => {
 
                 {/* Header / Top Bar */}
                 <header
-                    className="h-20 flex items-center justify-between px-8 z-40 backdrop-blur-md sticky top-0 bg-[var(--bg-main)]/80 border-b border-[var(--border-default)]"
+                    className="flex flex-col gap-4 px-8 py-5 z-40 backdrop-blur-md sticky top-0 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]"
                 >
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden btn-ghost p-2">
-                            <Menu size={20} />
-                        </button>
-                        <div className="hidden md:flex items-center text-label">
-                            <LayoutDashboard size={14} className="mr-2" />
-                            <span>Controle</span>
-                            <ChevronRight size={14} className="mx-2 opacity-50" />
-                            <span className="text-[var(--accent)]">
-                                {activeTab === 'overview' ? 'Visão Geral' : activeTab === 'players' ? 'Jogadores' : activeTab === 'rounds' ? 'Rodadas' : 'Histórico'}
-                            </span>
+                    {/* Linha 1: Breadcrumb + Profile */}
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden btn-ghost p-2">
+                                <Menu size={20} />
+                            </button>
+                            <div className="hidden md:flex items-center text-[12px] uppercase tracking-widest text-[#6B7280] font-bold">
+                                <span>CONTROLE</span>
+                                <span className="mx-2 opacity-50">›</span>
+                                <span>
+                                    {activeTab === 'overview' ? 'DASHBOARD' : activeTab === 'players' ? 'JOGADORES' : activeTab === 'rounds' ? 'RODADAS' : 'ANÁLISE'}
+                                </span>
+                            </div>
+                        </div>
+                        {/* Profile header */}
+                        <div className="flex items-center gap-4">
+                            <div className="hidden sm:flex flex-col text-right items-end gap-1">
+                                <span className="text-[13px] text-[#6B7280]">{nomeUsuario || user?.email || 'Analista'}</span>
+                            </div>
+                            <button
+                                onClick={handleShareDashboard}
+                                className="hidden md:flex items-center gap-2 text-[var(--accent)] text-[13px] hover:underline"
+                                title="Compartilhar Dashboard"
+                            >
+                                <Link size={16} />
+                            </button>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    {/* Linha 2: Filtros */}
+                    <div className="flex items-center justify-start w-full gap-4">
                         {/* ── Filtros de Tempo Rápido (Tabs) ── */}
-                        <div className="hidden lg:flex items-center gap-1 p-1 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)]">
-                            {([{ id: '7d', label: '7 dias' }, { id: '30d', label: 'Este Mês' }, { id: 'all', label: 'Todos' }] as const).map(t => (
+                        <div className="hidden lg:flex items-center gap-[8px]">
+                            {([{ id: '7d', label: '7 DIAS' }, { id: '30d', label: 'ESTE MÊS' }, { id: 'all', label: 'TODOS' }] as const).map(t => (
                                 <button
                                     key={t.id}
                                     onClick={() => { setTimeFilter(t.id); setSpecificDate(''); }}
-                                    className={`px-3 py-1.5 rounded-md text-label transition-all ${timeFilter === t.id && !specificDate ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'} ${specificDate ? 'opacity-50 grayscale' : ''}`}
+                                    className={`px-[12px] py-[6px] rounded-[8px] text-[13px] border border-[var(--border-default)] transition-all ${timeFilter === t.id && !specificDate ? 'bg-[var(--accent-muted)] border-[var(--accent)] text-[var(--accent-hover)] font-bold' : 'bg-[#1A1A1A] text-[var(--text-secondary)] hover:bg-[var(--accent-muted)] font-medium'} ${specificDate ? 'opacity-50 grayscale' : ''}`}
                                 >
                                     {t.label}
                                 </button>
@@ -1243,11 +1259,11 @@ export const Dashboard: React.FC = () => {
                         {/* Profile */}
                         <div className="flex items-center gap-4 pl-4 border-l border-[var(--border-subtle)]">
                             <div className="hidden sm:flex flex-col text-right items-end gap-1">
-                                <span className="text-label text-[10px] opacity-70 leading-none">{nomeUsuario || 'Analista'}</span>
+                                <span className="text-[13px] text-[#6B7280]">{nomeUsuario || user?.email || 'Analista'}</span>
                             </div>
                             <button
                                 onClick={handleShareDashboard}
-                                className="hidden md:flex items-center gap-2 btn-ghost"
+                                className="hidden md:flex items-center gap-2 text-[var(--accent)] text-[13px] hover:underline"
                                 title="Compartilhar Dashboard"
                             >
                                 <Link size={14} />
@@ -1256,13 +1272,13 @@ export const Dashboard: React.FC = () => {
                             {/* Mobile version simple icon */}
                             <button
                                 onClick={handleShareDashboard}
-                                className="md:hidden btn-ghost p-2.5"
+                                className="md:hidden btn-ghost p-2.5 text-[var(--accent)]"
                             >
                                 <Link size={18} />
                             </button>
 
                             <div
-                                className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs bg-[var(--accent)] text-white"
+                                className="w-10 h-10 rounded-full border-2 border-[var(--accent)] flex items-center justify-center font-bold text-xs bg-[var(--accent-muted)] text-[var(--accent-hover)]"
                             >
                                 {(nomeUsuario || user?.email || 'A')[0].toUpperCase()}
                             </div>
@@ -1374,12 +1390,12 @@ export const Dashboard: React.FC = () => {
                                             {/* Charts Row */}
                                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                                                 <Card className="lg:col-span-2">
-                                                    <div className="flex items-center justify-between mb-8">
+                                                    <div className="flex items-center justify-between mb-4">
                                                         <div>
-                                                            <h4 className="text-heading text-sm font-bold">Pontos por Mapa</h4>
-                                                            <p className="text-label mt-1">Total de pontos por mapa</p>
+                                                            <h4 className="text-heading">Pontos por Mapa</h4>
+                                                            <p className="text-[12px] text-[#6B7280] mb-[16px]">Total de pontos por mapa</p>
                                                         </div>
-                                                        <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
+                                                        <div className="p-2.5 text-[#4B5563] hover:text-[var(--accent)] transition-colors cursor-pointer">
                                                             <MapIcon size={16} />
                                                         </div>
                                                     </div>
@@ -1431,12 +1447,12 @@ export const Dashboard: React.FC = () => {
                                                 </Card>
 
                                                 <Card className="flex flex-col h-full">
-                                                    <div className="flex items-center justify-between mb-8">
+                                                    <div className="flex items-center justify-between mb-4">
                                                         <div>
-                                                            <h4 className="text-heading text-sm font-bold">Performance por Mapa</h4>
-                                                            <p className="text-label mt-1">Comparação de pontuação extrema</p>
+                                                            <h4 className="text-heading">Performance por Mapa</h4>
+                                                            <p className="text-[12px] text-[#6B7280] mb-[16px]">Comparação de pontuação extrema</p>
                                                         </div>
-                                                        <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
+                                                        <div className="p-2.5 text-[#4B5563] hover:text-[var(--accent)] transition-colors cursor-pointer">
                                                             <MapIcon size={16} />
                                                         </div>
                                                     </div>
@@ -1449,35 +1465,35 @@ export const Dashboard: React.FC = () => {
                                                     ) : (
                                                         <div className="grid grid-cols-2 gap-0 h-full">
                                                             {/* Melhor Mapa */}
-                                                            <div className="pr-6 flex flex-col justify-center">
-                                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#10B981] mb-2 block">Melhor Mapa</span>
-                                                                <h3 className="text-heading text-2xl font-black uppercase tracking-tight mb-6">{mapComparisonData.best.mapa}</h3>
+                                                            <div className="pr-6 flex flex-col justify-center overflow-hidden">
+                                                                <span className="text-[10px] whitespace-nowrap font-black uppercase tracking-[0.2em] text-[#10B981] mb-2 block">Melhor Mapa</span>
+                                                                <h3 className="text-heading text-xl font-black uppercase tracking-tight mb-6 truncate">{mapComparisonData.best.mapa}</h3>
                                                                 
                                                                 <div className="space-y-4">
                                                                     <div>
-                                                                        <div className="text-heading text-xl font-bold text-white">{mapComparisonData.best.total}</div>
-                                                                        <span className="text-label !text-[#10B981]/80">Pontos no Melhor Mapa</span>
+                                                                        <div className="text-heading text-xl font-bold text-white whitespace-nowrap">{mapComparisonData.best.total}</div>
+                                                                        <span className="text-label whitespace-nowrap !text-[#10B981]/80">Pontos no Melhor</span>
                                                                     </div>
                                                                     <div>
-                                                                        <div className="text-heading text-xl font-semibold text-white/90">{mapComparisonData.best.media}</div>
-                                                                        <span className="text-label !text-[#10B981]/50">Média por queda</span>
+                                                                        <div className="text-heading text-xl font-semibold text-white/90 whitespace-nowrap">{mapComparisonData.best.media}</div>
+                                                                        <span className="text-label whitespace-nowrap !text-[#10B981]/50">Média por queda</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
 
                                                             {/* Pior Mapa */}
-                                                            <div className="pl-6 border-l border-[var(--border-subtle)] flex flex-col justify-center">
-                                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#EF4444] mb-2 block">Pior Mapa</span>
-                                                                <h3 className="text-heading text-2xl font-black uppercase tracking-tight mb-6">{mapComparisonData.worst.mapa}</h3>
+                                                            <div className="pl-6 border-l border-[var(--border-subtle)] flex flex-col justify-center overflow-hidden">
+                                                                <span className="text-[10px] whitespace-nowrap font-black uppercase tracking-[0.2em] text-[#EF4444] mb-2 block">Pior Mapa</span>
+                                                                <h3 className="text-heading text-xl font-black uppercase tracking-tight mb-6 truncate">{mapComparisonData.worst.mapa}</h3>
                                                                 
                                                                 <div className="space-y-4">
                                                                     <div>
-                                                                        <div className="text-heading text-xl font-bold text-white">{mapComparisonData.worst.total}</div>
-                                                                        <span className="text-label !text-[#EF4444]/80">Pontos no Pior Mapa</span>
+                                                                        <div className="text-heading text-xl font-bold text-white whitespace-nowrap">{mapComparisonData.worst.total}</div>
+                                                                        <span className="text-label whitespace-nowrap !text-[#EF4444]/80">Pontos no Pior</span>
                                                                     </div>
                                                                     <div>
-                                                                        <div className="text-heading text-xl font-semibold text-white/90">{mapComparisonData.worst.media}</div>
-                                                                        <span className="text-label !text-[#EF4444]/50">Média por queda</span>
+                                                                        <div className="text-heading text-xl font-semibold text-white/90 whitespace-nowrap">{mapComparisonData.worst.media}</div>
+                                                                        <span className="text-label whitespace-nowrap !text-[#EF4444]/50">Média por queda</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1490,12 +1506,12 @@ export const Dashboard: React.FC = () => {
                                             {filteredPlayerRows.length > 0 && (
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                                     <Card className="p-6 md:col-span-2">
-                                                        <div className="flex items-center justify-between mb-6">
+                                                        <div className="flex items-center justify-between mb-4">
                                                             <div>
-                                                                <h4 className="text-heading text-sm font-bold">Evolução Diária</h4>
-                                                                <p className="text-label mt-1">Média e total de pontos por dia</p>
+                                                                <h4 className="text-heading">Evolução Diária</h4>
+                                                                <p className="text-[12px] text-[#6B7280] mb-[16px]">Média e total de pontos por dia</p>
                                                             </div>
-                                                            <div className="p-2.5 rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
+                                                            <div className="p-2.5 text-[#4B5563] hover:text-[var(--accent)] transition-colors cursor-pointer">
                                                                 <TrendingUp size={16} />
                                                             </div>
                                                         </div>
@@ -1526,10 +1542,10 @@ export const Dashboard: React.FC = () => {
                                                     </Card>
 
                                                     <Card className="md:col-span-1 p-6 flex flex-col justify-between">
-                                                        <div className="flex items-center justify-between mb-8">
+                                                        <div className="flex items-center justify-between mb-4">
                                                             <div>
-                                                                <h4 className="text-heading text-sm font-bold">Médias do squad</h4>
-                                                                <p className="text-label mt-1">Análise consolidada por queda</p>
+                                                                <h4 className="text-heading">Médias do squad</h4>
+                                                                <p className="text-[12px] text-[#6B7280] mb-[16px]">Análise consolidada por queda</p>
                                                             </div>
                                                             <div className="flex gap-2">
                                                                 <span className="badge badge-purple">GLOBAL</span>

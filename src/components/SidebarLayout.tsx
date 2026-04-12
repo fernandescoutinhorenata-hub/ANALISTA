@@ -50,66 +50,107 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
             >
                 {/* Logo Section */}
                 <div 
-                    className="flex justify-center cursor-pointer transition-all duration-300 group px-6 py-6" 
+                    className="flex items-center gap-3 cursor-pointer transition-all duration-300 group px-6 py-6" 
                     onClick={() => navigate('/')}
                 >
                     <img 
                         src="/ctracker_logo_square_nobg.png" 
                         alt="Celo Tracker" 
-                        className="w-40 h-auto object-contain transition-all duration-500 group-hover:scale-105" 
+                        className="w-8 h-8 object-contain transition-all duration-500 group-hover:scale-110" 
                     />
+                    <div className="flex flex-col">
+                        <span className="font-bold text-[16px] text-white tracking-wide">CTRACKER</span>
+                        <span className="text-[10px] text-[var(--text-tertiary)] uppercase mt-0.5">Performance Area</span>
+                    </div>
                 </div>
 
                 {/* Nav Items */}
-                <nav className="flex-1 px-4 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
-                    {navItems.map((item) => {
-                        const isActive = activeTab === item.id;
-                        const isLocked = item.premium && !isSubscriber;
+                <nav className="flex-1 px-4 flex flex-col overflow-y-auto custom-scrollbar">
+                    <div className="text-label mb-2 mt-2 px-2 text-[var(--text-disabled)] tracking-[0.1em]">ANÁLISE</div>
+                    <div className="flex flex-col gap-1">
+                        {navItems.filter(i => ['overview', 'rounds', 'players', 'coletivo'].includes(i.id)).map((item) => {
+                            const isActive = activeTab === item.id;
+                            const isLocked = item.premium && !isSubscriber;
 
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => {
-                                    if (isLocked) {
-                                        navigate('/planos', { 
-                                            state: { message: "Esta funcionalidade é exclusiva para assinantes. Assine um plano para ter acesso completo." } 
-                                        });
-                                        return;
-                                    }
-                                    navigate(item.path);
-                                    setIsSidebarOpen(false);
-                                }}
-                                className={`nav-item w-full flex items-center justify-between ${isActive ? 'active' : ''} ${isLocked ? 'opacity-80' : ''}`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <item.icon size={18} />
-                                    {item.label}
-                                </div>
-                                {isLocked && <Lock size={12} className="text-[var(--text-tertiary)]" />}
-                            </button>
-                        );
-                    })}
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => {
+                                        if (isLocked) {
+                                            navigate('/planos', { 
+                                                state: { message: "Esta funcionalidade é exclusiva para assinantes. Assine um plano para ter acesso completo." } 
+                                            });
+                                            return;
+                                        }
+                                        navigate(item.path);
+                                        setIsSidebarOpen(false);
+                                    }}
+                                    className={`nav-item w-full flex items-center justify-between ${isActive ? 'active' : ''} ${isLocked ? 'opacity-80' : ''}`}
+                                >
+                                    <div className="flex items-center gap-[10px]">
+                                        <item.icon size={18} />
+                                        <span className="font-medium text-[14px]">{item.label}</span>
+                                    </div>
+                                    {isLocked && <Lock size={12} className="text-[var(--text-tertiary)]" />}
+                                </button>
+                            );
+                        })}
+                    </div>
 
-                    <button
-                        onClick={() => { navigate('/afiliado'); setIsSidebarOpen(false); }}
-                        className={`nav-item w-full flex items-center gap-3 ${activeTab === 'afiliados' ? 'active' : ''}`}
-                    >
-                        <DollarSign size={18} />
-                        Afiliados
-                    </button>
+                    <div className="text-label mb-2 mt-6 px-2 text-[var(--text-disabled)] tracking-[0.1em]">TÁTICO</div>
+                    <div className="flex flex-col gap-1">
+                        {navItems.filter(i => ['quebras', 'history'].includes(i.id)).map((item) => {
+                            const isActive = activeTab === item.id;
+                            const isLocked = item.premium && !isSubscriber;
 
-                    <button
-                        onClick={() => { navigate('/admin-celo/planos'); setIsSidebarOpen(false); }}
-                        className={`nav-item w-full flex items-center gap-3 ${activeTab === 'planos' ? 'active' : ''}`}
-                    >
-                        <CreditCard size={18} />
-                        Planos
-                    </button>
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => {
+                                        if (isLocked) {
+                                            navigate('/planos', { 
+                                                state: { message: "Esta funcionalidade é exclusiva para assinantes. Assine um plano para ter acesso completo." } 
+                                            });
+                                            return;
+                                        }
+                                        navigate(item.path);
+                                        setIsSidebarOpen(false);
+                                    }}
+                                    className={`nav-item w-full flex items-center justify-between ${isActive ? 'active' : ''} ${isLocked ? 'opacity-80' : ''}`}
+                                >
+                                    <div className="flex items-center gap-[10px]">
+                                        <item.icon size={18} />
+                                        <span className="font-medium text-[14px]">{item.label}</span>
+                                    </div>
+                                    {isLocked && <Lock size={12} className="text-[var(--text-tertiary)]" />}
+                                </button>
+                            );
+                        })}
+                    </div>
 
-                    <div className="pt-4 mt-2 border-t border-white/5">
+                    <div className="text-label mb-2 mt-6 px-2 text-[var(--text-disabled)] tracking-[0.1em]">CONTA</div>
+                    <div className="flex flex-col gap-1">
+                        <button
+                            onClick={() => { navigate('/afiliado'); setIsSidebarOpen(false); }}
+                            className={`nav-item w-full flex items-center gap-[10px] ${activeTab === 'afiliados' ? 'active' : ''}`}
+                        >
+                            <DollarSign size={18} />
+                            <span className="font-medium text-[14px]">Afiliados</span>
+                        </button>
+
+                        <button
+                            onClick={() => { navigate('/admin-celo/planos'); setIsSidebarOpen(false); }}
+                            className={`nav-item w-full flex items-center gap-[10px] ${activeTab === 'planos' ? 'active' : ''}`}
+                        >
+                            <CreditCard size={18} />
+                            <span className="font-medium text-[14px]">Planos</span>
+                        </button>
+                    </div>
+
+                    <div className="pt-4 mt-6 border-t border-[var(--border-default)] mb-4">
                         <button
                             onClick={() => navigate('/input')}
-                            className="btn-primary w-full flex items-center justify-center gap-2 hover:brightness-110 transition-all duration-150"
+                            className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white w-full flex items-center justify-center gap-2 transition-all duration-150 rounded-[10px] font-semibold text-[14px] py-[12px]"
                         >
                             <PlusCircle size={18} />
                             Inserir Dados

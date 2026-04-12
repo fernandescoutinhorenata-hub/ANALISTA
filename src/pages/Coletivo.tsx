@@ -5,7 +5,7 @@ import {
     BarChart, Bar, Cell, CartesianGrid
 } from 'recharts';
 import {
-    Trophy, Map, Users, Calendar, ChevronRight, XCircle
+    Trophy, Map, Calendar, XCircle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -141,7 +141,12 @@ export const Coletivo: React.FC = () => {
 
     const HorizontalBarChart = ({ data, dataKey, title, color }: any) => (
         <Card className="h-full flex flex-col">
-            <h4 className="text-heading text-xs font-black uppercase tracking-widest mb-6 opacity-80">{title}</h4>
+            <div className="flex items-center justify-between mb-4">
+                <div>
+                    <h4 className="text-heading">{title}</h4>
+                    <p className="text-[12px] text-[#6B7280] mb-[16px]">Métricas individuais</p>
+                </div>
+            </div>
             <div className="flex-1 min-h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -184,47 +189,51 @@ export const Coletivo: React.FC = () => {
     return (
         <SidebarLayout activeTab="coletivo" isSubscriber={isSubscriber}>
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
-                <header className="h-20 flex items-center justify-between px-8 z-40 backdrop-blur-md sticky top-0 bg-[var(--bg-main)]/80 border-b border-[var(--border-default)]">
-                    <div className="flex items-center gap-4">
-                        <div className="hidden md:flex items-center text-label">
-                            <Users size={14} className="mr-2" />
-                            <span>Controle</span>
-                            <ChevronRight size={14} className="mx-2 opacity-50" />
-                            <span className="text-[var(--accent)]">Coletivo</span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        {/* Profile */}
-                        <div className="hidden sm:flex items-center gap-4 pr-4 border-r border-[var(--border-subtle)]">
-                            <div className="flex flex-col text-right items-end gap-1">
-                                <span className="text-label text-[10px] opacity-70 leading-none">{nomeUsuario || 'Analista'}</span>
+                <header className="flex flex-col gap-4 px-8 py-5 z-40 backdrop-blur-md sticky top-0 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]">
+                    {/* Linha 1: Breadcrumb + Profile */}
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-4">
+                            <div className="hidden md:flex items-center text-[12px] uppercase tracking-widest text-[#6B7280] font-bold">
+                                <span>CONTROLE</span>
+                                <span className="mx-2 opacity-50">›</span>
+                                <span>ANÁLISE COLETIVA</span>
                             </div>
                         </div>
 
+                        {/* Profile header */}
+                        <div className="flex items-center gap-4">
+                            <div className="hidden sm:flex flex-col text-right items-end gap-1">
+                                <span className="text-[13px] text-[#6B7280]">{nomeUsuario || 'Analista'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Linha 2: Filtros */}
+                    <div className="flex items-center justify-start w-full gap-3">
+
                         {/* Filtro Data */}
-                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#09090b] border border-[var(--border-default)] transition-all ${specificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
-                            <Calendar size={13} className={specificDate ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'} />
+                        <div className={`flex items-center gap-2 px-[12px] py-[6px] rounded-[8px] bg-[#1A1A1A] border border-[var(--border-default)] transition-all ${specificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
+                            <Calendar size={13} className={specificDate ? 'text-[var(--accent)]' : 'text-[#6B7280]'} />
                             <input 
                                 type="date" 
                                 value={specificDate}
                                 onChange={(e) => setSpecificDate(e.target.value)}
-                                className="bg-transparent text-white outline-none border-none text-xs [color-scheme:dark] cursor-pointer"
+                                className="bg-transparent text-[#6B7280] outline-none border-none text-[13px] [color-scheme:dark] cursor-pointer"
                             />
                             {specificDate && (
-                                <button onClick={() => setSpecificDate('')} className="text-[var(--text-tertiary)] hover:text-white transition-colors">
+                                <button onClick={() => setSpecificDate('')} className="text-[#6B7280] hover:text-white transition-colors">
                                     <XCircle size={14} />
                                 </button>
                             )}
                         </div>
 
                         {/* Filtro Campeonato */}
-                        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)] text-label">
+                        <div className="hidden lg:flex items-center gap-2 px-[12px] py-[6px] rounded-[8px] bg-[#1A1A1A] border border-[var(--border-default)]">
                             <Trophy size={13} className="text-[var(--accent)]" />
                             <select
                                 value={selectedChamp}
                                 onChange={e => setSelectedChamp(e.target.value)}
-                                className="outline-none cursor-pointer bg-transparent text-white border-none py-1 px-1 rounded-md text-xs font-bold"
+                                className="outline-none cursor-pointer bg-transparent text-[#6B7280] border-none text-[13px] font-medium"
                             >
                                 <option value="Todos" className="bg-[#141416]">Todos Eventos</option>
                                 {filterOptions.championships.map(c => <option key={c} value={c} className="bg-[#141416]">{c}</option>)}
@@ -232,12 +241,12 @@ export const Coletivo: React.FC = () => {
                         </div>
 
                         {/* Filtro Mapa */}
-                        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-default)] text-label">
+                        <div className="hidden lg:flex items-center gap-2 px-[12px] py-[6px] rounded-[8px] bg-[#1A1A1A] border border-[var(--border-default)]">
                             <Map size={13} className="text-[var(--accent)]" />
                             <select
                                 value={selectedMap}
                                 onChange={e => setSelectedMap(e.target.value)}
-                                className="outline-none cursor-pointer bg-transparent text-white border-none py-1 px-1 rounded-md text-xs font-bold"
+                                className="outline-none cursor-pointer bg-transparent text-[#6B7280] border-none text-[13px] font-medium"
                             >
                                 <option value="Todos" className="bg-[#141416]">Todos Mapas</option>
                                 {filterOptions.maps.map(m => <option key={m} value={m} className="bg-[#141416]">{m}</option>)}

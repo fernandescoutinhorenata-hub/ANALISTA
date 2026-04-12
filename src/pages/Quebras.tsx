@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
     Sword, Map, Calendar,
     Activity, TrendingUp, TrendingDown,
-    Shield, MapPin, ChevronRight
+    Shield, MapPin
 } from 'lucide-react';
 import {
     XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -27,22 +27,22 @@ const MetricCard: React.FC<{
     color?: 'purple' | 'green' | 'red';
 }> = ({ title, value, subValue, icon: Icon, color = 'purple' }) => {
     const colorClasses = {
-        purple: 'bg-[var(--accent-muted)] text-[var(--accent)]',
-        green: 'bg-emerald-500/10 text-emerald-500',
-        red: 'bg-rose-500/10 text-rose-500'
+        purple: 'text-[var(--accent)]',
+        green: 'text-emerald-500',
+        red: 'text-rose-500'
     };
 
     return (
-        <div className="card-metric flex flex-col gap-4">
+        <div className="card-metric flex flex-col gap-4 relative">
             <div className="flex justify-between items-start">
-                <div className={`p-2.5 rounded-xl ${colorClasses[color]}`}>
-                    <Icon size={20} />
-                </div>
-                {subValue && (
+                {subValue ? (
                     <span className={`badge ${color === 'green' ? 'badge-green' : color === 'red' ? 'badge-red' : 'badge-purple'}`}>
                         {subValue}
                     </span>
-                )}
+                ) : <div />}
+                <div className={colorClasses[color]}>
+                    <Icon size={20} strokeWidth={1.5} />
+                </div>
             </div>
             <div>
                 <h3 className="text-metric">
@@ -184,33 +184,36 @@ export default function Quebras() {
     return (
         <SidebarLayout activeTab="quebras" isSubscriber={isSubscriber}>
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-                <header className="sticky top-0 z-50 bg-[var(--bg-main)]/80 backdrop-blur-xl border-b border-[var(--border-subtle)]">
-                    <div className="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
+                <header className="flex flex-col gap-4 sticky top-0 z-50 bg-[var(--bg-surface)] backdrop-blur-md border-b border-[var(--border-subtle)] px-6 py-5">
+                    <div className="max-w-[1600px] w-full mx-auto flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="hidden md:flex items-center text-label">
-                                <Shield size={14} className="mr-2" />
-                                <span>Controle</span>
-                                <ChevronRight className="mx-2 opacity-50" size={14} />
-                                <span className="text-[var(--accent)]">Análise de Quebras</span>
+                            <div className="hidden md:flex items-center text-[12px] uppercase tracking-widest text-[#6B7280] font-bold">
+                                <span>CONTROLE</span>
+                                <span className="mx-2 opacity-50">›</span>
+                                <span>QUEBRAS</span>
                             </div>
                         </div>
 
+                        {/* Profile header */}
                         <div className="flex items-center gap-4">
-                            <div className="flex bg-[var(--bg-card)] p-1 rounded-lg border border-[var(--border-default)]">
-                                {[
-                                    { id: '7d', label: '7D' },
-                                    { id: '30d', label: '30D' },
-                                    { id: 'all', label: 'TUDO' }
-                                ].map(opt => (
-                                    <button
-                                        key={opt.id}
-                                        onClick={() => setTimeFilter(opt.id as any)}
-                                        className={`px-4 py-1.5 text-[10px] font-black rounded-md transition-all ${timeFilter === opt.id ? 'bg-[var(--accent)] text-white shadow-lg shadow-purple-500/20' : 'text-[var(--text-tertiary)] hover:text-white'}`}
-                                    >
-                                        {opt.label}
-                                    </button>
-                                ))}
+                            <div className="hidden sm:flex flex-col text-right items-end gap-1">
+                                <span className="text-[13px] text-[#6B7280]">{user?.email || 'Analista'}</span>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Linha 2: Filtros */}
+                    <div className="max-w-[1600px] w-full mx-auto flex items-center justify-start gap-4">
+                        <div className="flex items-center gap-[8px]">
+                            {([{ id: '7d', label: '7 DIAS' }, { id: '30d', label: 'ESTE MÊS' }, { id: 'all', label: 'TODOS' }] as const).map(opt => (
+                                <button
+                                    key={opt.id}
+                                    onClick={() => setTimeFilter(opt.id as any)}
+                                    className={`px-[12px] py-[6px] rounded-[8px] text-[13px] border border-[var(--border-default)] transition-all ${timeFilter === opt.id ? 'bg-[var(--accent-muted)] border-[var(--accent)] text-[#A78BFA] font-bold' : 'bg-[#1A1A1A] text-[var(--text-secondary)] hover:bg-[var(--accent-muted)] font-medium'}`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </header>
@@ -272,12 +275,14 @@ export default function Quebras() {
                     {/* Linha 2: Gráficos */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <Card>
-                            <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h4 className="text-heading text-sm uppercase tracking-widest font-black">Quebras por Mapa</h4>
-                                    <p className="text-[10px] text-[var(--text-tertiary)] font-bold uppercase mt-1">Volume de confrontos por território</p>
+                                    <h4 className="text-heading">Quebras por Mapa</h4>
+                                    <p className="text-[12px] text-[#6B7280] mb-[16px]">Volume de confrontos por território</p>
                                 </div>
-                                <MapPin size={18} className="text-[var(--text-tertiary)] opacity-20" />
+                                <div className="p-2.5 text-[#4B5563] hover:text-[var(--accent)] transition-colors cursor-pointer">
+                                    <MapPin size={18} />
+                                </div>
                             </div>
                             <div className="h-80">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -298,12 +303,14 @@ export default function Quebras() {
                         </Card>
 
                         <Card>
-                            <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h4 className="text-heading text-sm uppercase tracking-widest font-black">Frequência por Call</h4>
-                                    <p className="text-[10px] text-[var(--text-tertiary)] font-bold uppercase mt-1">Métricas detalhadas por ponto de interesse</p>
+                                    <h4 className="text-heading">Frequência por Call</h4>
+                                    <p className="text-[12px] text-[#6B7280] mb-[16px]">Métricas detalhadas por ponto de interesse</p>
                                 </div>
-                                <Sword size={18} className="text-[var(--text-tertiary)] opacity-20" />
+                                <div className="p-2.5 text-[#4B5563] hover:text-[var(--accent)] transition-colors cursor-pointer">
+                                    <Sword size={18} />
+                                </div>
                             </div>
                             <div className="h-80">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -327,8 +334,11 @@ export default function Quebras() {
 
                     {/* Linha 3: Tabela */}
                     <Card className="p-0 overflow-hidden">
-                        <div className="px-6 py-5 border-b border-[var(--border-subtle)] flex items-center justify-between bg-[var(--bg-card)]/30">
-                            <h4 className="text-heading text-sm uppercase tracking-widest font-black">Histórico de Quebras</h4>
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 className="text-heading">Histórico de Quebras</h4>
+                                <p className="text-[12px] text-[#6B7280] mb-[16px]">Detalhamento das quebras de calls</p>
+                            </div>
                             <div className="badge badge-purple">{filteredData.length} registros</div>
                         </div>
                         <div className="overflow-x-auto">
