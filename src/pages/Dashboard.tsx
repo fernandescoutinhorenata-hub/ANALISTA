@@ -1763,8 +1763,8 @@ export const Dashboard: React.FC = () => {
                                                         contentStyle={neonTooltipStyle}
                                                         itemStyle={neonItemStyle}
                                                         labelStyle={neonLabelStyle}
-                                                        formatter={(value: number) => [value, 'PONTOS']}
-                                                        labelFormatter={(label: string) => label}
+                                                        formatter={(value: number | undefined) => [value ?? 0, 'PONTOS']}
+                                                        labelFormatter={(label: unknown) => String(label)}
                                                     />
                                                     <Line 
                                                         type="monotone" 
