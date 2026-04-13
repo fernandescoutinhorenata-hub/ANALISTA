@@ -1759,10 +1759,17 @@ export const Dashboard: React.FC = () => {
                                                     <CartesianGrid stroke="#27272A" vertical={false} strokeDasharray="3 3" />
                                                     <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#A1A1AA' }} axisLine={false} tickLine={false} />
                                                     <YAxis tick={{ fontSize: 10, fill: '#A1A1AA' }} axisLine={false} tickLine={false} />
-                                                    <Tooltip contentStyle={neonTooltipStyle} itemStyle={neonItemStyle} labelStyle={neonLabelStyle} />
+                                                    <Tooltip
+                                                        contentStyle={neonTooltipStyle}
+                                                        itemStyle={neonItemStyle}
+                                                        labelStyle={neonLabelStyle}
+                                                        formatter={(value: number) => [value, 'PONTOS']}
+                                                        labelFormatter={(label: string) => label}
+                                                    />
                                                     <Line 
                                                         type="monotone" 
-                                                        dataKey="pontos" 
+                                                        dataKey="pontos"
+                                                        name="PONTOS"
                                                         stroke="#7C3AED" 
                                                         strokeWidth={3}
                                                         dot={{ r: 5, fill: '#7C3AED', strokeWidth: 0 }}
