@@ -80,20 +80,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
             <FeatureItem text="Dashboard básico da squad" />
             <FeatureItem text="Link público da squad" />
           </ul>
-          <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Quero testar o Celo Tracker gratuitamente!')}`}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: '100%', padding: '.9rem', borderRadius: '10px',
-              border: '1px solid rgba(255,255,255,0.15)', background: 'transparent',
-              color: '#f1f0ff', fontFamily: "'Inter', sans-serif", fontSize: '.9rem',
-              fontWeight: 700, textDecoration: 'none', transition: 'all .2s'
-            }}
-          >
-            Testar Agora
-          </a>
+
         </div>
 
         {/* CARD 2 — MODO COMPETITIVO */}
