@@ -56,7 +56,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                     <img 
                         src="/logo_ctracker.png" 
                         alt="Celo Tracker" 
-                        className="h-32 w-auto object-contain transition-all duration-500 group-hover:scale-105" 
+                        className="h-40 w-auto object-contain transition-all duration-500 group-hover:scale-105" 
                     />
                 </div>
 
