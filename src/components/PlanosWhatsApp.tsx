@@ -97,7 +97,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
           </div>
           <div style={{ minHeight: '1.4rem', marginBottom: '1.8rem' }} />
           <ul style={{ listStyle: 'none', marginBottom: '2rem', flex: 1 }}>
-            <FeatureItem text="OCR até 20 screenshots/hora" />
+            <FeatureItem text="Leituras ilimitadas via OCR" />
             <FeatureItem text="Dashboard completo da squad" />
             <FeatureItem text="Filtros por liga e data" />
             <FeatureItem text="Link público da squad" />
