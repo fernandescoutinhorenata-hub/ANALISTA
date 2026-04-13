@@ -1055,19 +1055,6 @@ export const Dashboard: React.FC = () => {
                                 </span>
                             </div>
                         </div>
-                        {/* Profile header */}
-                        <div className="flex items-center gap-4">
-                            <div className="hidden sm:flex flex-col text-right items-end gap-1">
-                                <span className="text-[13px] text-[#6B7280]">{nomeUsuario || user?.email || 'Analista'}</span>
-                            </div>
-                            <button
-                                onClick={handleShareDashboard}
-                                className="hidden md:flex items-center gap-2 text-[var(--accent)] text-[13px] hover:underline"
-                                title="Compartilhar Dashboard"
-                            >
-                                <Link size={16} />
-                            </button>
-                        </div>
                     </div>
 
                     {/* Linha 2: Filtros */}
