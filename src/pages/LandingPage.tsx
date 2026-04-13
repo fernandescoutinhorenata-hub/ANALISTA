@@ -67,9 +67,9 @@ export const LandingPage: React.FC = () => {
             <nav>
                 <a href="#" className="logo">
                     <img 
-                        src="/ctracker_banner_dark_nobg.png" 
+                        src="/logo_ctracker.png" 
                         alt="Celo Tracker" 
-                        style={{ width: '160px', height: 'auto', display: 'block' }} 
+                        style={{ height: '40px', width: 'auto', display: 'block' }} 
                     />
                 </a>
                 <ul className="nav-links">
@@ -358,9 +358,9 @@ export const LandingPage: React.FC = () => {
             <footer>
                 <a href="#" className="logo">
                     <img 
-                        src="/ctracker_banner_dark_nobg.png" 
+                        src="/logo_ctracker.png" 
                         alt="Celo Tracker" 
-                        style={{ width: '200px', height: 'auto', display: 'block' }} 
+                        style={{ height: '40px', width: 'auto', display: 'block' }} 
                     />
                 </a>
                 <ul className="footer-links">

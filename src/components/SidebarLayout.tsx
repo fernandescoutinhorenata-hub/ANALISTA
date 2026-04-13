@@ -50,20 +50,14 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
             >
                 {/* Logo Section */}
                 <div 
-                    className="flex items-center gap-3 cursor-pointer transition-all duration-300 group px-6 py-6" 
+                    className="flex items-center cursor-pointer transition-all duration-300 group px-6 py-6" 
                     onClick={() => navigate('/')}
                 >
                     <img 
-                        src="/ctracker_logo_square_nobg.png" 
+                        src="/logo_ctracker.png" 
                         alt="Celo Tracker" 
-                        className="w-8 h-8 object-contain transition-all duration-500 group-hover:scale-110" 
+                        className="h-10 object-contain transition-all duration-500 group-hover:scale-105" 
                     />
-                    <div className="flex flex-col">
-                        <span className="text-[15px] font-black tracking-tighter text-white group-hover:text-[var(--accent)] transition-colors">
-                            CELO TRACKER
-                        </span>
-                        <span className="text-[9px] font-bold text-[var(--accent)] tracking-[0.2em]">ANALYTICS</span>
-                    </div>
                 </div>
 
                 {/* Nav Items */}
@@ -194,7 +188,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                     <button onClick={() => setIsSidebarOpen(true)} className="btn-ghost p-2">
                         <Menu size={20} />
                     </button>
-                    <img src="/ctracker_logo_square_nobg.png" alt="Celo Tracker" className="h-14 object-contain" />
+                    <img src="/logo_ctracker.png" alt="Celo Tracker" className="h-10 object-contain" />
                     <div className="w-10" /> {/* Spacer */}
                 </header>
                 
