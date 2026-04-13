@@ -735,6 +735,14 @@ export const Dashboard: React.FC = () => {
         };
     }, [roundsTabRows]);
 
+    const roundsChartData = useMemo(() =>
+        roundsTabRows.map((r, index) => ({
+            name: `R${r.Rodada}-${index}`,
+            pontos: Number(r.Pontos_Total)
+        })),
+        [roundsTabRows]
+    );
+
     useEffect(() => {
         if (!expandedRound || !user) {
             setRoundPlayerData([]);
@@ -1755,7 +1763,7 @@ export const Dashboard: React.FC = () => {
                                         </div>
                                         <div className="h-64 px-6 py-8">
                                             <ResponsiveContainer width="100%" height="100%">
-                                                <LineChart data={roundsTabRows.map(r => ({ name: `R${r.Rodada}`, pontos: r.Pontos_Total }))}>
+                                                <LineChart data={roundsChartData}>
                                                     <CartesianGrid stroke="#27272A" vertical={false} strokeDasharray="3 3" />
                                                     <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#A1A1AA' }} axisLine={false} tickLine={false} />
                                                     <YAxis tick={{ fontSize: 10, fill: '#A1A1AA' }} axisLine={false} tickLine={false} />
