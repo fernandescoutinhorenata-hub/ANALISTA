@@ -421,8 +421,8 @@ export const PublicSquad: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                                     <MetricCard title="Total Kills" value={data.playerMetrics.totalKills || 0} icon={Sword} glow />
                                     <MetricCard title="Pontuação Total" value={data.general.totalPontos || 0} icon={Trophy} />
-                                    <MetricCard title="Booyahs" value={data.general.totalBooyahs || 0} icon={TrendingUp} color="#10B981" />
-                                    <MetricCard title="Dano Médio / Queda" value={(data.squadMetrics.avgDamage || 0).toLocaleString()} icon={Target} color="#BEF264" />
+                                    <MetricCard title="Booyahs" value={data.general.totalBooyahs || 0} icon={TrendingUp} color="#9D5FF5" />
+                                    <MetricCard title="Dano Médio / Queda" value={(data.squadMetrics.avgDamage || 0).toLocaleString()} icon={Target} color="#B47FFB" />
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     <Card className="lg:col-span-2 min-h-[400px]">

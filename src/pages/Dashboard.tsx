@@ -603,18 +603,20 @@ export const Dashboard: React.FC = () => {
     const maxAbates = useMemo(() => Math.max(...playerTableData.map((p: any) => p.abates), 1), [playerTableData]);
 
     const donutData = useMemo(() => {
+        const PURPLE_PALETTE = ['#7C3AED', '#9D5FF5', '#B47FFB', '#5B21B6', '#C4B5FD', '#6D28D9', '#DDD6FE'];
         return playerTableData.map((p: any, i: number) => ({
             name: p.name,
             value: p.abates,
-            fill: ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#D946EF'][i % 7]
+            fill: PURPLE_PALETTE[i % PURPLE_PALETTE.length]
         }));
     }, [playerTableData]);
 
     const quedasDonutData = useMemo(() => {
+        const PURPLE_PALETTE = ['#7C3AED', '#9D5FF5', '#B47FFB', '#5B21B6', '#C4B5FD', '#6D28D9', '#DDD6FE'];
         return playerTableData.map((p: any, i: number) => ({
             name: p.name,
             value: p.quedas,
-            fill: ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#D946EF'][i % 7]
+            fill: PURPLE_PALETTE[i % PURPLE_PALETTE.length]
         }));
     }, [playerTableData]);
 
@@ -1406,7 +1408,7 @@ export const Dashboard: React.FC = () => {
                                                                         wrapperStyle={{ fontSize: '10px', marginTop: '-20px' }}
                                                                     />
                                                                     <Line type="monotone" dataKey="media" name="Média" stroke="#7C3AED" strokeWidth={2} dot={{ r: 4, fill: '#7C3AED', strokeWidth: 0 }} activeDot={{ r: 6 }} />
-                                                                    <Line type="monotone" dataKey="total" name="Total" stroke="#10B981" strokeWidth={2} dot={{ r: 4, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                                                                    <Line type="monotone" dataKey="total" name="Total" stroke="#9D5FF5" strokeWidth={2} dot={{ r: 4, fill: '#9D5FF5', strokeWidth: 0 }} activeDot={{ r: 6 }} />
                                                                 </LineChart>
                                                             </ResponsiveContainer>
                                                         </div>
@@ -1575,7 +1577,7 @@ export const Dashboard: React.FC = () => {
                                                             <td className="px-6 py-4">{row.name}</td>
                                                             <td className="px-6 py-4 flex items-center gap-3">
                                                                 <span className="w-6 text-right">{row.abates}</span>
-                                                                <div className="h-2.5 bg-[#EF4444] rounded-sm" style={{ width: `${Math.max(2, (row.abates / maxAbates) * 80)}px` }} />
+                                                                <div className="h-2.5 bg-[#7C3AED] rounded-sm" style={{ width: `${Math.max(2, (row.abates / maxAbates) * 80)}px` }} />
                                                             </td>
                                                             <td className="px-6 py-4">{row.mortes}</td>
                                                             <td className="px-6 py-4">{row.assistencias}</td>
@@ -1601,7 +1603,7 @@ export const Dashboard: React.FC = () => {
                                                     return (
                                                         <div key={i} 
                                                             className="h-8 flex items-center justify-center rounded uppercase text-[10px] font-black text-black/70 shadow-sm"
-                                                            style={{ width: `${wP}%`, backgroundColor: `hsl(142, 70%, ${Math.min(90, 45 + (i * 8))}%)` }}
+                                                            style={{ width: `${wP}%`, backgroundColor: `hsl(258, 83%, ${Math.min(90, 45 + (i * 8))}%)` }}
                                                         >
                                                             {p.name}
                                                         </div>
@@ -1684,8 +1686,8 @@ export const Dashboard: React.FC = () => {
                                     <div className="w-full h-64 mt-4">
                                         <div className="flex flex-col items-center md:items-start mb-6 px-4">
                                             <div className="flex gap-4 text-xs font-bold uppercase">
-                                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#EF4444]" /> Abates</span>
-                                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#22C55E]" /> Assistência</span>
+                                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#7C3AED]" /> Abates</span>
+                                                <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-[#9D5FF5]" /> Assistência</span>
                                             </div>
                                         </div>
                                         <ResponsiveContainer width="100%" height="100%">
@@ -1694,8 +1696,8 @@ export const Dashboard: React.FC = () => {
                                                 <XAxis dataKey="player" hide />
                                                 <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#A1A1AA' }} />
                                                 <Tooltip contentStyle={{ backgroundColor: '#18181B', border: 'none', borderRadius: '8px' }} />
-                                                <Line type="monotone" dataKey="kill" name="Abates" stroke="#EF4444" strokeWidth={2} dot={{ r: 3, fill: '#EF4444', strokeWidth: 0 }} />
-                                                <Line type="monotone" dataKey="assistencia" name="Assistências" stroke="#22C55E" strokeWidth={2} dot={{ r: 3, fill: '#22C55E', strokeWidth: 0 }} />
+                                                <Line type="monotone" dataKey="kill" name="Abates" stroke="#7C3AED" strokeWidth={2} dot={{ r: 3, fill: '#7C3AED', strokeWidth: 0 }} />
+                                                <Line type="monotone" dataKey="assistencia" name="Assistências" stroke="#9D5FF5" strokeWidth={2} dot={{ r: 3, fill: '#9D5FF5', strokeWidth: 0 }} />
                                             </LineChart>
                                         </ResponsiveContainer>
                                     </div>

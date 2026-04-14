@@ -28,8 +28,8 @@ const MetricCard: React.FC<{
 }> = ({ title, value, subValue, icon: Icon, color = 'purple' }) => {
     const colorClasses = {
         purple: 'text-[var(--accent)]',
-        green: 'text-emerald-500',
-        red: 'text-rose-500'
+        green: 'text-[#9D5FF5]', // Roxo Médio em vez de verde
+        red: 'text-[#B47FFB]'    // Roxo Claro em vez de vermelho
     };
 
     return (
@@ -296,7 +296,7 @@ export default function Quebras() {
                                         />
                                         <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
                                         <Tooltip contentStyle={neonTooltipStyle} cursor={{ fill: 'var(--bg-hover)' }} />
-                                        <Bar dataKey="total" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={40} />
+                                        <Bar dataKey="total" fill="#7C3AED" radius={[4, 4, 0, 0]} barSize={40} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
@@ -370,8 +370,8 @@ export default function Quebras() {
                                             <td className="px-6 py-4">
                                                 <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
                                                     row.resultado_call?.toUpperCase() === 'WIN' 
-                                                        ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
-                                                        : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                                                        ? 'bg-[#7C3AED]/10 text-[#7C3AED] border border-[#7C3AED]/20' 
+                                                        : 'bg-[#9D5FF5]/10 text-[#9D5FF5] border border-[#9D5FF5]/20'
                                                 }`}>
                                                     {row.resultado_call || 'LOSS'}
                                                 </span>
