@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export default function Upgrade() {
   const WHATSAPP_NUMBER = '5513981630304';

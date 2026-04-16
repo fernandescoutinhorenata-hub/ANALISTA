@@ -191,7 +191,7 @@ export const Planos: React.FC = () => {
 
                         <div className="max-w-4xl mx-auto mt-20 text-center pb-12">
                             <p className="text-[var(--text-tertiary)] text-xs leading-relaxed max-w-2xl mx-auto">
-                                Suporte dedicado Celo Tracker. Assinaturas são ativadas manualmente após confirmação do comprovante.
+                                Suporte dedicado Celo Tracker. Assinaturas são ativadas automaticamente após a confirmação do pagamento via Lowify.
                             </p>
                         </div>
                     </div>
