@@ -129,7 +129,7 @@ export default function Afiliado() {
     }, [user]);
 
     const copyToClipboard = () => {
-        const code = isDemo ? 'CELO20' : affiliate?.coupon_code;
+        const code = isDemo ? 'LUKE12' : affiliate?.coupon_code;
         if (!code) return;
         navigator.clipboard.writeText(code);
         setCopied(true);
@@ -179,7 +179,7 @@ export default function Afiliado() {
                                     Seu Código de Afiliado
                                 </p>
                                 <p className="text-3xl font-black text-[var(--accent)] tracking-tighter font-mono flex items-center gap-2">
-                                    {isDemo ? 'CELO20' : affiliate.coupon_code}
+                                    {isDemo ? 'LUKE12' : affiliate.coupon_code}
                                     {isDemo && (
                                         <span className="text-[10px] bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded-full font-bold">
                                             DEMO
