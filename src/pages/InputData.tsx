@@ -134,16 +134,26 @@ export const InputData: React.FC = () => {
     useEffect(() => {
         if (!user) return;
         const checkSubAndUses = async () => {
-             // Busca status geral de assinante no perfil
-             const { data: profile } = await supabase
-                .from('profiles')
-                .select('is_subscriber, ocr_uses')
+             // 1. Busca usos de OCR no perfil (tabela perfis)
+             const { data: perfil } = await supabase
+                .from('perfis')
+                .select('ocr_uses')
                 .eq('id', user.id)
                 .maybeSingle();
             
-            setAssinaturaAtiva(!!profile?.is_subscriber);
-            if (profile) setOcrUses(profile.ocr_uses ?? 0);
-            console.log('[OCR DEBUG] ocr_uses carregado:', profile?.ocr_uses, '| assinatura:', !!profile?.is_subscriber);
+            if (perfil) setOcrUses(perfil.ocr_uses ?? 0);
+
+            // 2. Verifica assinatura ativa (tabela subscriptions)
+            const { data: sub } = await supabase
+                .from('subscriptions')
+                .select('status, data_fim')
+                .eq('user_id', user.id)
+                .eq('status', 'ativo')
+                .gt('data_fim', new Date().toISOString())
+                .maybeSingle();
+            
+            setAssinaturaAtiva(!!sub);
+            console.log('[OCR DEBUG] ocr_uses carregado:', perfil?.ocr_uses, '| assinatura:', !!sub);
         };
         checkSubAndUses();
     }, [user]);
@@ -287,7 +297,7 @@ export const InputData: React.FC = () => {
             // 2. Incrementar uso se não for PRO
             if (!assinaturaAtiva && user) {
                 const nextUses = ocrUses + 1;
-                await supabase.from('profiles').update({ ocr_uses: nextUses }).eq('id', user.id);
+                await supabase.from('perfis').update({ ocr_uses: nextUses }).eq('id', user.id);
                 setOcrUses(nextUses);
             }
 
