@@ -486,6 +486,30 @@
   margin: 0 auto;
 }
 
+/* Ajuste para o componente importado para alinhar com sec-wrap */
+.planos-landing-override {
+  max-width: 1260px !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 auto !important;
+}
+
+/* Responsividade para o grid interno do PlanosWhatsApp (que tem estilo inline) */
+@media(max-width: 900px) {
+  .planos-landing-override > div:nth-child(2) {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  
+  /* Ajuste no header interno do componente se necessário */
+  .planos-landing-override > div:first-child h2 {
+    font-size: 2rem !important;
+  }
+}
+
 .landing-page .depo {
   padding: 4rem 6%;
 }

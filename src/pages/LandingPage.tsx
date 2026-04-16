@@ -182,8 +182,10 @@ export const LandingPage: React.FC = () => {
 
             <div className="divider-l"></div>
 
-            <section id="planos">
-                <PlanosWhatsApp />
+            <section className="planos" id="planos">
+                <div className="sec-wrap">
+                    <PlanosWhatsApp className="planos-landing-override" />
+                </div>
             </section>
 
             <section className="depo" id="depoimento">
