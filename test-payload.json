@@ -1,0 +1,8 @@
+{
+  "event": "sale.paid",
+  "product": { "name": "Elite Squad" },
+  "customer": {
+    "name": "Usuario Teste Afiliado",
+    "email": "celoteste01@gmail.com"
+  }
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
     DollarSign, Copy, Check, 
-    ChevronLeft, Loader2, TrendingUp, Clock, FileText, AlertCircle
+    ChevronLeft, Loader2, TrendingUp, Clock, AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -35,6 +35,17 @@ const MetricCard: React.FC<{
     </div>
 );
 
+const FAKE_SALES = [
+    { id: 'f1', created_at: '2026-04-15T12:00:00Z', plan_name: 'Modo Competitivo', sale_amount: 10.00, commission_amount: 2.00, status: 'pending' },
+    { id: 'f2', created_at: '2026-04-14T12:00:00Z', plan_name: 'Modo Competitivo', sale_amount: 10.00, commission_amount: 2.00, status: 'pending' },
+    { id: 'f3', created_at: '2026-04-13T12:00:00Z', plan_name: 'Modo Competitivo', sale_amount: 10.00, commission_amount: 2.00, status: 'pending' },
+    { id: 'f4', created_at: '2026-04-12T12:00:00Z', plan_name: 'Modo Competitivo', sale_amount: 10.00, commission_amount: 2.00, status: 'pending' },
+    { id: 'f5', created_at: '2026-04-10T12:00:00Z', plan_name: 'Modo Competitivo', sale_amount: 10.00, commission_amount: 2.00, status: 'paid' },
+    { id: 'f6', created_at: '2026-04-08T12:00:00Z', plan_name: 'Elite Squad', sale_amount: 25.00, commission_amount: 5.00, status: 'paid' },
+    { id: 'f7', created_at: '2026-04-05T12:00:00Z', plan_name: 'Elite Squad', sale_amount: 25.00, commission_amount: 5.00, status: 'paid' },
+    { id: 'f8', created_at: '2026-04-01T12:00:00Z', plan_name: 'Elite Squad', sale_amount: 25.00, commission_amount: 5.00, status: 'paid' },
+];
+
 export default function Afiliado() {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -44,22 +55,22 @@ export default function Afiliado() {
     const [copied, setCopied] = useState(false);
     const [isSubscriber, setIsSubscriber] = useState(false);
 
+    const isDemo = useMemo(() => sales.length === 0, [sales]);
+    const activeSales = useMemo(() => isDemo ? FAKE_SALES : sales, [isDemo, sales]);
+
     const fetchOrCreateAffiliate = async () => {
         if (!user || !user.id) return;
         setLoading(true);
         try {
             // Verifica status de assinante via tabela subscriptions
-            const { data: subscription, error: subError } = await supabase
+            const { data: subscription } = await supabase
                 .from('subscriptions')
                 .select('status, data_fim')
                 .eq('user_id', user.id)
                 .eq('status', 'ativo')
                 .maybeSingle();
-            console.log('[DEBUG] user.id:', user?.id);
-            console.log('[DEBUG] subscription:', subscription);
-            console.log('[DEBUG] subError:', subError);
+
             const isActive = !!subscription && new Date(subscription.data_fim) > new Date();
-            console.log('[DEBUG] isActive:', isActive);
             setIsSubscriber(isActive);
 
             // 1. Tenta buscar registro existente
@@ -84,7 +95,6 @@ export default function Afiliado() {
                     .single();
 
                 if (error) {
-                    // Pode ter gerado conflito de cupom — tenta buscar novamente
                     const { data: retry } = await supabase
                         .from('affiliates')
                         .select('*')
@@ -119,22 +129,23 @@ export default function Afiliado() {
     }, [user]);
 
     const copyToClipboard = () => {
-        if (!affiliate?.coupon_code) return;
-        navigator.clipboard.writeText(affiliate.coupon_code);
+        const code = isDemo ? 'CELO20' : affiliate?.coupon_code;
+        if (!code) return;
+        navigator.clipboard.writeText(code);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
     const metrics = useMemo(() => {
-        const pending = sales.filter(s => s.status === 'pending').reduce((acc, s) => acc + Number(s.commission_amount), 0);
-        const paid = sales.filter(s => s.status === 'paid').reduce((acc, s) => acc + Number(s.commission_amount), 0);
+        const pending = activeSales.filter(s => s.status === 'pending').reduce((acc, s) => acc + Number(s.commission_amount), 0);
+        const paid = activeSales.filter(s => s.status === 'paid').reduce((acc, s) => acc + Number(s.commission_amount), 0);
         return {
-            totalSales: sales.length,
+            totalSales: activeSales.length,
             pending: pending.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
             paid: paid.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
             totalEarned: (pending + paid).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
         };
-    }, [sales]);
+    }, [activeSales]);
 
     if (loading) {
         return (
@@ -167,8 +178,13 @@ export default function Afiliado() {
                                 <p className="text-[10px] font-black text-[var(--text-tertiary)] uppercase tracking-widest mb-1">
                                     Seu Código de Afiliado
                                 </p>
-                                <p className="text-3xl font-black text-[var(--accent)] tracking-tighter font-mono">
-                                    {affiliate.coupon_code}
+                                <p className="text-3xl font-black text-[var(--accent)] tracking-tighter font-mono flex items-center gap-2">
+                                    {isDemo ? 'CELO20' : affiliate.coupon_code}
+                                    {isDemo && (
+                                        <span className="text-[10px] bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded-full font-bold">
+                                            DEMO
+                                        </span>
+                                    )}
                                 </p>
                                 <p className="text-[10px] text-[var(--text-tertiary)] mt-1">20% de desconto para o comprador</p>
                             </div>
@@ -236,19 +252,7 @@ export default function Afiliado() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[var(--border-subtle)]">
-                                    {sales.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-20 text-center">
-                                                <div className="flex flex-col items-center gap-3 opacity-20">
-                                                    <FileText size={40} />
-                                                    <p className="font-bold uppercase tracking-widest text-xs">
-                                                        Nenhuma venda registrada ainda
-                                                    </p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        sales.map(sale => (
+                                    {activeSales.map(sale => (
                                             <tr key={sale.id} className="hover:bg-white/[0.02] transition-colors">
                                                 <td className="px-6 py-4 text-sm font-medium">
                                                     {new Date(sale.created_at).toLocaleDateString('pt-BR')}
@@ -276,8 +280,7 @@ export default function Afiliado() {
                                                     )}
                                                 </td>
                                             </tr>
-                                        ))
-                                    )}
+                                        ))}
                                 </tbody>
                             </table>
                         </div>
