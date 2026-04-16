@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { PlanosWhatsApp } from '../components/PlanosWhatsApp';
 import './LandingPage.css';
 
 export const LandingPage: React.FC = () => {
@@ -181,111 +182,8 @@ export const LandingPage: React.FC = () => {
 
             <div className="divider-l"></div>
 
-            <section className="planos" id="planos">
-                <div className="sec-wrap">
-                    <div className="sec-tag" style={{ margin: '0 auto 1rem' }}>PLANOS</div>
-                    <h2 className="sec-h2" style={{ marginBottom: '.8rem' }}>Simples. <span>Sem enrolação.</span></h2>
-                    <p className="sec-sub" style={{ maxWidth: '480px', margin: '0 auto 3rem' }}>
-                        Começa de graça e cresce conforme sua squad evolui.
-                        Ativação via WhatsApp na hora.
-                    </p>
-                    <div className="planos-grid">
-                        {/* GRATUITO */}
-                        <div className="plano-box" style={{ background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', padding: '2.5rem 2rem', textAlign: 'left', transition: 'transform .3s' }}>
-                            <div style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>GRATUITO</div>
-                            <div style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: '3rem', fontWeight: 800, lineHeight: 1, marginBottom: '.3rem' }}>R$0 <span style={{ fontSize: '.82rem', color: '#6b7280', fontWeight: 400 }}>/ para sempre</span></div>
-                            <div style={{ minHeight: '1.4rem', marginBottom: '1.8rem' }}></div>
-                            <ul style={{ listStyle: 'none', marginBottom: '2rem' }}>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    4 leituras automáticas via OCR
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Acesso limitado às métricas
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Dashboard básico da squad
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Link público da squad
-                                </li>
-                            </ul>
-                            <button onClick={() => navigate('/login')} className="btn-ghost-l" style={{ width: '100%', justifyContent: 'center' }}>
-                                Testar Agora
-                            </button>
-                        </div>
-
-                        {/* MODO COMPETITIVO */}
-                        <div className="plano-box" style={{ background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', padding: '2.5rem 2rem', textAlign: 'left', transition: 'transform .3s' }}>
-                            <div style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>MODO COMPETITIVO</div>
-                            <div style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: '3rem', fontWeight: 800, lineHeight: 1, marginBottom: '.3rem' }}>R$10 <span style={{ fontSize: '.82rem', color: '#6b7280', fontWeight: 400 }}>/ semana</span></div>
-                            <div style={{ minHeight: '1.4rem', marginBottom: '1.8rem' }}></div>
-                            <ul style={{ listStyle: 'none', marginBottom: '2rem' }}>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    OCR até 20 screenshots/hora
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Dashboard completo da squad
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Filtros por liga e data
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Link público da squad
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Suporte via WhatsApp
-                                </li>
-                            </ul>
-                            <a href="https://wa.me/5513981630304?text=Olá!%20Quero%20o%20plano%20Semanal%20do%20Celo%20Tracker!" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.55rem', width: '100%', padding: '.9rem', borderRadius: '10px', border: 'none', background: '#25d366', color: '#fff', fontFamily: '"Inter", sans-serif', fontSize: '.9rem', fontWeight: 700, textDecoration: 'none', transition: 'all .2s' }}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
-                                Quero o plano
-                            </a>
-                        </div>
-
-                        {/* ELITE SQUAD */}
-                        <div className="plano-box" style={{ background: 'rgba(255,255,255,.025)', border: '1px solid #7c3aed', borderRadius: '20px', padding: '2.5rem 2rem', textAlign: 'left', position: 'relative', boxShadow: '0 0 50px rgba(124,58,237,.12)', transition: 'transform .3s' }}>
-                            <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(90deg,#7c3aed,#9333ea)', color: '#fff', fontSize: '.68rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', padding: '.28rem 1.1rem', borderRadius: '100px', whiteSpace: 'nowrap' }}>MAIS POPULAR</div>
-                            <div style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>ELITE SQUAD</div>
-                            <div style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: '3rem', fontWeight: 800, lineHeight: 1, marginBottom: '.3rem' }}>R$25 <span style={{ fontSize: '.82rem', color: '#6b7280', fontWeight: 400 }}>/ mês</span></div>
-                            <div style={{ fontSize: '.78rem', fontWeight: 600, color: '#22c55e', marginBottom: '1.8rem' }}>Economize R$15 vs semanal</div>
-                            <ul style={{ listStyle: 'none', marginBottom: '2rem' }}>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Tudo do Modo Competitivo
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Histórico completo de campeonatos
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Relatório de rodadas detalhado
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Suporte prioritário
-                                </li>
-                                <li style={{ display: 'flex', alignItems: 'center', gap: '.55rem', fontSize: '.86rem', color: '#9ca3af', padding: '.35rem 0' }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                                    Cupom de afiliado exclusivo (20%)
-                                </li>
-                            </ul>
-                            <a href="https://wa.me/5513981630304?text=Olá!%20Quero%20o%20plano%20Elite%20Squad%20do%20Celo%20Tracker!" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.55rem', width: '100%', padding: '.9rem', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg,#7c3aed,#9333ea)', color: '#fff', fontFamily: '"Inter", sans-serif', fontSize: '.9rem', fontWeight: 700, textDecoration: 'none', transition: 'all .2s' }}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
-                                Quero o plano
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            <section id="planos">
+                <PlanosWhatsApp />
             </section>
 
             <section className="depo" id="depoimento">
