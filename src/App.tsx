@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './pages/Login';
@@ -17,6 +18,16 @@ import { PlanoGuard } from './components/PlanoGuard';
 import Upgrade from './pages/Upgrade';
 
 function App() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('celo_referral', ref);
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <Router>

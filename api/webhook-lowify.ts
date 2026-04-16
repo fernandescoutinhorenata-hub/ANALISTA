@@ -27,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // (Usamos 'perfis' pois 'auth.users' não é acessível diretamente pelo cliente padrão public)
     const { data: userData } = await supabase
       .from('perfis')
-      .select('id')
+      .select('id, referral_code')
       .eq('email', email)
       .maybeSingle();
 
@@ -59,6 +59,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (error) throw error;
       console.log(`[Lowify] ✅ Assinatura Ativada: ${email} — ${diasDeAcesso} dias`);
+
+      // LÓGICA DE COMISSÃO DE AFILIADOS
+      if (userId && userData?.referral_code) {
+        try {
+          // 1. Buscar o afiliado pelo código do cupom
+          const { data: affiliate } = await supabase
+            .from('affiliates')
+            .select('id, commission_rate, total_sales, total_earned')
+            .eq('coupon_code', userData.referral_code)
+            .maybeSingle();
+
+          if (affiliate) {
+            // 2. Definir valor da venda e calcular comissão
+            // Modo Competitivo = R$10.00 | Elite Squad = R$25.00
+            const saleAmount = plano.toLowerCase().includes('elite') ? 25 : 10;
+            const commissionRate = Number(affiliate.commission_rate || 20);
+            const commissionAmount = saleAmount * (commissionRate / 100);
+
+            // 3. Registrar a venda na tabela affiliate_sales
+            await supabase
+              .from('affiliate_sales')
+              .insert({
+                affiliate_id: affiliate.id,
+                buyer_user_id: userId,
+                plan_name: plano,
+                sale_amount: saleAmount,
+                commission_amount: commissionAmount,
+                status: 'pending'
+              });
+
+            // 4. Atualizar estatísticas acumuladas do afiliado
+            await supabase
+              .from('affiliates')
+              .update({
+                total_sales: (affiliate.total_sales || 0) + 1,
+                total_earned: Number(affiliate.total_earned || 0) + commissionAmount
+              })
+              .eq('id', affiliate.id);
+
+            console.log(`[Affiliate] ✅ Comissão de R$${commissionAmount} registrada para o cupom ${userData.referral_code}`);
+          }
+        } catch (affError: any) {
+          console.error('[Affiliate] ❌ Erro ao registrar comissão:', affError.message);
+        }
+      }
     }
 
     else if (event === 'sale.pending') {

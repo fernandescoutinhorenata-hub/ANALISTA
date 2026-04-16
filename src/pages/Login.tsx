@@ -56,11 +56,17 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                 
                 if (data?.user) {
                     // 3. Registrar Perfil
+                    const referral = localStorage.getItem('celo_referral');
                     await supabase.from('perfis').insert([{
                         id: data.user.id,
                         email: email,
-                        nome: teamName
+                        nome: teamName,
+                        referral_code: referral || null
                     }]);
+
+                    if (referral) {
+                        localStorage.removeItem('celo_referral');
+                    }
 
                     // 4. Registrar IP do Novo Usuário
                     await supabase.functions.invoke('check-ip', {
