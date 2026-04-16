@@ -105,7 +105,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
               cursor: 'pointer', transition: 'all .2s'
             }}
           >
-            Quero o plano
+            Quero Evoluir
           </button>
         </div>
 
@@ -150,7 +150,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
               cursor: 'pointer', transition: 'all .2s'
             }}
           >
-            Quero o plano
+            Quero Evoluir
           </button>
         </div>
 
