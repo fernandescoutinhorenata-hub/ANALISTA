@@ -70,7 +70,7 @@ export const LandingPage: React.FC = () => {
                     <img 
                         src="/logo_ctracker.png" 
                         alt="Celo Tracker" 
-                        style={{ height: '40px', width: 'auto', display: 'block' }} 
+                        style={{ height: '120px', width: 'auto', display: 'block' }} 
                     />
                 </a>
                 <ul className="nav-links">
@@ -260,7 +260,7 @@ export const LandingPage: React.FC = () => {
                     <img 
                         src="/logo_ctracker.png" 
                         alt="Celo Tracker" 
-                        style={{ height: '40px', width: 'auto', display: 'block' }} 
+                        style={{ height: '120px', width: 'auto', display: 'block' }} 
                     />
                 </a>
                 <ul className="footer-links">
