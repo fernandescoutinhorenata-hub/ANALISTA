@@ -236,8 +236,6 @@ export const InputData: React.FC = () => {
 
             const mediaType = file.type || 'image/jpeg';
             const { data: { session } } = await supabase.auth.getSession();
-            console.log('[OCR DEBUG] access_token:', session?.access_token?.substring(0, 50));
-            console.log('[OCR DEBUG] token_type:', session?.token_type);
             
             const rawJson = await readScreenshot(base64, mediaType, session?.access_token);
 
@@ -260,9 +258,6 @@ export const InputData: React.FC = () => {
             }
 
             // ── Debug OCR (remover após validação) ──────────────────
-            console.log('[OCR RESULT]', JSON.stringify(result));
-            console.log('[OCR posicao_squad]', result.posicao_squad);
-            console.log('[OCR jogador[0].reviv]', result.jogadores?.[0]?.reviv);
             // ────────────────────────────────────────────────────────
 
             // Preencher campos automaticamente

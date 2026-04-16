@@ -133,7 +133,9 @@ function App() {
             path="/admin-celo" 
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <AdminRoute>
+                  <Dashboard />
+                </AdminRoute>
               </ProtectedRoute>
             } 
           />
@@ -141,7 +143,9 @@ function App() {
             path="/admin-celo/input" 
             element={
               <ProtectedRoute>
-                <InputData />
+                <AdminRoute>
+                  <InputData />
+                </AdminRoute>
               </ProtectedRoute>
             } 
           />
@@ -149,7 +153,9 @@ function App() {
             path="/admin-celo/planos" 
             element={
               <ProtectedRoute>
-                <Planos />
+                <AdminRoute>
+                  <Planos />
+                </AdminRoute>
               </ProtectedRoute>
             } 
           />
