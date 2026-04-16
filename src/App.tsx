@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useSubscription } from './hooks/useSubscription';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Coletivo } from './pages/Coletivo';
@@ -16,6 +17,19 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { PlanoGuard } from './components/PlanoGuard';
 import Upgrade from './pages/Upgrade';
+
+function UpgradeGuard({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const { subscription, loading } = useSubscription(user?.id);
+
+  if (loading) return null;
+
+  if (subscription?.ativo) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
 
 function App() {
   useEffect(() => {
@@ -37,7 +51,16 @@ function App() {
           <Route path="/register" element={<Login mode="register" />} />
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/planos" element={<Planos />} />
-          <Route path="/upgrade" element={<Upgrade />} />
+          <Route 
+            path="/upgrade" 
+            element={
+              <ProtectedRoute>
+                <UpgradeGuard>
+                  <Upgrade />
+                </UpgradeGuard>
+              </ProtectedRoute>
+            } 
+          />
           
           {/* Acesso Público via Share Token */}
           <Route path="/squad/:token" element={<PublicSquad />} />
