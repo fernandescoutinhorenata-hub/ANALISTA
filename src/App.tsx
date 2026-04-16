@@ -13,7 +13,8 @@ import { LandingPage } from './pages/LandingPage';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
-import { SubscriberRoute } from './components/SubscriberRoute';
+import { PlanoGuard } from './components/PlanoGuard';
+import Upgrade from './pages/Upgrade';
 
 function App() {
   return (
@@ -25,17 +26,20 @@ function App() {
           <Route path="/register" element={<Login mode="register" />} />
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/planos" element={<Planos />} />
+          <Route path="/upgrade" element={<Upgrade />} />
           
           {/* Acesso Público via Share Token */}
           <Route path="/squad/:token" element={<PublicSquad />} />
           <Route path="/share/:token" element={<PublicSquad />} />
           
-          {/* Dashboard e Input Principal */}
+          {/* Dashboard e Input Principal - Protegidos por Login E Plano Ativo */}
           <Route 
             path="/" 
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <PlanoGuard>
+                  <Dashboard />
+                </PlanoGuard>
               </ProtectedRoute>
             } 
           />
@@ -43,7 +47,9 @@ function App() {
             path="/coletivo" 
             element={
               <ProtectedRoute>
-                <Coletivo />
+                <PlanoGuard>
+                  <Coletivo />
+                </PlanoGuard>
               </ProtectedRoute>
             } 
           />
@@ -51,7 +57,9 @@ function App() {
             path="/afiliado" 
             element={
               <ProtectedRoute>
-                <Afiliado />
+                <PlanoGuard>
+                  <Afiliado />
+                </PlanoGuard>
               </ProtectedRoute>
             } 
           />
@@ -59,9 +67,9 @@ function App() {
             path="/quebras" 
             element={
               <ProtectedRoute>
-                <SubscriberRoute>
+                <PlanoGuard>
                   <Quebras />
-                </SubscriberRoute>
+                </PlanoGuard>
               </ProtectedRoute>
             } 
           />
@@ -69,9 +77,9 @@ function App() {
             path="/analise" 
             element={
               <ProtectedRoute>
-                <SubscriberRoute>
+                <PlanoGuard>
                   <Dashboard />
-                </SubscriberRoute>
+                </PlanoGuard>
               </ProtectedRoute>
             } 
           />
@@ -79,7 +87,9 @@ function App() {
             path="/input" 
             element={
               <ProtectedRoute>
-                <InputData />
+                <PlanoGuard>
+                  <InputData />
+                </PlanoGuard>
               </ProtectedRoute>
             } 
           />
