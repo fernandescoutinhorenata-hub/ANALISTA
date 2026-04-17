@@ -261,11 +261,11 @@ export const Dashboard: React.FC = () => {
         const fetchPerfil = async () => {
             const { data } = await supabase
                 .from('perfis')
-                .select('nome, email, share_token')
+                .select('nome, share_token')
                 .eq('id', user.id)
                 .single();
             if (data) {
-                setNomeUsuario(data.nome || data.email || user.email || '');
+                setNomeUsuario(data.nome || user?.email || '');
                 setShareToken(data.share_token);
             }
         };
@@ -481,7 +481,7 @@ export const Dashboard: React.FC = () => {
                 const [perfRes, champsRes] = await Promise.all([
                     supabase
                         .from('vw_jogadores_com_campeonato')
-                        .select('*')
+                        .select('player, kill, assistencia, dano_causado, posicao, mapa, equipe, data, rodada, campeonato')
                         .eq('user_id', user.id),
                     supabase
                         .from('vw_jogadores_com_campeonato')

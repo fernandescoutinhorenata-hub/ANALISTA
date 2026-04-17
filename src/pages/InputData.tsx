@@ -153,7 +153,9 @@ export const InputData: React.FC = () => {
                 .maybeSingle();
             
             setAssinaturaAtiva(!!sub);
-            console.log('[OCR DEBUG] ocr_uses carregado:', perfil?.ocr_uses, '| assinatura:', !!sub);
+            if (import.meta.env.DEV) {
+                console.log('[OCR DEBUG] ocr_uses carregado:', perfil?.ocr_uses, '| assinatura:', !!sub);
+            }
         };
         checkSubAndUses();
     }, [user]);
@@ -230,7 +232,9 @@ export const InputData: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        console.log('[OCR DEBUG] ocr_uses:', ocrUses, '| assinaturaAtiva:', assinaturaAtiva);
+        if (import.meta.env.DEV) {
+            console.log('[OCR DEBUG] ocr_uses:', ocrUses, '| assinaturaAtiva:', assinaturaAtiva);
+        }
 
         // 1. Verificar Assinatura Ativa ou Usos Gratuitos (Paywall OCR)
         // Se NÃO for Pro e já usou 4 vezes, abre Upsell
