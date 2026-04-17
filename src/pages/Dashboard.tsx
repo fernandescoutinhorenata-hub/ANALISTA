@@ -20,6 +20,7 @@ import { processData } from '../utils/data-processing';
 import { useAuth } from '../contexts/AuthContext';
 import { OnboardingModal } from '../components/OnboardingModal';
 import { SidebarLayout } from '../components/SidebarLayout';
+import { SecurityTab } from '../components/SecurityTab';
 
 // ─── Componentes de UI (Design System) ──────────────────────────────────────────
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -1464,6 +1465,10 @@ export const Dashboard: React.FC = () => {
                                         </>
                                     )}
                                 </div>
+                            )}
+
+                            {activeTab === 'security' && (
+                                <SecurityTab />
                             )}
 
                             {/* ══════════ PLAYERS TAB ══════════ */}

@@ -141,6 +141,14 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                             <CreditCard size={18} />
                             <span className="font-medium text-[14px]">Planos</span>
                         </button>
+
+                        <button
+                            onClick={() => { navigate('/?tab=security'); setIsSidebarOpen(false); }}
+                            className={`nav-item w-full flex items-center gap-[10px] ${activeTab === 'security' ? 'active' : ''}`}
+                        >
+                            <Lock size={18} />
+                            <span className="font-medium text-[14px]">Segurança</span>
+                        </button>
                     </div>
 
                     <div className="pt-4 mt-6 border-t border-[var(--border-default)] mb-4">

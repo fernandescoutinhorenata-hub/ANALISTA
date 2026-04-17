@@ -77,6 +77,15 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
             } else {
                 const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
                 if (signInError) throw signInError;
+
+                // 5. Verificar conformidade de MFA (Obrigatório para Admins)
+                const { data: mfaCheck, error: mfaError } = await supabase.functions.invoke('enforce-mfa');
+                
+                if (!mfaError && mfaCheck?.error === 'mfa_required') {
+                    navigate('/setup-mfa', { replace: true });
+                    return;
+                }
+
                 navigate('/');
             }
         } catch (err: any) {

@@ -1,7 +1,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { hmac } from "https://deno.land/x/hmac@v2.0.1/mod.ts"
+
 
 // --- Configurações por Plano ---
 const PLANNERS: Record<string, { amount: number; days: number }> = {
@@ -20,8 +20,48 @@ function safeCompare(a: string, b: string): boolean {
 }
 
 serve(async (req) => {
-    // 1. Sempre retornar 200 para evitar retries infinitos do MP
+    const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    };
+
+    if (req.method === 'OPTIONS') {
+        return new Response('ok', { headers: corsHeaders });
+    }
+
+    // 1. Sempre retornar 200 para evitar retries infinitos do MP (excisão no caso de error explícito de infra/rate limit)
     try {
+        const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
+                   req.headers.get('x-real-ip')?.trim() || 
+                   'unknown';
+
+        const supabase = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+
+        // --- RATE LIMITING ---
+        // TODO/NOTA: Em produção, os IPs oficiais do Mercado Pago devem ser whitelistados aqui
+        // para garantir que os servidores do MP não corram o risco de trigger de throttling.
+        const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        const { count, error: rlError } = await supabase
+            .from('api_rate_limits')
+            .select('*', { count: 'exact', head: true })
+            .eq('action_type', 'mp-webhook')
+            .eq('identifier', ip)
+            .gt('created_at', umaHoraAtras);
+
+        if (rlError) {
+             console.error('[mp-webhook] RL Error', rlError);
+        } else if (count !== null && count >= 20) {
+             return new Response(JSON.stringify({ error: 'Too Many Requests' }), { 
+                 status: 429, 
+                 headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+             });
+        }
+
+        await supabase.from('api_rate_limits').insert({ action_type: 'mp-webhook', identifier: ip });
+
         const body = await req.json();
         const headerSignature = req.headers.get('x-signature');
         const requestId = req.headers.get('x-request-id');
@@ -49,10 +89,26 @@ serve(async (req) => {
             return new Response('Bad Request', { status: 400 });
         }
 
+        // --- VALIDAÇÃO COM CRYPTO NATIVO ---
         const manifest = `id:${paymentId};request-id:${requestId};ts:${ts};`;
-        const computedHmac = hmac("sha256", webhookSecret, manifest, "utf8", "hex");
+        const encoder = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+            "raw",
+            encoder.encode(webhookSecret),
+            { name: "HMAC", hash: "SHA-256" },
+            false,
+            ["sign"]
+        );
+        const signatureBuffer = await crypto.subtle.sign(
+            "HMAC",
+            key,
+            encoder.encode(manifest)
+        );
+        const v1Computed = Array.from(new Uint8Array(signatureBuffer))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
 
-        if (!safeCompare(computedHmac, v1)) {
+        if (!safeCompare(v1Computed, v1)) {
             console.error('Assinatura HMAC inválida. Tentativa de falsificação detectada.');
             return new Response('Forbidden', { status: 403 });
         }

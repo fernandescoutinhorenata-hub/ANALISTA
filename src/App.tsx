@@ -17,6 +17,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { PlanoGuard } from './components/PlanoGuard';
 import Upgrade from './pages/Upgrade';
+import { SetupMFA } from './pages/SetupMFA';
 
 function UpgradeGuard({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -58,6 +59,14 @@ function App() {
                 <UpgradeGuard>
                   <Upgrade />
                 </UpgradeGuard>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/setup-mfa" 
+            element={
+              <ProtectedRoute>
+                <SetupMFA />
               </ProtectedRoute>
             } 
           />
