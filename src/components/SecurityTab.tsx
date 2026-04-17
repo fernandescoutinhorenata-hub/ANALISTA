@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Shield, Lock, CheckCircle, Smartphone, AlertCircle, RefreshCcw, ArrowRight, XCircle } from 'lucide-react';
+import { Shield, Lock, CheckCircle, Smartphone, AlertCircle, RefreshCcw, ArrowRight } from 'lucide-react';
 
 export const SecurityTab: React.FC = () => {
     const [factors, setFactors] = useState<any[]>([]);
