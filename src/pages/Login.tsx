@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,6 +16,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
     const [teamName, setTeamName] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const { session } = useAuth();
@@ -28,10 +30,19 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!captchaToken) return;
         setLoading(true);
         setError(null);
 
         try {
+            // Validate Turnstile captcha token via Edge Function
+            const { error: captchaError } = await supabase.functions.invoke('validate-captcha', {
+                body: { token: captchaToken }
+            });
+            if (captchaError) {
+                throw new Error('Verificação de segurança falhou. Tente novamente.');
+            }
+
             if (activeTab === 'register') {
                 if (!teamName.trim()) throw new Error("O nome do time é obrigatório.");
                 
@@ -203,10 +214,20 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                             />
                         </div>
 
+                        {/* Cloudflare Turnstile Widget */}
+                        <div className="flex justify-center">
+                            <Turnstile
+                                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                                onSuccess={(token) => setCaptchaToken(token)}
+                                onExpire={() => setCaptchaToken(null)}
+                                options={{ theme: 'dark' }}
+                            />
+                        </div>
+
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="btn-primary w-full py-3.5 flex items-center justify-center font-semibold text-sm rounded-[8px] mt-4"
+                            disabled={loading || !captchaToken}
+                            className="btn-primary w-full py-3.5 flex items-center justify-center font-semibold text-sm rounded-[8px] mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <div className="h-5 w-5 border-2 border-white/30 border-t-white animate-spin rounded-full" />
