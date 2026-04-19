@@ -33,6 +33,7 @@ export const Planos: React.FC = () => {
                     .select('*')
                     .eq('user_id', user.id)
                     .eq('status', 'ativo')
+                    .gt('data_fim', new Date().toISOString())
                     .maybeSingle();
 
                 if (error) throw error;
