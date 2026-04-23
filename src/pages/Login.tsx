@@ -138,7 +138,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
 
                     <header className="mb-10 text-center md:text-left">
                         <div className="flex justify-center mb-10">
-                            <img src={logo} alt="CTracker" style={{ height: '40px', width: 'auto' }} />
+                            <img src={logo} alt="CTracker" style={{ height: '200px', width: 'auto' }} />
                         </div>
                         <h3 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
                             {activeTab === 'login' ? 'Entrar' : 'Criar conta'}
