@@ -57,7 +57,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                     <img 
                         src={logo} 
                         alt="CTracker" 
-                        style={{ height: '32px', width: 'auto' }} 
+                        style={{ height: '48px', width: 'auto' }} 
                         className="transition-all duration-500 group-hover:scale-105" 
                     />
                 </div>
@@ -198,7 +198,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                     <button onClick={() => setIsSidebarOpen(true)} className="btn-ghost p-2">
                         <Menu size={20} />
                     </button>
-                    <img src={logo} alt="CTracker" style={{ height: '32px', width: 'auto' }} />
+                    <img src={logo} alt="CTracker" style={{ height: '48px', width: 'auto' }} />
                     <div className="w-10" /> {/* Spacer */}
                 </header>
                 
