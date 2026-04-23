@@ -7,6 +7,7 @@ import {
     LogOut, Menu, Lock
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import logo from '../assets/logo.png';
 
 interface SidebarLayoutProps {
     children: React.ReactNode;
@@ -54,9 +55,10 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                     onClick={() => navigate('/')}
                 >
                     <img 
-                        src="/logo_ctracker.png" 
-                        alt="Celo Tracker" 
-                        className="h-40 w-auto object-contain transition-all duration-500 group-hover:scale-105" 
+                        src={logo} 
+                        alt="CTracker" 
+                        style={{ height: '32px', width: 'auto' }} 
+                        className="transition-all duration-500 group-hover:scale-105" 
                     />
                 </div>
 
@@ -196,7 +198,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                     <button onClick={() => setIsSidebarOpen(true)} className="btn-ghost p-2">
                         <Menu size={20} />
                     </button>
-                    <img src="/logo_ctracker.png" alt="Celo Tracker" className="h-10 object-contain" />
+                    <img src={logo} alt="CTracker" style={{ height: '32px', width: 'auto' }} />
                     <div className="w-10" /> {/* Spacer */}
                 </header>
                 
