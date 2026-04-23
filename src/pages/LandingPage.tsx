@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { PlanosWhatsApp } from '../components/PlanosWhatsApp';
+import logo from '../assets/logo.png';
 import './LandingPage.css';
 
 export const LandingPage: React.FC = () => {
@@ -68,9 +69,9 @@ export const LandingPage: React.FC = () => {
             <nav>
                 <a href="#" className="logo">
                     <img 
-                        src="/logo_ctracker.png" 
-                        alt="Celo Tracker" 
-                        style={{ height: '120px', width: 'auto', display: 'block' }} 
+                        src={logo} 
+                        alt="CTracker" 
+                        style={{ height: '64px', width: 'auto', display: 'block' }} 
                     />
                 </a>
                 <ul className="nav-links">
@@ -258,9 +259,9 @@ export const LandingPage: React.FC = () => {
             <footer>
                 <a href="#" className="logo">
                     <img 
-                        src="/logo_ctracker.png" 
-                        alt="Celo Tracker" 
-                        style={{ height: '120px', width: 'auto', display: 'block' }} 
+                        src={logo} 
+                        alt="CTracker" 
+                        style={{ height: '64px', width: 'auto', display: 'block' }} 
                     />
                 </a>
                 <ul className="footer-links">

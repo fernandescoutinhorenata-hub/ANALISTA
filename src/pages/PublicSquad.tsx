@@ -335,7 +335,7 @@ export const PublicSquad: React.FC = () => {
                 {/* ─── HEADER ─── */}
                 <header id="public-header" className="h-20 bg-[#0B0B0C]/80 backdrop-blur-xl border-b border-[#2D2D30] sticky top-0 z-50 px-6 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <img src={logo} alt="CTracker" style={{ height: '180px', width: 'auto' }} />
+                        <img src={logo} alt="CTracker" style={{ height: '64px', width: 'auto' }} />
                         <div className="h-8 w-px bg-[#2D2D30]" />
                         <div>
                             <span className="block text-[9px] font-black text-[#A855F7] uppercase tracking-[0.2em] mb-0.5">Analytics Público</span>
