@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@700&display=swap');
 
 :root {
   color-scheme: dark;
@@ -8,7 +8,7 @@
   --bg-main: #0F0F0F;
   --bg-surface: #111111;
   --bg-card: #1A1A1A;
-  --bg-hover: #7C3AED08;
+  --bg-hover: rgba(91, 95, 255, 0.05);
 
   /* Borders */
   --border-subtle: #1F1F1F;
@@ -16,10 +16,15 @@
   --border-strong: #3F3F46;
 
   /* Accent */
-  --accent: #7C3AED;
-  --accent-hover: #6D28D9;
-  --accent-muted: #7C3AED20;
-  --accent-glow: #7C3AED15;
+  --accent: #5B5FFF;
+  --accent-hover: #4A4DE6;
+  --accent-muted: rgba(91, 95, 255, 0.15);
+  --accent-glow: rgba(91, 95, 255, 0.1);
+
+  /* Font variables */
+  --font-title: 'Inter', sans-serif;
+  --font-subtitle: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
 
   /* Accent secundário (para destaques positivos) */
   --accent-green: #22C55E;
@@ -30,8 +35,8 @@
   --accent-amber: #F59E0B;
 
   /* Texto */
-  --text-primary: #F9FAFB;
-  --text-secondary: #9CA3AF;
+  --text-primary: #EDEDED;
+  --text-secondary: #A1A1A1;
   --text-tertiary: #6B7280;
   --text-disabled: #4B5563;
 
@@ -44,7 +49,7 @@
   /* Shadows */
   --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
   --shadow-elevated: 0 4px 16px rgba(0,0,0,0.5);
-  --shadow-accent: 0 0 20px rgba(147, 51, 234, 0.15);
+  --shadow-accent: 0 0 20px rgba(91, 95, 255, 0.15);
 }
 
 /* ── Reset & Base ─────────────────────────────── */
@@ -63,7 +68,7 @@ body {
     linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
   color: var(--text-primary);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -79,10 +84,10 @@ body {
 /* ── Tipografia ───────────────────────────────── */
 .text-label {
   font-size: 11px !important;
-  font-weight: 700 !important;
+  font-weight: 400 !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
-  color: var(--text-tertiary) !important;
+  color: #A1A1A1 !important;
   opacity: 1 !important;
 }
 
@@ -96,8 +101,8 @@ body {
 
 .text-heading {
   font-size: 15px !important;
-  font-weight: 600 !important;
-  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  color: #EDEDED !important;
   letter-spacing: -0.01em !important;
 }
 
@@ -245,12 +250,12 @@ select option:checked {
 .nav-item:hover svg { color: #fff; }
 
 .nav-item.active {
-  background-color: rgba(124, 58, 237, 0.15);
-  color: #A855F7 !important;
+  background-color: #11124D;
+  color: var(--accent) !important;
 }
 
 .nav-item.active svg {
-  color: #A855F7;
+  color: var(--accent);
 }
 
 .nav-item.active::before {
@@ -260,7 +265,7 @@ select option:checked {
   top: 0;
   bottom: 0;
   width: 3px;
-  background-color: #7C3AED;
+  background-color: var(--accent);
 }
 
 /* ── Divisores ────────────────────────────────── */

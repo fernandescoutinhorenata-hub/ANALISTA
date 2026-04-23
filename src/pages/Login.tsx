@@ -140,10 +140,10 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         <div className="flex justify-center mb-10">
                             <img src={logo} alt="CTracker" style={{ height: '80px', width: 'auto' }} />
                         </div>
-                        <h3 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
+                        <h3 className="text-3xl font-bold text-[#EDEDED] tracking-tight mb-2">
                             {activeTab === 'login' ? 'Entrar' : 'Criar conta'}
                         </h3>
-                        <p className="text-[var(--text-secondary)] text-sm font-medium">
+                        <p className="text-[#A1A1A1] text-sm font-normal">
                             {activeTab === 'login' ? 'Bem-vindo ao Celo Tracker' : 'Crie sua conta gratuitamente'}
                         </p>
                     </header>
@@ -179,7 +179,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                     <form onSubmit={handleAuth} className="space-y-6">
                         {activeTab === 'register' && (
                             <div className="space-y-2 group">
-                                <label className="text-[13px] font-semibold text-[var(--text-secondary)] group-focus-within:text-[var(--accent)] transition-colors">Nome do time</label>
+                                <label className="text-[13px] font-normal text-[#A1A1A1] group-focus-within:text-[var(--accent)] transition-colors">Nome do time</label>
                                 <input
                                     type="text"
                                     value={teamName}
@@ -192,7 +192,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         )}
 
                         <div className="space-y-2 group">
-                            <label className="text-[13px] font-semibold text-[var(--text-secondary)] group-focus-within:text-[var(--accent)] transition-colors">Email</label>
+                            <label className="text-[13px] font-normal text-[#A1A1A1] group-focus-within:text-[var(--accent)] transition-colors">Email</label>
                             <input
                                 type="email"
                                 value={email}
@@ -204,7 +204,7 @@ export const Login: React.FC<LoginProps> = ({ mode = 'login' }) => {
                         </div>
 
                         <div className="space-y-2 group">
-                            <label className="text-[13px] font-semibold text-[var(--text-secondary)] group-focus-within:text-[var(--accent)] transition-colors">Senha</label>
+                            <label className="text-[13px] font-normal text-[#A1A1A1] group-focus-within:text-[var(--accent)] transition-colors">Senha</label>
                             <input
                                 type="password"
                                 value={password}

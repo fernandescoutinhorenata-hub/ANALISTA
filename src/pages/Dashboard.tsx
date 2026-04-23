@@ -1050,7 +1050,7 @@ export const Dashboard: React.FC = () => {
                     {/* Linha 1: Breadcrumb + Profile */}
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-4">
-                            <div className="hidden md:flex items-center text-[12px] uppercase tracking-widest text-[#6B7280] font-bold">
+                            <div className="hidden md:flex items-center text-[12px] uppercase tracking-widest text-[#A1A1A1] font-normal">
                                 <span>CONTROLE</span>
                                 <span className="mx-2 opacity-50">›</span>
                                 <span>

@@ -8,13 +8,13 @@ interface PlanosWhatsAppProps {
 
 
 const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B5FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
 
 const FeatureItem = ({ text }: { text: string }) => (
-  <li style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', fontSize: '0.86rem', color: '#9ca3af', padding: '0.35rem 0' }}>
+  <li style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', fontSize: '0.86rem', color: '#A1A1A1', padding: '0.35rem 0' }}>
     <CheckIcon />
     {text}
   </li>
@@ -30,22 +30,22 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-          background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)',
+          background: 'rgba(91, 95, 255, 0.08)', border: '1px solid rgba(91, 95, 255, 0.2)',
           padding: '0.28rem 0.9rem', borderRadius: '100px',
-          fontSize: '0.72rem', fontWeight: 700, color: '#a78bfa',
+          fontSize: '0.72rem', fontWeight: 700, color: '#5B5FFF',
           letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '1rem'
         }}>
           PLANOS
         </div>
         <h2 style={{
-          fontFamily: "'Space Grotesk', sans-serif",
+          fontFamily: "'Inter', sans-serif",
           fontSize: 'clamp(1.8rem, 3vw, 2.8rem)',
-          fontWeight: 800, lineHeight: 1.1, letterSpacing: '-1px',
-          color: '#f1f0ff', marginBottom: '0.8rem'
+          fontWeight: 700, lineHeight: 1.1, letterSpacing: '-1px',
+          color: '#EDEDED', marginBottom: '0.8rem'
         }}>
-          Simples. <span style={{ color: '#a78bfa' }}>Sem enrolação.</span>
+          Simples. <span style={{ color: '#5B5FFF' }}>Sem enrolação.</span>
         </h2>
-        <p style={{ color: '#9ca3af', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '420px', margin: '0 auto' }}>
+        <p style={{ color: '#A1A1A1', fontSize: '0.95rem', lineHeight: 1.75, maxWidth: '420px', margin: '0 auto' }}>
           Começa de graça e cresce conforme sua squad evolui. Ativação automática via Lowify.
         </p>
       </div>
@@ -59,10 +59,10 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
           borderRadius: '20px', padding: '2.5rem 2rem', textAlign: 'left', transition: 'transform .3s',
           display: 'flex', flexDirection: 'column'
         }}>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>
             GRATUITO
           </div>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '3rem', fontWeight: 800, lineHeight: 1, marginBottom: '.3rem', color: '#f1f0ff' }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '3rem', fontWeight: 700, lineHeight: 1, marginBottom: '.3rem', color: '#EDEDED' }}>
             R$0 <span style={{ fontSize: '.82rem', color: '#6b7280', fontWeight: 400 }}>/ para sempre</span>
           </div>
           <div style={{ minHeight: '1.4rem', marginBottom: '1.8rem' }} />
@@ -81,10 +81,10 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
           borderRadius: '20px', padding: '2.5rem 2rem', textAlign: 'left', transition: 'transform .3s',
           display: 'flex', flexDirection: 'column'
         }}>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>
             MODO COMPETITIVO
           </div>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '3rem', fontWeight: 800, lineHeight: 1, marginBottom: '.3rem', color: '#f1f0ff' }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '3rem', fontWeight: 700, lineHeight: 1, marginBottom: '.3rem', color: '#EDEDED' }}>
             R$10 <span style={{ fontSize: '.82rem', color: '#6b7280', fontWeight: 400 }}>/ semana</span>
           </div>
           <div style={{ minHeight: '1.4rem', marginBottom: '1.8rem' }} />
@@ -100,7 +100,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.55rem',
               width: '100%', padding: '.9rem', borderRadius: '10px', border: 'none',
-              background: '#7c3aed', color: '#fff',
+              background: '#5B5FFF', color: '#fff',
               fontFamily: "'Inter', sans-serif", fontSize: '.9rem', fontWeight: 700,
               cursor: 'pointer', transition: 'all .2s'
             }}
@@ -118,16 +118,16 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
         }}>
           <div style={{
             position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
-            background: 'linear-gradient(90deg,#7c3aed,#9333ea)', color: '#fff',
+            background: 'linear-gradient(90deg,#5B5FFF,#4A4DE6)', color: '#fff',
             fontSize: '.68rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
             padding: '.28rem 1.1rem', borderRadius: '100px', whiteSpace: 'nowrap'
           }}>
             MAIS POPULAR
           </div>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '.72rem', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '.9rem' }}>
             ELITE SQUAD
           </div>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '3rem', fontWeight: 800, lineHeight: 1, marginBottom: '.3rem', color: '#f1f0ff' }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '3rem', fontWeight: 700, lineHeight: 1, marginBottom: '.3rem', color: '#EDEDED' }}>
             R$25 <span style={{ fontSize: '.82rem', color: '#6b7280', fontWeight: 400 }}>/ mês</span>
           </div>
           <div style={{ fontSize: '.78rem', fontWeight: 600, color: '#22c55e', marginBottom: '1.8rem' }}>
@@ -144,8 +144,8 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
             onClick={() => window.open('https://pay.lowify.com.br/checkout?product_id=hBRgF5', '_blank', 'noopener,noreferrer')}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.55rem',
-              width: '100%', padding: '.9rem', borderRadius: '10px', border: 'none',
-              background: 'linear-gradient(135deg,#7c3aed,#9333ea)', color: '#fff',
+              width: '100%', padding: '.9rem', borderRadius: '100px', border: 'none',
+              background: 'linear-gradient(135deg,#5B5FFF,#4A4DE6)', color: '#fff',
               fontFamily: "'Inter', sans-serif", fontSize: '.9rem', fontWeight: 700,
               cursor: 'pointer', transition: 'all .2s'
             }}

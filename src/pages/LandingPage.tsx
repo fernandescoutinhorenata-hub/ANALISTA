@@ -55,8 +55,8 @@ export const LandingPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#08080f]">
-                <div className="animate-spin h-8 w-8 border-4 border-[#7c3aed]/30 border-t-[#7c3aed] rounded-full" />
+            <div className="flex h-screen items-center justify-center bg-[#0F0F0F]">
+                <div className="animate-spin h-8 w-8 border-4 border-[#5B5FFF]/30 border-t-[#5B5FFF] rounded-full" />
             </div>
         );
     }

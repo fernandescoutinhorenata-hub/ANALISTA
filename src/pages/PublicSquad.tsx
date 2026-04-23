@@ -20,25 +20,25 @@ import logo from '../assets/logo.png';
 
 // ─── Design Tokens ────────────────────────────────────────────────────────
 const S = {
-    bgMain: '#0B0B0C',
-    bgCard: '#161618',
-    accent: '#A855F7',
+    bgMain: '#0F0F0F',
+    bgCard: '#1A1A1A',
+    accent: '#5B5FFF',
     border: '#2D2D30',
 };
 
 const Card: React.FC<{ children: React.ReactNode; className?: string; id?: string }> = ({ children, className = '', id }) => (
-    <div id={id} className={`bg-[#161618] border border-[#2D2D30] rounded-2xl p-6 relative overflow-hidden shadow-xl ${className}`}>
+    <div id={id} className={`bg-[#1A1A1A] border border-[#2D2D30] rounded-2xl p-6 relative overflow-hidden shadow-xl ${className}`}>
         {children}
     </div>
 );
 
 const MetricCard: React.FC<{ title: string; value: string | number; icon: any; color?: string; glow?: boolean }> = ({ title, value, icon: Icon, color = S.accent, glow }) => (
-    <div className="bg-[#161618] border border-[#2D2D30] rounded-2xl p-6 flex flex-col gap-3 relative transition-all hover:border-[#A855F7]/40 shadow-lg">
+    <div className="bg-[#1A1A1A] border border-[#2D2D30] rounded-2xl p-6 flex flex-col gap-3 relative transition-all hover:border-[#5B5FFF]/40 shadow-lg">
         <div className="flex justify-between items-start">
-            <div className="p-2.5 rounded-xl bg-[#A855F7]/10 text-[#A855F7]" style={{ color: color, backgroundColor: `${color}15` }}>
+            <div className="p-2.5 rounded-xl bg-[#5B5FFF]/10 text-[#5B5FFF]" style={{ color: color, backgroundColor: `${color}15` }}>
                 <Icon size={20} />
             </div>
-            {glow && <div className="absolute top-0 right-0 w-20 h-20 bg-[#A855F7]/5 blur-3xl rounded-full" />}
+            {glow && <div className="absolute top-0 right-0 w-20 h-20 bg-[#5B5FFF]/5 blur-3xl rounded-full" />}
         </div>
         <div>
             <h3 className="text-3xl font-black text-white tracking-tighter">{value}</h3>
@@ -48,10 +48,10 @@ const MetricCard: React.FC<{ title: string; value: string | number; icon: any; c
 );
 
 const neonTooltipStyle = {
-    backgroundColor: '#161618',
+    backgroundColor: '#1A1A1A',
     border: '1px solid #2D2D30',
     borderRadius: '12px',
-    color: '#E4E4E7',
+    color: '#EDEDED',
     fontFamily: 'Inter, sans-serif',
     fontSize: '12px',
     padding: '12px 16px',
