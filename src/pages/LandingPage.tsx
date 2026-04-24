@@ -217,59 +217,202 @@ export const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            <section className="features" id="features">
-                <div className="sec-wrap">
-                    <div className="sec-header">
-                        <div>
-                            <div className="sec-tag">Funcionalidades</div>
-                            <h2 className="sec-h2">Análise profissional para<br /><span>coaches competitivos</span></h2>
-                        </div>
-                        <p className="sec-sub">Do upload da screenshot ao relatório completo da rodada. Sem planilhas manuais, sem perder nenhum dado da partida.</p>
+
+            <section style={{ background: '#0F0F0F', padding: '80px 24px' }}>
+                <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
+
+                    <p style={{ color: '#5B5FFF', fontSize: '12px', fontWeight: 600,
+                    letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>
+                    POR QUE MUDAR?
+                    </p>
+
+                    <h2 style={{ color: '#EDEDED', fontSize: '32px', fontWeight: 700,
+                    marginBottom: '8px' }}>
+                    O jeito antigo <span style={{ color: '#5B5FFF' }}>custa mais</span>
+                    </h2>
+                    <h2 style={{ color: '#EDEDED', fontSize: '32px', fontWeight: 700,
+                    marginBottom: '16px' }}>
+                    do que parece
+                    </h2>
+
+                    <p style={{ color: '#A1A1A1', fontSize: '15px', maxWidth: '600px',
+                    margin: '0 auto 48px', lineHeight: '1.7' }}>
+                    Cada rodada analisada no Excel é tempo que você não passou treinando,
+                    ajustando táticas ou estudando o adversário.
+                    </p>
+
+                    {/* Tabela comparativa */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
+                    border: '1px solid #2C2C2C', borderRadius: '12px', overflow: 'hidden',
+                    marginBottom: '48px' }}>
+
+                    {/* Headers */}
+                    <div style={{ background: '#1A1A1A', padding: '16px',
+                        borderBottom: '1px solid #2C2C2C', borderRight: '1px solid #2C2C2C' }}>
+                        <p style={{ color: '#777', fontSize: '11px', letterSpacing: '0.1em',
+                        textTransform: 'uppercase', marginBottom: '4px' }}>ANTES</p>
+                        <p style={{ color: '#EDEDED', fontWeight: 600 }}>Planilha / manual</p>
                     </div>
-                    <div className="feat-grid">
-                        <div className="feat-card">
-                            <div className="feat-icon fi-p">
-                                <svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" strokeWidth="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></svg>
-                            </div>
-                            <h3>OCR Automático</h3>
-                            <p>Sobe a screenshot da partida e a IA extrai kills, mortes, dano e posição em segundos. Sem digitar nada.</p>
-                        </div>
-                        <div className="feat-card">
-                            <div className="feat-icon fi-g">
-                                <svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" strokeWidth="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="20" y2="10" /><line x1="18" x2="18" y1="20" y2="4" /><line x1="6" x2="6" y1="20" y2="16" /></svg>
-                            </div>
-                            <h3>Analytics em tempo real</h3>
-                            <p>Dashboard com filtros por liga, data e campeonato. Veja a evolução de cada jogador rodada a rodada.</p>
-                        </div>
-                        <div className="feat-card">
-                            <div className="feat-icon fi-b">
-                                <svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" strokeWidth="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
-                            </div>
-                            <h3>Link público</h3>
-                            <p>Compartilha o analytics da sua squad com qualquer pessoa via link único. Sem precisar criar conta.</p>
-                        </div>
-                        <div className="feat-card">
-                            <div className="feat-icon fi-p">
-                                <svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" strokeWidth="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>
-                            </div>
-                            <h3>Histórico por campeonato</h3>
-                            <p>Separa os dados por torneio e liga. Compara performance entre fases e descobre onde sua equipe evolui.</p>
-                        </div>
-                        <div className="feat-card">
-                            <div className="feat-icon fi-g">
-                                <svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" strokeWidth="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>
-                            </div>
-                            <h3>Rodadas</h3>
-                            <p>Acompanha a evolução da squad ao longo de um campeonato inteiro. Vê quais rodadas foram decisivas.</p>
-                        </div>
-                        <div className="feat-card">
-                            <div className="feat-icon fi-b">
-                                <svg xmlns="http://www.w3.org/2000/svg" stroke="#a78bfa" strokeWidth="1.5" width="22" height="22" fill="none" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                            </div>
-                            <h3>Sistema de afiliados</h3>
-                            <p>Indica o Celo Tracker e ganha 20% de comissão em cada assinatura feita com seu cupom exclusivo.</p>
-                        </div>
+                    <div style={{ background: '#11124D', padding: '16px',
+                        borderBottom: '1px solid #2C2C2C' }}>
+                        <p style={{ color: '#5B5FFF', fontSize: '11px', letterSpacing: '0.1em',
+                        textTransform: 'uppercase', marginBottom: '4px' }}>COM CELO TRACKER</p>
+                        <p style={{ color: '#EDEDED', fontWeight: 600 }}>Análise por IA</p>
                     </div>
+
+                    {/* Row 1 */}
+                    <div style={{ padding: '20px', borderBottom: '1px solid #1A1A1A',
+                        borderRight: '1px solid #2C2C2C', textAlign: 'left' }}>
+                        <p style={{ color: '#FF5252', fontSize: '11px', fontWeight: 600,
+                        marginBottom: '6px' }}>✕ COLETA DE DADOS</p>
+                        <p style={{ color: '#A1A1A1', fontSize: '13px', lineHeight: '1.6',
+                        marginBottom: '8px' }}>
+                        Abre o print, lê cada número, digita na planilha.
+                        Um jogador por vez, uma rodada por vez.
+                        </p>
+                        <span style={{ background: '#2A0B0B', color: '#FF5252', fontSize: '11px',
+                        padding: '3px 8px', borderRadius: '4px' }}>~45 min por rodada</span>
+                    </div>
+                    <div style={{ padding: '20px', borderBottom: '1px solid #1A1A1A',
+                        textAlign: 'left' }}>
+                        <p style={{ color: '#00E676', fontSize: '11px', fontWeight: 600,
+                        marginBottom: '6px' }}>✓ COLETA DE DADOS</p>
+                        <p style={{ color: '#A1A1A1', fontSize: '13px', lineHeight: '1.6',
+                        marginBottom: '8px' }}>
+                        Sobe a screenshot. A IA lê <strong style={{ color: '#EDEDED' }}>kills,
+                        dano, mortes e posição</strong> automaticamente. Sem digitar nada.
+                        </p>
+                        <span style={{ background: '#052E1F', color: '#00E676', fontSize: '11px',
+                        padding: '3px 8px', borderRadius: '4px' }}>~30 segundos</span>
+                    </div>
+
+                    {/* Row 2 */}
+                    <div style={{ padding: '20px', borderBottom: '1px solid #1A1A1A',
+                        borderRight: '1px solid #2C2C2C', textAlign: 'left' }}>
+                        <p style={{ color: '#FF5252', fontSize: '11px', fontWeight: 600,
+                        marginBottom: '6px' }}>✕ HISTÓRICO DE EVOLUÇÃO</p>
+                        <p style={{ color: '#A1A1A1', fontSize: '13px', lineHeight: '1.6',
+                        marginBottom: '8px' }}>
+                        Guarda em abas separadas por rodada. Impossível comparar fases
+                        diferentes sem montar tabela nova.
+                        </p>
+                        <span style={{ background: '#2A0B0B', color: '#FF5252', fontSize: '11px',
+                        padding: '3px 8px', borderRadius: '4px' }}>Dado espalhado e perdido</span>
+                    </div>
+                    <div style={{ padding: '20px', borderBottom: '1px solid #1A1A1A',
+                        textAlign: 'left' }}>
+                        <p style={{ color: '#00E676', fontSize: '11px', fontWeight: 600,
+                        marginBottom: '6px' }}>✓ HISTÓRICO DE EVOLUÇÃO</p>
+                        <p style={{ color: '#A1A1A1', fontSize: '13px', lineHeight: '1.6',
+                        marginBottom: '8px' }}>
+                        <strong style={{ color: '#EDEDED' }}>Dashboard com histórico
+                        completo</strong> por jogador, rodada e campeonato. Tudo junto, filtrável.
+                        </p>
+                        <span style={{ background: '#052E1F', color: '#00E676', fontSize: '11px',
+                        padding: '3px 8px', borderRadius: '4px' }}>Tudo em um lugar</span>
+                    </div>
+
+                    {/* Row 3 */}
+                    <div style={{ padding: '20px', borderBottom: '1px solid #1A1A1A',
+                        borderRight: '1px solid #2C2C2C', textAlign: 'left' }}>
+                        <p style={{ color: '#FF5252', fontSize: '11px', fontWeight: 600,
+                        marginBottom: '6px' }}>✕ DECISÃO DE LINEUP</p>
+                        <p style={{ color: '#A1A1A1', fontSize: '13px', lineHeight: '1.6',
+                        marginBottom: '8px' }}>
+                        Baseada em impressão geral e memória da última rodada.
+                        Sem dado comparativo entre jogadores.
+                        </p>
+                        <span style={{ background: '#2A0B0B', color: '#FF5252', fontSize: '11px',
+                        padding: '3px 8px', borderRadius: '4px' }}>Achismo disfarçado de análise</span>
+                    </div>
+                    <div style={{ padding: '20px', borderBottom: '1px solid #1A1A1A',
+                        textAlign: 'left' }}>
+                        <p style={{ color: '#00E676', fontSize: '11px', fontWeight: 600,
+                        marginBottom: '6px' }}>✓ DECISÃO DE LINEUP</p>
+                        <p style={{ color: '#A1A1A1', fontSize: '13px', lineHeight: '1.6',
+                        marginBottom: '8px' }}>
+                        Compara performance dos jogadores por fase, por campeonato, por métrica.
+                        Dado real, não feeling.
+                        </p>
+                        <span style={{ background: '#052E1F', color: '#00E676', fontSize: '11px',
+                        padding: '3px 8px', borderRadius: '4px' }}>Decisão com evidência</span>
+                    </div>
+
+                    {/* Row 4 */}
+                    <div style={{ padding: '20px', borderRight: '1px solid #2C2C2C',
+                        textAlign: 'left' }}>
+                        <p style={{ color: '#FF5252', fontSize: '11px', fontWeight: 600,
+                        marginBottom: '6px' }}>✕ CUSTO REAL</p>
+                        <p style={{ color: '#A1A1A1', fontSize: '13px', lineHeight: '1.6',
+                        marginBottom: '8px' }}>
+                        Grátis em dinheiro. Mas 3–4 horas por semana em trabalho manual
+                        = tempo que não foi treinamento.
+                        </p>
+                        <span style={{ background: '#2A0B0B', color: '#FF5252', fontSize: '11px',
+                        padding: '3px 8px', borderRadius: '4px' }}>Caro em tempo</span>
+                    </div>
+                    <div style={{ padding: '20px', textAlign: 'left' }}>
+                        <p style={{ color: '#00E676', fontSize: '11px', fontWeight: 600,
+                        marginBottom: '6px' }}>✓ CUSTO REAL</p>
+                        <p style={{ color: '#A1A1A1', fontSize: '13px', lineHeight: '1.6',
+                        marginBottom: '8px' }}>
+                        A partir de <strong style={{ color: '#EDEDED' }}>R$0 grátis</strong> para
+                        começar. Plano completo por menos de R$1,50 por dia de campeonato.
+                        </p>
+                        <span style={{ background: '#052E1F', color: '#00E676', fontSize: '11px',
+                        padding: '3px 8px', borderRadius: '4px' }}>Barato em tempo e dinheiro</span>
+                    </div>
+                    </div>
+
+                    {/* Barra de tempo */}
+                    <div style={{ background: '#171717', border: '1px solid #2C2C2C',
+                    borderRadius: '12px', padding: '24px', marginBottom: '32px' }}>
+                    <p style={{ color: '#EDEDED', fontSize: '14px', fontWeight: 600,
+                        marginBottom: '20px' }}>Tempo gasto por semana de campeonato</p>
+                    <div style={{ marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between',
+                        marginBottom: '6px' }}>
+                        <span style={{ color: '#A1A1A1', fontSize: '13px' }}>
+                            Planilha manual (por rodada)
+                        </span>
+                        <span style={{ color: '#FF5252', fontSize: '13px' }}>~3–4 horas</span>
+                        </div>
+                        <div style={{ background: '#FF5252', height: '8px',
+                        borderRadius: '4px', width: '90%' }}/>
+                    </div>
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between',
+                        marginBottom: '6px' }}>
+                        <span style={{ color: '#A1A1A1', fontSize: '13px' }}>Com Celo Tracker</span>
+                        <span style={{ color: '#00E676', fontSize: '13px' }}>~5 minutos</span>
+                        </div>
+                        <div style={{ background: '#00E676', height: '8px',
+                        borderRadius: '4px', width: '8%' }}/>
+                    </div>
+                    </div>
+
+                    {/* Ancoragem de valor */}
+                    <div style={{ background: '#11124D', border: '1px solid #5B5FFF',
+                    borderRadius: '12px', padding: '32px', marginBottom: '32px' }}>
+                    <p style={{ color: '#5B5FFF', fontSize: '11px', fontWeight: 600,
+                        letterSpacing: '0.1em', textTransform: 'uppercase',
+                        marginBottom: '16px' }}>ANCORAGEM DE VALOR</p>
+                    <p style={{ color: '#EDEDED', fontSize: '16px', lineHeight: '1.8' }}>
+                        Se você gasta <strong>3 horas por semana</strong> em trabalho manual
+                        que vale R$20/hora, está perdendo{' '}
+                        <strong>R$240/mês em tempo</strong> — só para manter uma planilha.
+                        <br/>O plano Elite Squad custa <strong>R$25/mês</strong>. A conta é simples.
+                    </p>
+                    <button 
+                        onClick={() => navigate('/login')}
+                        style={{ marginTop: '24px', background: '#5B5FFF',
+                        color: '#EDEDED', border: 'none', padding: '14px 32px',
+                        borderRadius: '8px', fontSize: '15px', fontWeight: 600,
+                        cursor: 'pointer' }}>
+                        Quero evoluir por R$25/mês
+                    </button>
+                    </div>
+
                 </div>
             </section>
 
