@@ -129,6 +129,93 @@ export const LandingPage: React.FC = () => {
             </section>
 
 
+            <section style={{ background: '#0F0F0F', padding: '80px 24px' }}>
+                <div style={{ maxWidth: '860px', margin: '0 auto', textAlign: 'center' }}>
+                    
+                    <p style={{ color: '#5B5FFF', fontSize: '12px', fontWeight: 600, 
+                    letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>
+                    VOCÊ SE RECONHECE AQUI?
+                    </p>
+                    
+                    <h2 style={{ color: '#EDEDED', fontSize: '28px', fontWeight: 700, 
+                    marginBottom: '8px' }}>
+                    Todo coach competitivo já perdeu tempo
+                    </h2>
+                    <h2 style={{ color: '#5B5FFF', fontSize: '28px', fontWeight: 700, 
+                    marginBottom: '48px' }}>
+                    que deveria ter gasto treinando.
+                    </h2>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', 
+                    gap: '16px', marginBottom: '32px' }}>
+                    
+                    <div style={{ background: '#171717', border: '1px solid #2C2C2C', 
+                        borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
+                        <p style={{ color: '#5B5FFF', fontWeight: 600, marginBottom: '8px' }}>
+                        • Copiando dado na mão
+                        </p>
+                        <p style={{ color: '#A1A1A1', fontSize: '14px', lineHeight: '1.6' }}>
+                        Abrindo screenshot, olhando número por número, digitando na planilha. 
+                        Isso não é análise — é trabalho braçal.
+                        </p>
+                    </div>
+
+                    <div style={{ background: '#171717', border: '1px solid #2C2C2C', 
+                        borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
+                        <p style={{ color: '#5B5FFF', fontWeight: 600, marginBottom: '8px' }}>
+                        • Decisão de lineup no achismo
+                        </p>
+                        <p style={{ color: '#A1A1A1', fontSize: '14px', lineHeight: '1.6' }}>
+                        Você escalou o jogador porque "parecia bem" na última rodada. 
+                        Sem dado histórico, toda escolha é um chute.
+                        </p>
+                    </div>
+
+                    <div style={{ background: '#171717', border: '1px solid #2C2C2C', 
+                        borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
+                        <p style={{ color: '#5B5FFF', fontWeight: 600, marginBottom: '8px' }}>
+                        • Relatório que fica obsoleto
+                        </p>
+                        <p style={{ color: '#A1A1A1', fontSize: '14px', lineHeight: '1.6' }}>
+                        Passou horas montando o report da rodada. 
+                        Amanhã tem mais uma e você começa do zero de novo.
+                        </p>
+                    </div>
+
+                    <div style={{ background: '#171717', border: '1px solid #2C2C2C', 
+                        borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
+                        <p style={{ color: '#5B5FFF', fontWeight: 600, marginBottom: '8px' }}>
+                        • Sem histórico de evolução
+                        </p>
+                        <p style={{ color: '#A1A1A1', fontSize: '14px', lineHeight: '1.6' }}>
+                        Não sabe dizer se o jogador melhorou nos últimos 3 torneios. 
+                        Só lembra da impressão geral, não dos números.
+                        </p>
+                    </div>
+                    </div>
+
+                    <div style={{ borderLeft: '3px solid #5B5FFF', padding: '20px 24px', 
+                    background: '#171717', borderRadius: '0 12px 12px 0', 
+                    textAlign: 'left', marginBottom: '32px' }}>
+                    <p style={{ color: '#EDEDED', fontSize: '15px', fontStyle: 'italic', 
+                        lineHeight: '1.7' }}>
+                        "O Celo Tracker foi criado por coaches que viveram essas mesmas 
+                        frustrações. A ideia é simples: você sobe o print, a IA lê tudo, 
+                        e em segundos você tem o relatório pronto pra passar pro squad."
+                    </p>
+                    </div>
+
+                    <button 
+                        onClick={() => navigate('/login')}
+                        style={{ background: 'transparent', border: '1px solid #EDEDED', 
+                        color: '#EDEDED', padding: '14px 32px', borderRadius: '8px', 
+                        fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                    Quero analisar sem planilha
+                    </button>
+
+                </div>
+            </section>
 
             <section className="features" id="features">
                 <div className="sec-wrap">
