@@ -1,4 +1,3 @@
-import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Trophy, Lock } from 'lucide-react';
 
@@ -7,7 +6,6 @@ export default function Upgrade() {
   const [searchParams] = useSearchParams();
   
   const isNovo = searchParams.get('novo') === 'true';
-  const isExpirado = searchParams.get('expirado') === 'true' || (!isNovo);
 
   const content = {
     icon: isNovo ? <Trophy size={64} /> : <Lock size={64} />,
