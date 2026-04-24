@@ -9,20 +9,22 @@ interface PlanoGuardProps {
 
 export function PlanoGuard({ children }: PlanoGuardProps) {
   const { user } = useAuth()
-  const { subscription, loading } = useSubscription(user?.id)
+  const { subscription, ocrCredits, loading } = useSubscription(user?.id)
 
-  // Enquanto carrega os dados da assinatura, não mostra nada para evitar flashes
   if (loading) return null
 
-  // Se não tiver assinatura ativa (ou expirou hoje/no passado), redireciona
-  if (subscription === null || subscription === undefined) {
-    return <Navigate to="/upgrade?novo=true" replace />
+  const hasActivePlan = subscription?.ativo === true
+  const hasCredits = ocrCredits > 0
+
+  // Bloqueia apenas se não tiver plano ativo E não tiver créditos
+  if (!hasActivePlan && !hasCredits) {
+    // Se nunca teve plano, é novo
+    if (!subscription) {
+      return <Navigate to="/upgrade?novo=true&esgotado=true" replace />
+    }
+    // Se já teve plano mas expirou (e agora acabaram os créditos)
+    return <Navigate to="/upgrade?expirado=true&esgotado=true" replace />
   }
 
-  if (!subscription.ativo) {
-    return <Navigate to="/upgrade?expirado=true" replace />
-  }
-
-  // Se estiver tudo OK, renderiza o conteúdo protegido
   return <>{children}</>
 }

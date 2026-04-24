@@ -7,6 +7,7 @@ import {
     LogOut, Menu, Lock
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubscription } from '../hooks/useSubscription';
 import logo from '../assets/logo.png';
 
 interface SidebarLayoutProps {
@@ -20,7 +21,8 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     activeTab, 
     isSubscriber = false 
 }) => {
-    const { signOut } = useAuth();
+    const { signOut, user } = useAuth();
+    const { ocrCredits } = useSubscription(user?.id);
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -161,6 +163,28 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                             <PlusCircle size={18} />
                             Inserir Dados
                         </button>
+
+                        {/* Contador de Leituras Gratuitas */}
+                        {!isSubscriber && (
+                            <div className="mt-4 p-4 rounded-xl bg-[var(--bg-surface-secondary)] border border-[var(--border-default)]">
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Saldo Free</span>
+                                    <Activity size={12} className={ocrCredits > 1 ? "text-[#5B5FFF]" : "text-[#FFC107]"} />
+                                </div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className={`text-xl font-black ${ocrCredits > 1 ? "text-[#5B5FFF]" : "text-[#FFC107]"}`}>
+                                        {ocrCredits}
+                                    </span>
+                                    <span className="text-[11px] font-medium text-[var(--text-secondary)]">leituras restantes</span>
+                                </div>
+                                <div className="mt-3 h-1.5 w-full bg-[var(--bg-main)] rounded-full overflow-hidden">
+                                    <div 
+                                        className={`h-full transition-all duration-500 ${ocrCredits > 1 ? "bg-[#5B5FFF]" : "bg-[#FFC107]"}`}
+                                        style={{ width: `${(ocrCredits / 4) * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </nav>
 

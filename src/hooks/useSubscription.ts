@@ -10,6 +10,7 @@ export interface Subscription {
 
 export function useSubscription(userId: string | undefined) {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [ocrCredits, setOcrCredits] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -18,9 +19,10 @@ export function useSubscription(userId: string | undefined) {
       return
     }
 
-    async function fetchSubscription() {
+    async function fetchData() {
       try {
-        const { data, error } = await supabase
+        // 1. Buscar assinatura
+        const { data: subData } = await supabase
           .from('subscriptions')
           .select('plano, status, data_fim')
           .eq('user_id', userId)
@@ -28,26 +30,29 @@ export function useSubscription(userId: string | undefined) {
           .limit(1)
           .maybeSingle();
 
-        if (error || !data) {
-          setSubscription(null)
+        if (subData) {
+          const ativo = subData.status === 'ativo' && new Date(subData.data_fim) > new Date()
+          setSubscription({ ...subData, ativo })
         } else {
-          // Validação em duas camadas: Status precisa ser ativo E a data_fim precisa ser futura
-          const ativo =
-            data.status === 'ativo' &&
-            new Date(data.data_fim) > new Date()
-
-          setSubscription({ ...data, ativo })
+          setSubscription(null)
         }
+
+        // 2. Buscar créditos OCR (RPC ou Select Count)
+        const { data: creditsData } = await supabase.rpc('get_ocr_credits_remaining', {
+          p_user_id: userId
+        });
+        
+        setOcrCredits(creditsData ?? 0)
+
       } catch (err) {
         console.error('Erro no useSubscription:', err)
-        setSubscription(null)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchSubscription()
+    fetchData()
   }, [userId])
 
-  return { subscription, loading }
+  return { subscription, ocrCredits, loading }
 }
