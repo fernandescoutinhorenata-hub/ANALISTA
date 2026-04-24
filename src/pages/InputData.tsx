@@ -104,7 +104,6 @@ export const InputData: React.FC = () => {
     const [ocrLoading, setOcrLoading] = useState(false);
     const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
     const [trialExpiresAt, setTrialExpiresAt] = useState<string | null>(null);
-    const [isUpsellModalOpen, setIsUpsellModalOpen] = useState(false);
     const [toast, setToast] = useState<any>(null);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
@@ -234,11 +233,8 @@ export const InputData: React.FC = () => {
         if (!file) return;
 
         if (import.meta.env.DEV) {
-            console.log('[OCR DEBUG] ocr_uses:', ocrUses, '| assinaturaAtiva:', assinaturaAtiva);
+            console.log('[OCR DEBUG] assinaturaAtiva:', assinaturaAtiva);
         }
-
-        // OCR liberado durante o trial ou assinatura
-        // (O PlanoGuard já garante que o usuário tem acesso a esta página)
 
         setOcrLoading(true);
         try {
@@ -266,9 +262,6 @@ export const InputData: React.FC = () => {
                 showToast(`Resposta inválida. Tente novamente.`, 'error');
                 return;
             }
-
-            // ── Debug OCR (remover após validação) ──────────────────
-            // ────────────────────────────────────────────────────────
 
             // Preencher campos automaticamente
             setMatchData(prev => ({
@@ -663,64 +656,6 @@ export const InputData: React.FC = () => {
                     </div>
                 )}
 
-                {/* 💎 Upsell Modal (Plano Pro) */}
-                {isUpsellModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-reveal">
-                        <div className="w-full max-w-md bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-8 shadow-2xl overflow-hidden relative">
-                            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                                <Camera size={120} />
-                            </div>
-                            
-                            <div className="flex flex-col items-center text-center gap-6 relative z-10">
-                                <div className="w-16 h-16 rounded-2xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] shrink-0">
-                                    <Zap size={32} fill="currentColor" />
-                                </div>
-                                
-                                <div>
-                                    <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2 uppercase tracking-tight">
-                                        {ocrUses >= 4 ? "Seus usos gratuitos acabaram" : "Recurso exclusivo do Plano Pro"}
-                                    </h3>
-                                    <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                                        {ocrUses >= 4 
-                                            ? "Você usou todos os 4 usos gratuitos. Assine o Plano Pro para continuar usando sem limite."
-                                            : "Com o Plano Pro, tire um print do resultado da partida e o sistema preenche tudo automaticamente em segundos."
-                                        }
-                                    </p>
-                                </div>
-
-                                <ul className="text-left w-full space-y-3 bg-[var(--bg-main)]/50 p-5 rounded-xl border border-[var(--border-subtle)]">
-                                    {[
-                                        'Leitura automática de screenshots',
-                                        'Preenchimento instantâneo do formulário',
-                                        'Economize tempo em cada partida'
-                                    ].map((item, i) => (
-                                        <li key={i} className="flex items-center gap-3 text-xs font-semibold text-[var(--text-secondary)]">
-                                            <div className="w-5 h-5 rounded-full bg-[var(--accent-green-muted)] flex items-center justify-center">
-                                                <CheckCircle size={12} className="text-[var(--accent-green)]" />
-                                            </div>
-                                            {item}
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <div className="flex flex-col gap-3 w-full">
-                                    <button
-                                        onClick={() => navigate('/admin-celo/planos')}
-                                        className="btn-primary w-full py-4 text-sm font-black uppercase tracking-widest shadow-xl shadow-[var(--accent-glow)]"
-                                    >
-                                        Assinar agora — R$10/semana
-                                    </button>
-                                    <button
-                                        onClick={() => setIsUpsellModalOpen(false)}
-                                        className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-xs font-bold uppercase transition-colors py-2"
-                                    >
-                                        Preencher manualmente
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* 📊 Modal de Detalhes da Partida (Pós-Salvamento) */}
                 {isMatchDetailModalOpen && (
