@@ -103,7 +103,6 @@ export const InputData: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [ocrLoading, setOcrLoading] = useState(false);
     const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
-    const [ocrUses, setOcrUses] = useState(0);
     const [isUpsellModalOpen, setIsUpsellModalOpen] = useState(false);
     const [toast, setToast] = useState<any>(null);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -133,16 +132,7 @@ export const InputData: React.FC = () => {
 
     useEffect(() => {
         if (!user) return;
-        const checkSubAndUses = async () => {
-             // 1. Busca total de usos de OCR na tabela ocr_usage
-             const { count } = await supabase
-                .from('ocr_usage')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', user.id);
-            
-            setOcrUses(count ?? 0);
-
-            // 2. Verifica assinatura ativa (tabela subscriptions)
+        const checkSub = async () => {
             const { data: sub } = await supabase
                 .from('subscriptions')
                 .select('status, data_fim')
@@ -152,11 +142,8 @@ export const InputData: React.FC = () => {
                 .maybeSingle();
             
             setAssinaturaAtiva(!!sub);
-            if (import.meta.env.DEV) {
-                console.log('[OCR DEBUG] ocr_usage count:', count, '| assinatura:', !!sub);
-            }
         };
-        checkSubAndUses();
+        checkSub();
     }, [user]);
 
     const showToast = (message: string, type: string) => {
@@ -235,13 +222,8 @@ export const InputData: React.FC = () => {
             console.log('[OCR DEBUG] ocr_uses:', ocrUses, '| assinaturaAtiva:', assinaturaAtiva);
         }
 
-        // 1. Verificar Assinatura Ativa ou Usos Gratuitos (Paywall OCR)
-        // Se NÃO for Pro e já usou 4 vezes, abre Upsell
-        if (!assinaturaAtiva && ocrUses >= 4) {
-            setIsUpsellModalOpen(true);
-            if (screenshotInputRef.current) screenshotInputRef.current.value = '';
-            return;
-        }
+        // OCR liberado durante o trial ou assinatura
+        // (O PlanoGuard já garante que o usuário tem acesso a esta página)
 
         setOcrLoading(true);
         try {
@@ -297,16 +279,9 @@ export const InputData: React.FC = () => {
 
 
 
-            // 2. Incrementar uso se não for PRO (Inserir na ocr_usage)
-            if (!assinaturaAtiva && user) {
-                const { error: insertError } = await supabase
-                    .from('ocr_usage')
-                    .insert({ user_id: user.id });
-                
-                if (!insertError) {
-                    const nextUses = ocrUses + 1;
-                    setOcrUses(nextUses);
-                }
+            // Registro silencioso na ocr_usage para auditoria (opcional)
+            if (user) {
+                await supabase.from('ocr_usage').insert({ user_id: user.id });
             }
 
             showToast('Screenshot lida! Revise os dados antes de salvar.', 'success');
@@ -522,13 +497,7 @@ export const InputData: React.FC = () => {
                                 <span className="text-xs font-semibold md:inline hidden">Reiniciar Tabela</span>
                             </button>
 
-                            {!assinaturaAtiva && (
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-hover)] border border-[var(--border-subtle)] rounded-md md:flex hidden">
-                                    <span className="text-[10px] font-bold text-[var(--text-secondary)]">
-                                        {Math.max(0, 4 - ocrUses)} de 4 usos gratuitos restantes
-                                    </span>
-                                </div>
-                            )}
+                             {/* Badge de trial/assinatura será exibido na Sidebar */}
 
                         </div>
                     </div>
@@ -605,32 +574,10 @@ export const InputData: React.FC = () => {
 
                     {/* 3. Botões de Ação */}
                     <div className="flex flex-col items-center gap-3 pt-8 animate-reveal max-w-2xl mx-auto w-full">
-                        {/* Contador de usos gratuitos */}
-                        {!assinaturaAtiva && (
-                            <p style={{
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                textAlign: 'center',
-                                color: ocrUses >= 3
-                                    ? 'var(--accent-red)'
-                                    : ocrUses >= 2
-                                        ? 'var(--accent-amber)'
-                                        : 'var(--text-secondary)',
-                                marginBottom: '-4px'
-                            }}>
-                                {ocrUses} de 4 leituras gratuitas utilizadas
-                            </p>
-                        )}
-
                         {/* Botão Ler Screenshot */}
                         <button
                             onClick={() => {
-                                console.log('[OCR DEBUG] botão clicado | assinatura:', assinaturaAtiva, '| ocrUses:', ocrUses);
-                                if (assinaturaAtiva || ocrUses < 4) {
-                                    screenshotInputRef.current?.click();
-                                } else {
-                                    setIsUpsellModalOpen(true);
-                                }
+                                screenshotInputRef.current?.click();
                             }}
                             disabled={ocrLoading}
                             className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10 flex items-center justify-center gap-2"

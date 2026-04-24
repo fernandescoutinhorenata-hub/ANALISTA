@@ -10,7 +10,7 @@ export interface Subscription {
 
 export function useSubscription(userId: string | undefined) {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [ocrCredits, setOcrCredits] = useState<number>(0)
+  const [trialExpiresAt, setTrialExpiresAt] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -21,28 +21,32 @@ export function useSubscription(userId: string | undefined) {
 
     async function fetchData() {
       try {
-        // 1. Buscar assinatura
-        const { data: subData } = await supabase
-          .from('subscriptions')
-          .select('plano, status, data_fim')
-          .eq('user_id', userId)
-          .order('data_fim', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        // 1. Buscar assinatura e dados do perfil (trial) em paralelo
+        const [subRes, perfilRes] = await Promise.all([
+          supabase
+            .from('subscriptions')
+            .select('plano, status, data_fim')
+            .eq('user_id', userId)
+            .order('data_fim', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('perfis')
+            .select('trial_expires_at')
+            .eq('id', userId)
+            .maybeSingle()
+        ]);
 
-        if (subData) {
-          const ativo = subData.status === 'ativo' && new Date(subData.data_fim) > new Date()
-          setSubscription({ ...subData, ativo })
+        if (subRes.data) {
+          const ativo = subRes.data.status === 'ativo' && new Date(subRes.data.data_fim) > new Date()
+          setSubscription({ ...subRes.data, ativo })
         } else {
           setSubscription(null)
         }
 
-        // 2. Buscar créditos OCR (RPC ou Select Count)
-        const { data: creditsData } = await supabase.rpc('get_ocr_credits_remaining', {
-          p_user_id: userId
-        });
-        
-        setOcrCredits(creditsData ?? 0)
+        if (perfilRes.data) {
+          setTrialExpiresAt(perfilRes.data.trial_expires_at)
+        }
 
       } catch (err) {
         console.error('Erro no useSubscription:', err)
@@ -54,5 +58,5 @@ export function useSubscription(userId: string | undefined) {
     fetchData()
   }, [userId])
 
-  return { subscription, ocrCredits, loading }
+  return { subscription, trialExpiresAt, loading }
 }

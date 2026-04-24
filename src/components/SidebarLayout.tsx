@@ -22,7 +22,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     isSubscriber = false 
 }) => {
     const { signOut, user } = useAuth();
-    const { ocrCredits } = useSubscription(user?.id);
+    const { trialExpiresAt } = useSubscription(user?.id);
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -164,23 +164,23 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                             Inserir Dados
                         </button>
 
-                        {/* Contador de Leituras Gratuitas */}
-                        {!isSubscriber && (
-                            <div className="mt-4 p-4 rounded-xl bg-[var(--bg-surface-secondary)] border border-[var(--border-default)]">
+                        {/* Badge de Trial */}
+                        {!isSubscriber && trialExpiresAt && new Date(trialExpiresAt) > new Date() && (
+                            <div className="mt-4 p-4 rounded-xl bg-[#FFC107]/10 border border-[#FFC107]/20">
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Saldo Free</span>
-                                    <Activity size={12} className={ocrCredits > 1 ? "text-[#5B5FFF]" : "text-[#FFC107]"} />
+                                    <span className="text-[10px] font-bold text-[#FFC107] uppercase tracking-wider">Acesso Trial</span>
+                                    <Activity size={12} className="text-[#FFC107]" />
                                 </div>
                                 <div className="flex items-baseline gap-1">
-                                    <span className={`text-xl font-black ${ocrCredits > 1 ? "text-[#5B5FFF]" : "text-[#FFC107]"}`}>
-                                        {ocrCredits}
+                                    <span className="text-xl font-black text-[#FFC107]">
+                                        {Math.max(0, Math.ceil((new Date(trialExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60)))}
                                     </span>
-                                    <span className="text-[11px] font-medium text-[var(--text-secondary)]">leituras restantes</span>
+                                    <span className="text-[11px] font-medium text-[#FFC107]/80">horas restantes</span>
                                 </div>
-                                <div className="mt-3 h-1.5 w-full bg-[var(--bg-main)] rounded-full overflow-hidden">
+                                <div className="mt-3 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                                     <div 
-                                        className={`h-full transition-all duration-500 ${ocrCredits > 1 ? "bg-[#5B5FFF]" : "bg-[#FFC107]"}`}
-                                        style={{ width: `${(ocrCredits / 4) * 100}%` }}
+                                        className="h-full bg-[#FFC107] transition-all duration-500"
+                                        style={{ width: `${Math.min(100, (Math.max(0, new Date(trialExpiresAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)) * 100)}%` }}
                                     />
                                 </div>
                             </div>
