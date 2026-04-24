@@ -424,70 +424,177 @@ export const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            <section className="depo" id="depoimento">
-                <div className="depo-grid">
-                    <div className="depo-card">
-                        <div className="depo-quote" style={{ fontSize: '4rem', opacity: 0.2, position: 'absolute', top: '1rem', left: '1.5rem', fontFamily: 'serif' }}>"</div>
-                        <p className="depo-text">"O Celo Tracker mudou como eu preparo minha equipe. Antes eu ficava copiando dado na mão. Agora subo a screenshot e em segundos já sei onde cada jogador precisa melhorar."</p>
-                        <div className="depo-author">
-                            <div className="depo-avatar">CR</div>
+
+            <section style={{ background: '#0F0F0F', padding: '80px 24px' }}>
+                <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
+                    gap: '16px', marginBottom: '64px' }}>
+
+                    <div style={{ background: '#171717', border: '1px solid #2C2C2C',
+                        borderRadius: '12px', padding: '24px' }}>
+                        <p style={{ color: '#EDEDED', fontSize: '14px', lineHeight: '1.7',
+                        fontStyle: 'italic', marginBottom: '20px' }}>
+                        "O Celo Tracker mudou como eu preparo minha equipe. Antes eu ficava
+                        copiando dado na mão. Agora subo a screenshot e em segundos já sei
+                        <strong> onde cada jogador precisa melhorar.</strong>"
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center',
+                        justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '50%',
+                            background: '#5B5FFF', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', fontSize: '12px', fontWeight: 700,
+                            color: '#EDEDED' }}>CR</div>
                             <div>
-                                <div className="depo-name">Coach Rafinha</div>
-                                <div className="depo-role">Head Coach — Liga DN</div>
+                            <p style={{ color: '#EDEDED', fontSize: '13px',
+                                fontWeight: 600, margin: 0 }}>Coach Rafinha</p>
+                            <p style={{ color: '#5B5FFF', fontSize: '11px',
+                                margin: 0 }}>Head Coach — Liga DN</p>
                             </div>
-                            <div className="stars">★★★★★</div>
                         </div>
-                    </div>
-                    
-                    <div className="depo-card">
-                        <div className="depo-quote" style={{ fontSize: '4rem', opacity: 0.2, position: 'absolute', top: '1rem', left: '1.5rem', fontFamily: 'serif' }}>"</div>
-                        <p className="depo-text">"Antes do Celo Tracker eu passava horas no Excel tentando montar relatório de campeonato. Agora em 5 minutos tenho tudo pronto pra passar pro meu squad antes da próxima rodada."</p>
-                        <div className="depo-author">
-                            <div className="depo-avatar" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>CT</div>
-                            <div>
-                                <div className="depo-name">Coach Thiaguinho</div>
-                                <div className="depo-role">Coach</div>
-                            </div>
-                            <div className="stars">★★★★★</div>
+                        <span style={{ color: '#FFC107' }}>★★★★★</span>
                         </div>
                     </div>
 
-                    <div className="depo-card">
-                        <div className="depo-quote" style={{ fontSize: '4rem', opacity: 0.2, position: 'absolute', top: '1rem', left: '1.5rem', fontFamily: 'serif' }}>"</div>
-                        <p className="depo-text">"Eu jogava sem saber meus números reais. Depois que meu coach começou a usar o sistema, percebi que meu dano tava alto mas eu tava derrubando pouco. Isso mudou meu jogo."</p>
-                        <div className="depo-author">
-                            <div className="depo-avatar" style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}>DK</div>
+                    <div style={{ background: '#171717', border: '1px solid #2C2C2C',
+                        borderRadius: '12px', padding: '24px' }}>
+                        <p style={{ color: '#EDEDED', fontSize: '14px', lineHeight: '1.7',
+                        fontStyle: 'italic', marginBottom: '20px' }}>
+                        "Antes eu passava horas no Excel tentando montar relatório de
+                        campeonato. Agora <strong>em 5 minutos tenho tudo pronto</strong> pra
+                        passar pro meu squad antes da próxima rodada."
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center',
+                        justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '50%',
+                            background: '#00D1B2', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', fontSize: '12px', fontWeight: 700,
+                            color: '#EDEDED' }}>CT</div>
                             <div>
-                                <div className="depo-name">Dark</div>
-                                <div className="depo-role">Jogador</div>
+                            <p style={{ color: '#EDEDED', fontSize: '13px',
+                                fontWeight: 600, margin: 0 }}>Coach Thiaguinho</p>
+                            <p style={{ color: '#5B5FFF', fontSize: '11px',
+                                margin: 0 }}>Coach</p>
                             </div>
-                            <div className="stars">★★★★★</div>
+                        </div>
+                        <span style={{ color: '#FFC107' }}>★★★★★</span>
                         </div>
                     </div>
 
-                    <div className="depo-card">
-                        <div className="depo-quote" style={{ fontSize: '4rem', opacity: 0.2, position: 'absolute', top: '1rem', left: '1.5rem', fontFamily: 'serif' }}>"</div>
-                        <p className="depo-text">"Ferramenta séria para coach sério. Consigo ver a evolução de cada jogador rodada a rodada e tomar decisão de lineup com dado real, não com achismo."</p>
-                        <div className="depo-author">
-                            <div className="depo-avatar" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>CM</div>
+                    <div style={{ background: '#171717', border: '1px solid #2C2C2C',
+                        borderRadius: '12px', padding: '24px' }}>
+                        <p style={{ color: '#EDEDED', fontSize: '14px', lineHeight: '1.7',
+                        fontStyle: 'italic', marginBottom: '20px' }}>
+                        "Eu jogava sem saber meus números reais. Depois que meu coach começou
+                        a usar o sistema, percebi que <strong>meu dano tava alto mas eu tava
+                        derrubando pouco</strong>. Isso mudou meu jogo."
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center',
+                        justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '50%',
+                            background: '#FF3EDB', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', fontSize: '12px', fontWeight: 700,
+                            color: '#EDEDED' }}>DK</div>
                             <div>
-                                <div className="depo-name">Coach Matheuzin</div>
-                                <div className="depo-role">Coach</div>
+                            <p style={{ color: '#EDEDED', fontSize: '13px',
+                                fontWeight: 600, margin: 0 }}>Dark</p>
+                            <p style={{ color: '#5B5FFF', fontSize: '11px',
+                                margin: 0 }}>Jogador</p>
                             </div>
-                            <div className="stars">★★★★★</div>
+                        </div>
+                        <span style={{ color: '#FFC107' }}>★★★★★</span>
                         </div>
                     </div>
-                </div>
-            </section>
 
-            <section className="cta-sec">
-                <div className="cta-inner">
-                    <h2>Eleve o nível analítico<br /><span>da sua squad.</span></h2>
-                    <p>Fale com a gente no WhatsApp e ative seu plano agora. Sem complicação, sem formulário.</p>
-                    <a href="https://wa.me/5513981630304?text=Olá!%20Quero%20adquirir%20um%20plano%20do%20Celo%20Tracker!" className="btn-wpp" style={{ display: 'inline-flex', fontSize: '1rem', padding: '1rem 2.2rem' }} target="_blank" rel="noreferrer">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
-                        Quero adquirir um plano
+                    <div style={{ background: '#171717', border: '1px solid #2C2C2C',
+                        borderRadius: '12px', padding: '24px' }}>
+                        <p style={{ color: '#EDEDED', fontSize: '14px', lineHeight: '1.7',
+                        fontStyle: 'italic', marginBottom: '20px' }}>
+                        "Ferramenta séria para coach sério. Consigo ver a evolução de cada
+                        jogador rodada a rodada e <strong>tomar decisão de lineup com dado
+                        real</strong>, não com achismo."
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center',
+                        justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '50%',
+                            background: '#FF8C00', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', fontSize: '12px', fontWeight: 700,
+                            color: '#EDEDED' }}>CM</div>
+                            <div>
+                            <p style={{ color: '#EDEDED', fontSize: '13px',
+                                fontWeight: 600, margin: 0 }}>Coach Matheuzin</p>
+                            <p style={{ color: '#5B5FFF', fontSize: '11px',
+                                margin: 0 }}>Coach</p>
+                            </div>
+                        </div>
+                        <span style={{ color: '#FFC107' }}>★★★★★</span>
+                        </div>
+                    </div>
+                    </div>
+
+                    {/* Resumo do que vai ter */}
+                    <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+                    <p style={{ color: '#5B5FFF', fontSize: '12px', fontWeight: 600,
+                        letterSpacing: '0.1em', textTransform: 'uppercase',
+                        marginBottom: '24px' }}>RESUMINDO TUDO QUE VOCÊ VAI TER</p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
+                        gap: '12px', marginBottom: '48px', textAlign: 'left' }}>
+                        {[
+                        ['OCR automático', '— sobe o print, a IA extrai tudo em segundos'],
+                        ['Dashboard completo', 'com histórico por jogador, rodada e campeonato'],
+                        ['Link público', '— qualquer jogador acessa sem criar conta'],
+                        ['Filtros por liga e data', 'para comparar fases e campeonatos'],
+                        ['Histórico preservado', 'mesmo quando o squad muda'],
+                        ['Decisão de lineup', 'com dado real, não com achismo'],
+                        ].map(([bold, rest], i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start',
+                            gap: '10px', background: '#171717', border: '1px solid #2C2C2C',
+                            borderRadius: '8px', padding: '16px' }}>
+                            <span style={{ color: '#00E676', fontSize: '16px',
+                            marginTop: '1px' }}>✓</span>
+                            <p style={{ color: '#A1A1A1', fontSize: '13px',
+                            lineHeight: '1.6', margin: 0 }}>
+                            <strong style={{ color: '#EDEDED' }}>{bold}</strong>{rest}
+                            </p>
+                        </div>
+                        ))}
+                    </div>
+
+                    <h2 style={{ color: '#EDEDED', fontSize: '32px', fontWeight: 700,
+                        marginBottom: '8px' }}>
+                        Tudo isso por{' '}
+                        <span style={{ color: '#5B5FFF' }}>menos de R$1,50 por dia.</span>
+                    </h2>
+                    <p style={{ color: '#A1A1A1', fontSize: '14px', marginBottom: '32px' }}>
+                        Começa grátis. Faz o upgrade quando quiser.{' '}
+                        <strong style={{ color: '#EDEDED' }}>Sem contrato, sem formulário.</strong>
+                    </p>
+
+                    <a href="/login" style={{ display: 'block', maxWidth: '400px',
+                        margin: '0 auto 12px', background: '#5B5FFF', color: '#EDEDED',
+                        padding: '16px 32px', borderRadius: '8px', fontSize: '16px',
+                        fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>
+                        Quero começar grátis agora
                     </a>
+                    <p style={{ color: '#777', fontSize: '12px', marginBottom: '16px' }}>
+                        Acesso imediato · Cancele quando quiser ·{' '}
+                        <span style={{ color: '#5B5FFF' }}>Sem cartão para o plano grátis</span>
+                    </p>
+                    <button 
+                        onClick={() => navigate('/admin-celo/planos')}
+                        style={{ display: 'block', maxWidth: '400px', width: '100%',
+                        margin: '0 auto', border: '1px solid #2C2C2C', background: 'transparent', color: '#EDEDED',
+                        padding: '14px 32px', borderRadius: '8px', fontSize: '15px',
+                        fontWeight: 600, textDecoration: 'none', textAlign: 'center', cursor: 'pointer' }}>
+                        Ver todos os planos →
+                    </button>
+                    </div>
+
                 </div>
             </section>
 
