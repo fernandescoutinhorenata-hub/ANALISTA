@@ -1,7 +1,25 @@
-
+import React from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Trophy, Lock } from 'lucide-react';
 
 export default function Upgrade() {
   const WHATSAPP_NUMBER = '5513981630304';
+  const [searchParams] = useSearchParams();
+  
+  const isNovo = searchParams.get('novo') === 'true';
+  const isExpirado = searchParams.get('expirado') === 'true' || (!isNovo);
+
+  const content = {
+    icon: isNovo ? <Trophy size={64} /> : <Lock size={64} />,
+    title: isNovo ? "Escolha seu plano" : "Seu plano expirou",
+    subtitle: isNovo 
+      ? "Acesse todas as métricas da sua squad com um plano CTracker." 
+      : "Renove sua assinatura para continuar acessando as métricas avançadas e o dashboard completo da sua squad.",
+    button: isNovo ? "Assinar via WhatsApp" : "Renovar agora via WhatsApp",
+    message: isNovo 
+      ? 'Olá! Quero conhecer os planos e assinar o Celo Tracker.' 
+      : 'Olá! Meu plano expirou e quero renovar meu acesso ao Celo Tracker.'
+  };
 
   return (
     <div style={{
@@ -15,13 +33,13 @@ export default function Upgrade() {
       fontFamily: "'Inter', sans-serif",
       padding: '2rem'
     }}>
-      {/* Icon/Emoji */}
+      {/* Icon Section */}
       <div style={{ 
-        fontSize: '4rem', 
         marginBottom: '1.5rem',
-        filter: 'drop-shadow(0 0 20px rgba(124, 58, 237, 0.3))'
+        filter: 'drop-shadow(0 0 20px rgba(124, 58, 237, 0.3))',
+        color: '#7C3AED'
       }}>
-        🔒
+        {content.icon}
       </div>
 
       <h1 style={{ 
@@ -33,7 +51,7 @@ export default function Upgrade() {
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent'
       }}>
-        Seu plano expirou
+        {content.title}
       </h1>
 
       <p style={{ 
@@ -43,11 +61,11 @@ export default function Upgrade() {
         maxWidth: '400px',
         lineHeight: 1.6
       }}>
-        Renove sua assinatura para continuar acessando as métricas avançadas e o dashboard completo da sua squad.
+        {content.subtitle}
       </p>
       
       <a
-        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Meu plano expirou e quero renovar meu acesso ao Celo Tracker.')}`}
+        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(content.message)}`}
         target="_blank"
         rel="noopener noreferrer"
         style={{
@@ -73,7 +91,7 @@ export default function Upgrade() {
           e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(124, 58, 237, 0.4)';
         }}
       >
-        <span>Renovar agora via WhatsApp</span>
+        <span>{content.button}</span>
       </a>
 
       <button

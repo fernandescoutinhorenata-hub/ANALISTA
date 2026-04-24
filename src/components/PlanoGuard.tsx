@@ -15,8 +15,12 @@ export function PlanoGuard({ children }: PlanoGuardProps) {
   if (loading) return null
 
   // Se não tiver assinatura ativa (ou expirou hoje/no passado), redireciona
-  if (!subscription?.ativo) {
-    return <Navigate to="/upgrade" replace />
+  if (subscription === null || subscription === undefined) {
+    return <Navigate to="/upgrade?novo=true" replace />
+  }
+
+  if (!subscription.ativo) {
+    return <Navigate to="/upgrade?expirado=true" replace />
   }
 
   // Se estiver tudo OK, renderiza o conteúdo protegido
