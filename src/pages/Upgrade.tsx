@@ -1,3 +1,4 @@
+// Redeploy trigger
 import { useSearchParams } from 'react-router-dom';
 import { Trophy, Lock } from 'lucide-react';
 
