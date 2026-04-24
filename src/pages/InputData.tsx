@@ -4,7 +4,7 @@ import { matchNomeOficial } from '../utils/ocr-processing';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, CheckCircle, XCircle, AlertTriangle, Trash2,
-    Camera, Loader2, Zap, HelpCircle
+    Loader2, Zap, HelpCircle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
