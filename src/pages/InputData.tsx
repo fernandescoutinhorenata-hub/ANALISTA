@@ -134,14 +134,13 @@ export const InputData: React.FC = () => {
     useEffect(() => {
         if (!user) return;
         const checkSubAndUses = async () => {
-             // 1. Busca usos de OCR no perfil (tabela perfis)
-             const { data: perfil } = await supabase
-                .from('perfis')
-                .select('ocr_uses')
-                .eq('id', user.id)
-                .maybeSingle();
+             // 1. Busca total de usos de OCR na tabela ocr_usage
+             const { count } = await supabase
+                .from('ocr_usage')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', user.id);
             
-            if (perfil) setOcrUses(perfil.ocr_uses ?? 0);
+            setOcrUses(count ?? 0);
 
             // 2. Verifica assinatura ativa (tabela subscriptions)
             const { data: sub } = await supabase
@@ -154,7 +153,7 @@ export const InputData: React.FC = () => {
             
             setAssinaturaAtiva(!!sub);
             if (import.meta.env.DEV) {
-                console.log('[OCR DEBUG] ocr_uses carregado:', perfil?.ocr_uses, '| assinatura:', !!sub);
+                console.log('[OCR DEBUG] ocr_usage count:', count, '| assinatura:', !!sub);
             }
         };
         checkSubAndUses();
@@ -298,11 +297,16 @@ export const InputData: React.FC = () => {
 
 
 
-            // 2. Incrementar uso se não for PRO
+            // 2. Incrementar uso se não for PRO (Inserir na ocr_usage)
             if (!assinaturaAtiva && user) {
-                const nextUses = ocrUses + 1;
-                await supabase.from('perfis').update({ ocr_uses: nextUses }).eq('id', user.id);
-                setOcrUses(nextUses);
+                const { error: insertError } = await supabase
+                    .from('ocr_usage')
+                    .insert({ user_id: user.id });
+                
+                if (!insertError) {
+                    const nextUses = ocrUses + 1;
+                    setOcrUses(nextUses);
+                }
             }
 
             showToast('Screenshot lida! Revise os dados antes de salvar.', 'success');
