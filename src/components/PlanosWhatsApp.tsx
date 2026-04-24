@@ -67,9 +67,9 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
           </div>
           <div style={{ minHeight: '1.4rem', marginBottom: '1.8rem' }} />
           <ul style={{ listStyle: 'none', marginBottom: '2rem', flex: 1 }}>
-            <FeatureItem text="4 leituras automáticas via OCR" />
-            <FeatureItem text="Acesso limitado às métricas" />
-            <FeatureItem text="Dashboard básico da squad" />
+            <FeatureItem text="Trial de 1 dia (OCR Incluso)" />
+            <FeatureItem text="Acesso vitalício ao dashboard" />
+            <FeatureItem text="Métricas básicas da squad" />
             <FeatureItem text="Link público da squad" />
           </ul>
 

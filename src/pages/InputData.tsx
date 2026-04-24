@@ -103,6 +103,7 @@ export const InputData: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [ocrLoading, setOcrLoading] = useState(false);
     const [assinaturaAtiva, setAssinaturaAtiva] = useState(false);
+    const [trialExpiresAt, setTrialExpiresAt] = useState<string | null>(null);
     const [isUpsellModalOpen, setIsUpsellModalOpen] = useState(false);
     const [toast, setToast] = useState<any>(null);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -124,6 +125,10 @@ export const InputData: React.FC = () => {
     const totalKillsSquad = parseInt(matchData.totalKillsManual) || 0;
     const totalPontosPartida = pontosPosicao + totalKillsSquad;
 
+    // Cálculo de permissão de OCR
+    const trialValid = trialExpiresAt ? new Date(trialExpiresAt) > new Date() : false;
+    const canUseOCR = assinaturaAtiva || trialValid;
+
     // Sincronizar kills dos jogadores com o total (opcional, mas ajuda o usuário)
     useEffect(() => {
         const sumKills = players.reduce((acc, p) => acc + (parseInt(p.kills) || 0), 0);
@@ -132,7 +137,8 @@ export const InputData: React.FC = () => {
 
     useEffect(() => {
         if (!user) return;
-        const checkSub = async () => {
+        const fetchData = async () => {
+            // 1. Verifica assinatura
             const { data: sub } = await supabase
                 .from('subscriptions')
                 .select('status, data_fim')
@@ -142,8 +148,17 @@ export const InputData: React.FC = () => {
                 .maybeSingle();
             
             setAssinaturaAtiva(!!sub);
+
+            // 2. Busca trial
+            const { data: perfil } = await supabase
+                .from('perfis')
+                .select('trial_expires_at')
+                .eq('id', user.id)
+                .maybeSingle();
+            
+            if (perfil) setTrialExpiresAt(perfil.trial_expires_at);
         };
-        checkSub();
+        fetchData();
     }, [user]);
 
     const showToast = (message: string, type: string) => {
@@ -575,19 +590,36 @@ export const InputData: React.FC = () => {
                     {/* 3. Botões de Ação */}
                     <div className="flex flex-col items-center gap-3 pt-8 animate-reveal max-w-2xl mx-auto w-full">
                         {/* Botão Ler Screenshot */}
-                        <button
-                            onClick={() => {
-                                screenshotInputRef.current?.click();
-                            }}
-                            disabled={ocrLoading}
-                            className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10 flex items-center justify-center gap-2"
-                        >
-                            {ocrLoading ? (
-                                <><Loader2 size={16} className="animate-spin" /><span>LENDO...</span></>
-                            ) : (
-                                <span>Ler Screenshot</span>
-                            )}
-                        </button>
+                        {canUseOCR ? (
+                            <button
+                                onClick={() => {
+                                    screenshotInputRef.current?.click();
+                                }}
+                                disabled={ocrLoading}
+                                className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-3.5 font-bold text-sm rounded-[10px] transition-all shadow-lg shadow-purple-500/10 flex items-center justify-center gap-2"
+                            >
+                                {ocrLoading ? (
+                                    <><Loader2 size={16} className="animate-spin" /><span>LENDO...</span></>
+                                ) : (
+                                    <span>Ler Screenshot</span>
+                                )}
+                            </button>
+                        ) : (
+                            <div className="w-full p-6 bg-amber-500/10 border border-amber-500/20 rounded-xl flex flex-col items-center text-center gap-4 animate-reveal">
+                                <div className="flex flex-col gap-1">
+                                    <p className="text-sm font-bold text-amber-500">Seu período gratuito expirou</p>
+                                    <p className="text-xs text-[var(--text-secondary)]">Assine um plano para continuar inserindo prints.</p>
+                                </div>
+                                <a 
+                                    href="https://wa.me/13981630304?text=Olá! Quero conhecer os planos e assinar o Celo Tracker"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="w-full bg-[#25D366] hover:bg-[#20BA56] text-white py-3 font-bold text-sm rounded-lg transition-all flex items-center justify-center gap-2"
+                                >
+                                    Assinar via WhatsApp
+                                </a>
+                            </div>
+                        )}
 
                         <button
                             onClick={handleSaveSquad}

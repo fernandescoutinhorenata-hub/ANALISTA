@@ -164,26 +164,41 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                             Inserir Dados
                         </button>
 
-                        {/* Badge de Trial */}
-                        {!isSubscriber && trialExpiresAt && new Date(trialExpiresAt) > new Date() && (
-                            <div className="mt-4 p-4 rounded-xl bg-[#FFC107]/10 border border-[#FFC107]/20">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[10px] font-bold text-[#FFC107] uppercase tracking-wider">Acesso Trial</span>
-                                    <Activity size={12} className="text-[#FFC107]" />
+                        {/* Badge de Trial / Assinatura */}
+                        {!isSubscriber && trialExpiresAt && (
+                            new Date(trialExpiresAt) > new Date() ? (
+                                <div className="mt-4 p-4 rounded-xl bg-[#FFC107]/10 border border-[#FFC107]/20">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-[10px] font-bold text-[#FFC107] uppercase tracking-wider">Trial ativo</span>
+                                        <Activity size={12} className="text-[#FFC107]" />
+                                    </div>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-xl font-black text-[#FFC107]">
+                                            {Math.max(0, Math.ceil((new Date(trialExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60)))}
+                                        </span>
+                                        <span className="text-[11px] font-medium text-[#FFC107]/80">horas restantes</span>
+                                    </div>
+                                    <div className="mt-3 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full bg-[#FFC107] transition-all duration-500"
+                                            style={{ width: `${Math.min(100, (Math.max(0, new Date(trialExpiresAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)) * 100)}%` }}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-xl font-black text-[#FFC107]">
-                                        {Math.max(0, Math.ceil((new Date(trialExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60)))}
-                                    </span>
-                                    <span className="text-[11px] font-medium text-[#FFC107]/80">horas restantes</span>
-                                </div>
-                                <div className="mt-3 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full bg-[#FFC107] transition-all duration-500"
-                                        style={{ width: `${Math.min(100, (Math.max(0, new Date(trialExpiresAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)) * 100)}%` }}
-                                    />
-                                </div>
-                            </div>
+                            ) : (
+                                <a 
+                                    href="https://wa.me/13981630304?text=Olá! Meu trial expirou e quero assinar o Celo Tracker"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-4 p-4 rounded-xl bg-[#5B5FFF]/10 border border-[#5B5FFF]/20 flex items-center justify-between group transition-all hover:bg-[#5B5FFF]/20"
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-[#5B5FFF] uppercase tracking-wider">Trial expirado</span>
+                                        <span className="text-sm font-black text-[#5B5FFF]">Assinar plano</span>
+                                    </div>
+                                    <ChevronRight size={18} className="text-[#5B5FFF] group-hover:translate-x-1 transition-transform" />
+                                </a>
+                            )
                         )}
                     </div>
                 </nav>
