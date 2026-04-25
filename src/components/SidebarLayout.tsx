@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     LayoutDashboard, Users, Activity, Shield, 
-    FileSpreadsheet, DollarSign, CreditCard, 
+    FileSpreadsheet, CreditCard, 
     PlusCircle, AlertCircle, ChevronRight, 
     LogOut, Menu, Lock
 } from 'lucide-react';
@@ -130,13 +130,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
 
                     <div className="text-label mb-2 mt-6 px-2 text-[var(--text-disabled)] tracking-[0.1em]">CONTA</div>
                     <div className="flex flex-col gap-1">
-                        <button
-                            onClick={() => { navigate('/afiliado'); setIsSidebarOpen(false); }}
-                            className={`nav-item w-full flex items-center gap-[10px] ${activeTab === 'afiliados' ? 'active' : ''}`}
-                        >
-                            <DollarSign size={18} />
-                            <span className="font-medium text-[14px]">Afiliados</span>
-                        </button>
+
 
                         <button
                             onClick={() => { navigate('/admin-celo/planos'); setIsSidebarOpen(false); }}

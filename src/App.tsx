@@ -10,7 +10,7 @@ import { Planos } from './pages/Planos';
 import { AdminPanel } from './pages/AdminPanel';
 import { PublicSquad } from './pages/PublicSquad';
 import Quebras from './pages/Quebras';
-import Afiliado from './pages/Afiliado';
+
 import { LandingPage } from './pages/LandingPage';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -96,16 +96,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/afiliado" 
-            element={
-              <ProtectedRoute>
-                <PlanoGuard>
-                  <Afiliado />
-                </PlanoGuard>
-              </ProtectedRoute>
-            } 
-          />
+
           <Route 
             path="/quebras" 
             element={
