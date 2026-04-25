@@ -138,7 +138,7 @@ export const PlanosWhatsApp: React.FC<PlanosWhatsAppProps> = ({ className = '' }
             <FeatureItem text="Histórico completo de campeonatos" />
             <FeatureItem text="Relatório de rodadas detalhado" />
             <FeatureItem text="Suporte prioritário" />
-            <FeatureItem text="Cupom de afiliado exclusivo (20%)" />
+
           </ul>
           <button
             onClick={() => window.open('https://pay.lowify.com.br/checkout?product_id=hBRgF5', '_blank', 'noopener,noreferrer')}
