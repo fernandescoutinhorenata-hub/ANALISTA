@@ -121,7 +121,7 @@ export const MapModal: React.FC<MapModalProps> = ({ isOpen, onClose, mapa, parti
               {points.map((p, idx) => (
                 <div
                   key={idx}
-                  className="absolute w-5 h-5 rounded-full bg-[#FF5252] border-2 border-white flex items-center justify-center text-white text-[10px] font-bold shadow-lg animate-pulse"
+                  className="absolute w-[28px] h-[28px] rounded-full bg-[#FF5252] border-[3px] border-white flex items-center justify-center text-white text-[12px] font-bold shadow-lg animate-pulse opacity-100"
                   style={{
                     left: `${p.x}%`,
                     top: `${p.y}%`,

@@ -83,11 +83,11 @@ export const HeatMap: React.FC<HeatMapProps> = ({ userId }) => {
 
   const getPointStyle = (count: number) => {
     if (count >= 6) {
-      return { color: '#FF5252', size: 24, glow: '0 0 15px rgba(255, 82, 82, 0.8)' }; // Red, large
+      return { color: '#FF5252', size: 48, glow: '0 0 24px #FF5252' }; // Red, large
     } else if (count >= 3) {
-      return { color: '#FF8C00', size: 18, glow: '0 0 10px rgba(255, 140, 0, 0.7)' }; // Orange, medium
+      return { color: '#FF8C00', size: 36, glow: '0 0 18px #FF8C00' }; // Orange, medium
     } else {
-      return { color: '#FFC107', size: 14, glow: '0 0 8px rgba(255, 193, 7, 0.5)' }; // Yellow, small
+      return { color: '#FFC107', size: 24, glow: '0 0 12px #FFC107' }; // Yellow, small
     }
   };
 
@@ -152,7 +152,7 @@ export const HeatMap: React.FC<HeatMapProps> = ({ userId }) => {
               return (
                 <div
                   key={idx}
-                  className="absolute rounded-full flex items-center justify-center font-bold text-white transition-all hover:scale-125 cursor-help"
+                  className="absolute rounded-full flex items-center justify-center font-bold text-white transition-all hover:scale-125 cursor-help opacity-100"
                   style={{
                     left: `${p.x}%`,
                     top: `${p.y}%`,
@@ -179,13 +179,13 @@ export const HeatMap: React.FC<HeatMapProps> = ({ userId }) => {
       
       <div className="mt-4 flex flex-wrap gap-6 justify-center text-sm font-medium">
         <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-          <span className="w-3 h-3 rounded-full bg-[#FFC107] shadow-[0_0_8px_rgba(255,193,7,0.5)]"></span> 1-2 mortes
+          <span className="w-6 h-6 rounded-full bg-[#FFC107] shadow-[0_0_12px_#FFC107]"></span> 1-2 mortes
         </div>
         <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-          <span className="w-4 h-4 rounded-full bg-[#FF8C00] shadow-[0_0_10px_rgba(255,140,0,0.7)]"></span> 3-5 mortes
+          <span className="w-9 h-9 rounded-full bg-[#FF8C00] shadow-[0_0_18px_#FF8C00]"></span> 3-5 mortes
         </div>
         <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-          <span className="w-5 h-5 rounded-full bg-[#FF5252] shadow-[0_0_15px_rgba(255,82,82,0.8)]"></span> 6+ mortes
+          <span className="w-12 h-12 rounded-full bg-[#FF5252] shadow-[0_0_24px_#FF5252]"></span> 6+ mortes
         </div>
       </div>
     </div>
