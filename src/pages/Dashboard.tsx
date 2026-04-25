@@ -21,6 +21,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { OnboardingModal } from '../components/OnboardingModal';
 import { SidebarLayout } from '../components/SidebarLayout';
 import { SecurityTab } from '../components/SecurityTab';
+import { HeatMap } from '../components/HeatMap';
 
 // ─── Componentes de UI (Design System) ──────────────────────────────────────────
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -1469,6 +1470,10 @@ export const Dashboard: React.FC = () => {
 
                             {activeTab === 'security' && (
                                 <SecurityTab />
+                            )}
+
+                            {activeTab === 'heatmap' && user?.id && (
+                                <HeatMap userId={user.id} />
                             )}
 
                             {/* ══════════ PLAYERS TAB ══════════ */}

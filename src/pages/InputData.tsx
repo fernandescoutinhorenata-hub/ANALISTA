@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { verificarDesbloqueioConquistas } from '../utils/conquistas';
 import { readScreenshot } from '../lib/vision';
 import { SidebarLayout } from '../components/SidebarLayout';
+import { MapModal } from '../components/MapModal';
 
 const MAPAS = ['BERMUDA', 'PURGATÓRIO', 'KALAHARI', 'ALPINE', 'NOVA TERRA', 'SOLARA'];
 const COLOCACOES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
@@ -117,6 +118,10 @@ export const InputData: React.FC = () => {
         qualCall: ''
     });
 
+    const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+    const [mapaAtual, setMapaAtual] = useState('');
+    const [partidaIdAtual, setPartidaIdAtual] = useState('');
+
     const screenshotInputRef = useRef<HTMLInputElement>(null);
 
     // Cálculo de Pontos em Tempo Real
@@ -190,6 +195,8 @@ export const InputData: React.FC = () => {
         ]);
         setCallDetail({ quebraCall: null, resultadoCall: null, qualCall: '' });
         setCurrentMatchId(null);
+        setMapaAtual('');
+        setPartidaIdAtual('');
     };
 
     const compressImage = (file: File): Promise<string> => {
@@ -368,6 +375,8 @@ export const InputData: React.FC = () => {
 
             if (inserted?.id) {
                 setCurrentMatchId(inserted.id);
+                setPartidaIdAtual(inserted.id);
+                setMapaAtual(matchData.mapa);
                 setIsMatchDetailModalOpen(true);
             }
 
@@ -400,6 +409,11 @@ export const InputData: React.FC = () => {
         }
     };
 
+    const openMapModal = () => {
+        setIsMatchDetailModalOpen(false);
+        setIsMapModalOpen(true);
+    };
+
     const handleSaveCallDetails = async () => {
         if (!currentMatchId) return;
         setLoading(true);
@@ -411,10 +425,10 @@ export const InputData: React.FC = () => {
             }).eq('id', currentMatchId);
 
             if (error) throw error;
-            setIsMatchDetailModalOpen(false);
-            resetForm();
+            openMapModal();
         } catch (err: any) {
             showToast(err.message || 'Erro ao salvar detalhes', 'error');
+        } finally {
             setLoading(false);
         }
     };
@@ -431,16 +445,20 @@ export const InputData: React.FC = () => {
             }).eq('id', currentMatchId);
 
             if (error) throw error;
-            setIsMatchDetailModalOpen(false);
-            resetForm();
+            openMapModal();
         } catch (err: any) {
             showToast(err.message || 'Erro', 'error');
+        } finally {
             setLoading(false);
         }
     };
 
     const handleCloseDetailModal = () => {
-        setIsMatchDetailModalOpen(false);
+        openMapModal();
+    };
+
+    const handleCloseMapModal = () => {
+        setIsMapModalOpen(false);
         resetForm();
     };
     const handleResetData = async () => {
@@ -761,6 +779,13 @@ export const InputData: React.FC = () => {
                         </div>
                     </div>
                 )}
+
+                <MapModal 
+                    isOpen={isMapModalOpen}
+                    onClose={handleCloseMapModal}
+                    mapa={mapaAtual}
+                    partida_id={partidaIdAtual}
+                />
 
                 <style>{`
                     @keyframes reveal {

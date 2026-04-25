@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     LayoutDashboard, Users, Activity, Shield, 
-    FileSpreadsheet, CreditCard, 
+    FileSpreadsheet, CreditCard, Map,
     PlusCircle, AlertCircle, ChevronRight, 
     LogOut, Menu, Lock
 } from 'lucide-react';
@@ -32,6 +32,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
         { id: 'players', label: 'Jogadores', icon: Users, path: '/?tab=players', premium: false },
         { id: 'coletivo', label: 'Coletivo', icon: Activity, path: '/coletivo', premium: false },
         { id: 'quebras', label: 'Quebras', icon: Shield, path: '/quebras', premium: true },
+        { id: 'heatmap', label: 'Mapa de Calor', icon: Map, path: '/?tab=heatmap', premium: true },
         { id: 'history', label: 'Análise', icon: FileSpreadsheet, path: '/?tab=history', premium: true },
     ];
 
@@ -99,7 +100,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
 
                     <div className="text-label mb-2 mt-6 px-2 text-[var(--text-disabled)] tracking-[0.1em]">TÁTICO</div>
                     <div className="flex flex-col gap-1">
-                        {navItems.filter(i => ['quebras', 'history'].includes(i.id)).map((item) => {
+                        {navItems.filter(i => ['quebras', 'heatmap', 'history'].includes(i.id)).map((item) => {
                             const isActive = activeTab === item.id;
                             const isLocked = item.premium && !isSubscriber;
 
