@@ -25,6 +25,8 @@ const mapaParaArquivo: Record<string, string> = {
   'KALAHARI': '/maps/Kalahari_grid.jpg',
   'NOVA TERRA': '/maps/Nova_Terra_grid.jpg',
   'PURGATORIO': '/maps/Purgatory_grid.jpg',
+  'PURGATÓRIO': '/maps/Purgatory_grid.jpg',
+  'PURGATORY': '/maps/Purgatory_grid.jpg',
   'SOLARA': '/maps/Solara_grid.jpg',
 };
 
