@@ -53,6 +53,12 @@
   color: var(--purple-light);
 }
 
+.landing-page .logo-img {
+  height: 64px;
+  width: auto;
+  display: block;
+}
+
 .landing-page .nav-links {
   display: flex;
   gap: 2.5rem;
@@ -756,9 +762,9 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 40px;
-  background: #dc2626;
-  color: #fff;
+  min-height: 40px;
+  background: #5B5FFF;
+  color: #EDEDED;
   font-size: 13px;
   font-weight: 700;
   display: flex;
@@ -788,5 +794,77 @@
   .landing-page .urgency-bar {
     font-size: 11px;
     gap: 4px;
+  }
+}
+
+@media(max-width: 767px) {
+  /* Urgency Bar Mobile */
+  .landing-page .urgency-bar {
+    font-size: 12px !important;
+    padding: 8px 16px !important;
+    height: auto !important;
+    text-align: center;
+    flex-wrap: wrap;
+  }
+  
+  /* Navbar Mobile */
+  .landing-page nav {
+    padding: 0 16px !important;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+  }
+  .landing-page .logo-img {
+    height: 32px !important;
+  }
+  .landing-page .btn-nav-l {
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+  }
+  .landing-page .btn-ghost-l {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+  .landing-page .nav-ctas {
+    gap: 8px !important;
+  }
+
+  /* Hero Mobile */
+  .landing-page .hero {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .landing-page .hero h1 {
+    font-size: clamp(24px, 6vw, 36px) !important;
+  }
+  .landing-page .hero-desc {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+  .landing-page .hero-ctas {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .landing-page .hero-ctas .btn-sec,
+  .landing-page .hero-ctas .btn-wpp {
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 0 auto;
+    justify-content: center;
+  }
+
+  /* Sections Mobile */
+  .landing-page .content-section {
+    padding: 60px 16px !important;
+  }
+  .landing-page .info-grid,
+  .landing-page .compare-table,
+  .landing-page .depoimentos-grid,
+  .landing-page .resumo-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .landing-page .info-card,
+  .landing-page .depo-box {
+    padding: 16px !important;
   }
 }

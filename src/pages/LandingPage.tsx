@@ -71,7 +71,7 @@ export const LandingPage: React.FC = () => {
                     <img 
                         src={logo} 
                         alt="CTracker" 
-                        style={{ height: '64px', width: 'auto', display: 'block' }} 
+                        className="logo-img"
                     />
                 </a>
                 <ul className="nav-links">
@@ -129,7 +129,7 @@ export const LandingPage: React.FC = () => {
             </section>
 
 
-            <section style={{ background: '#0F0F0F', padding: '80px 24px' }}>
+            <section className="content-section" style={{ background: '#0F0F0F' }}>
                 <div style={{ maxWidth: '860px', margin: '0 auto', textAlign: 'center' }}>
                     
                     <p style={{ color: '#5B5FFF', fontSize: '12px', fontWeight: 600, 
@@ -146,10 +146,10 @@ export const LandingPage: React.FC = () => {
                     que deveria ter gasto treinando.
                     </h2>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', 
+                    <div className="info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', 
                     gap: '16px', marginBottom: '32px' }}>
                     
-                    <div style={{ background: '#171717', border: '1px solid #2C2C2C', 
+                    <div className="info-card" style={{ background: '#171717', border: '1px solid #2C2C2C', 
                         borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
                         <p style={{ color: '#5B5FFF', fontWeight: 600, marginBottom: '8px' }}>
                         • Copiando dado na mão
@@ -160,7 +160,7 @@ export const LandingPage: React.FC = () => {
                         </p>
                     </div>
 
-                    <div style={{ background: '#171717', border: '1px solid #2C2C2C', 
+                    <div className="info-card" style={{ background: '#171717', border: '1px solid #2C2C2C', 
                         borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
                         <p style={{ color: '#5B5FFF', fontWeight: 600, marginBottom: '8px' }}>
                         • Decisão de lineup no achismo
@@ -171,7 +171,7 @@ export const LandingPage: React.FC = () => {
                         </p>
                     </div>
 
-                    <div style={{ background: '#171717', border: '1px solid #2C2C2C', 
+                    <div className="info-card" style={{ background: '#171717', border: '1px solid #2C2C2C', 
                         borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
                         <p style={{ color: '#5B5FFF', fontWeight: 600, marginBottom: '8px' }}>
                         • Relatório que fica obsoleto
@@ -182,7 +182,7 @@ export const LandingPage: React.FC = () => {
                         </p>
                     </div>
 
-                    <div style={{ background: '#171717', border: '1px solid #2C2C2C', 
+                    <div className="info-card" style={{ background: '#171717', border: '1px solid #2C2C2C', 
                         borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
                         <p style={{ color: '#5B5FFF', fontWeight: 600, marginBottom: '8px' }}>
                         • Sem histórico de evolução
@@ -218,7 +218,7 @@ export const LandingPage: React.FC = () => {
             </section>
 
 
-            <section style={{ background: '#0F0F0F', padding: '80px 24px' }}>
+            <section className="content-section" style={{ background: '#0F0F0F' }}>
                 <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
 
                     <p style={{ color: '#5B5FFF', fontSize: '12px', fontWeight: 600,
@@ -242,7 +242,7 @@ export const LandingPage: React.FC = () => {
                     </p>
 
                     {/* Tabela comparativa */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
+                    <div className="compare-table" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
                     border: '1px solid #2C2C2C', borderRadius: '12px', overflow: 'hidden',
                     marginBottom: '48px' }}>
 
@@ -425,13 +425,13 @@ export const LandingPage: React.FC = () => {
             </section>
 
 
-            <section style={{ background: '#0F0F0F', padding: '80px 24px' }}>
+            <section className="content-section" style={{ background: '#0F0F0F' }}>
                 <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
+                    <div className="depoimentos-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
                     gap: '16px', marginBottom: '64px' }}>
 
-                    <div style={{ background: '#171717', border: '1px solid #2C2C2C',
+                    <div className="depo-box" style={{ background: '#171717', border: '1px solid #2C2C2C',
                         borderRadius: '12px', padding: '24px' }}>
                         <p style={{ color: '#EDEDED', fontSize: '14px', lineHeight: '1.7',
                         fontStyle: 'italic', marginBottom: '20px' }}>
@@ -457,7 +457,7 @@ export const LandingPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div style={{ background: '#171717', border: '1px solid #2C2C2C',
+                    <div className="depo-box" style={{ background: '#171717', border: '1px solid #2C2C2C',
                         borderRadius: '12px', padding: '24px' }}>
                         <p style={{ color: '#EDEDED', fontSize: '14px', lineHeight: '1.7',
                         fontStyle: 'italic', marginBottom: '20px' }}>
@@ -483,7 +483,7 @@ export const LandingPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div style={{ background: '#171717', border: '1px solid #2C2C2C',
+                    <div className="depo-box" style={{ background: '#171717', border: '1px solid #2C2C2C',
                         borderRadius: '12px', padding: '24px' }}>
                         <p style={{ color: '#EDEDED', fontSize: '14px', lineHeight: '1.7',
                         fontStyle: 'italic', marginBottom: '20px' }}>
@@ -509,7 +509,7 @@ export const LandingPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div style={{ background: '#171717', border: '1px solid #2C2C2C',
+                    <div className="depo-box" style={{ background: '#171717', border: '1px solid #2C2C2C',
                         borderRadius: '12px', padding: '24px' }}>
                         <p style={{ color: '#EDEDED', fontSize: '14px', lineHeight: '1.7',
                         fontStyle: 'italic', marginBottom: '20px' }}>
@@ -542,7 +542,7 @@ export const LandingPage: React.FC = () => {
                         letterSpacing: '0.1em', textTransform: 'uppercase',
                         marginBottom: '24px' }}>RESUMINDO TUDO QUE VOCÊ VAI TER</p>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
+                    <div className="resumo-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr',
                         gap: '12px', marginBottom: '48px', textAlign: 'left' }}>
                         {[
                         ['OCR automático', '— sobe o print, a IA extrai tudo em segundos'],
@@ -603,7 +603,7 @@ export const LandingPage: React.FC = () => {
                     <img 
                         src={logo} 
                         alt="CTracker" 
-                        style={{ height: '64px', width: 'auto', display: 'block' }} 
+                        className="logo-img"
                     />
                 </a>
                 <ul className="footer-links">
