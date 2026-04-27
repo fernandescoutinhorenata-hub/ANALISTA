@@ -209,31 +209,31 @@ export const Coletivo: React.FC = () => {
                     </div>
 
                     {/* Linha 2: Filtros */}
-                    <div className="flex items-center justify-start w-full gap-3">
+                    <div className="flex flex-col md:flex-row md:items-center justify-start w-full gap-3">
 
                         {/* Filtro Data */}
-                        <div className={`flex items-center gap-2 px-[12px] py-[6px] rounded-[8px] bg-[#1A1A1A] border border-[var(--border-default)] transition-all ${specificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
-                            <Calendar size={13} className={specificDate ? 'text-[var(--accent)]' : 'text-[#6B7280]'} />
+                        <div className={`flex w-full md:w-auto items-center gap-2 px-[12px] py-[6px] rounded-[8px] bg-[#1A1A1A] border border-[var(--border-default)] transition-all ${specificDate ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/30' : ''}`}>
+                            <Calendar size={13} className={specificDate ? 'text-[var(--accent)]' : 'text-[#6B7280] shrink-0'} />
                             <input 
                                 type="date" 
                                 value={specificDate}
                                 onChange={(e) => setSpecificDate(e.target.value)}
-                                className="bg-transparent text-[#6B7280] outline-none border-none text-[13px] [color-scheme:dark] cursor-pointer"
+                                className="bg-transparent text-[#6B7280] outline-none border-none text-[13px] [color-scheme:dark] cursor-pointer flex-1"
                             />
                             {specificDate && (
-                                <button onClick={() => setSpecificDate('')} className="text-[#6B7280] hover:text-white transition-colors">
+                                <button onClick={() => setSpecificDate('')} className="text-[#6B7280] hover:text-white transition-colors shrink-0">
                                     <XCircle size={14} />
                                 </button>
                             )}
                         </div>
 
                         {/* Filtro Campeonato */}
-                        <div className="hidden lg:flex items-center gap-2 px-[12px] py-[6px] rounded-[8px] bg-[#1A1A1A] border border-[var(--border-default)]">
-                            <Trophy size={13} className="text-[var(--accent)]" />
+                        <div className="flex w-full md:w-auto items-center gap-2 px-[12px] py-[6px] rounded-[8px] bg-[#1A1A1A] border border-[var(--border-default)]">
+                            <Trophy size={13} className="text-[var(--accent)] shrink-0" />
                             <select
                                 value={selectedChamp}
                                 onChange={e => setSelectedChamp(e.target.value)}
-                                className="outline-none cursor-pointer bg-transparent text-[#6B7280] border-none text-[13px] font-medium"
+                                className="flex-1 outline-none cursor-pointer bg-transparent text-[#6B7280] border-none text-[13px] font-medium w-full"
                             >
                                 <option value="Todos" className="bg-[#141416]">Todos Eventos</option>
                                 {filterOptions.championships.map(c => <option key={c} value={c} className="bg-[#141416]">{c}</option>)}
@@ -241,12 +241,12 @@ export const Coletivo: React.FC = () => {
                         </div>
 
                         {/* Filtro Mapa */}
-                        <div className="hidden lg:flex items-center gap-2 px-[12px] py-[6px] rounded-[8px] bg-[#1A1A1A] border border-[var(--border-default)]">
-                            <Map size={13} className="text-[var(--accent)]" />
+                        <div className="flex w-full md:w-auto items-center gap-2 px-[12px] py-[6px] rounded-[8px] bg-[#1A1A1A] border border-[var(--border-default)]">
+                            <Map size={13} className="text-[var(--accent)] shrink-0" />
                             <select
                                 value={selectedMap}
                                 onChange={e => setSelectedMap(e.target.value)}
-                                className="outline-none cursor-pointer bg-transparent text-[#6B7280] border-none text-[13px] font-medium"
+                                className="flex-1 outline-none cursor-pointer bg-transparent text-[#6B7280] border-none text-[13px] font-medium w-full"
                             >
                                 <option value="Todos" className="bg-[#141416]">Todos Mapas</option>
                                 {filterOptions.maps.map(m => <option key={m} value={m} className="bg-[#141416]">{m}</option>)}
